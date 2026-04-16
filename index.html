@@ -1027,7 +1027,10 @@ function inP(r,c,s){ return s==='r'?(r>=7&&r<=9&&c>=3&&c<=5):(r>=0&&r<=2&&c>=3&&
 // MOVE RULES
 // ══════════════════════════════════════════
 function rawMoves(p,ps){
-  const mv=[],{t,s,r,c}=p;
+  const mv=[],{s,r,c}=p;
+  // Quân úp dùng posType (loại quân của ô đang đứng theo bố cục gốc)
+  // Quân đã lật dùng t (loại quân thật)
+  const t = (p.hidden && p.posType) ? p.posType : p.t;
   const add=(nr,nc)=>{
     if(!onB(nr,nc))return;
     const tg=at(nr,nc,ps);
@@ -1261,7 +1264,7 @@ function execMove(piece,toR,toC){
     if(capI!==-1){snd('cap');pcs.splice(capI,1);}
     const mp=pcs.find(p=>p.id===piece.id);
     if(mp){mp.r=toR;mp.c=toC;}
-    if(wasHidden){piece.hidden=false;piece.revealed=true;snd('flip');}
+    if(wasHidden){piece.hidden=false;piece.revealed=true;piece.posType=null;snd('flip');}
     else snd('mv');
     turn=turn==='r'?'b':'r';
     sel=null;setTurnUI();draw();
@@ -1275,7 +1278,7 @@ function execMove(piece,toR,toC){
     const mp=pcs.find(p=>p.id===piece.id);
     if(mp){mp.r=toR;mp.c=toC;}
     // Lật sau khi đến ô mới
-    if(wasHidden){piece.hidden=false;piece.revealed=true;snd('flip');}
+    if(wasHidden){piece.hidden=false;piece.revealed=true;piece.posType=null;snd('flip');}
     sel=null;
     // Đổi lượt trước
     turn=movedSide==='r'?'b':'r';
@@ -1434,7 +1437,7 @@ function aiTurn(){
     if(capI!==-1){snd('cap');pcs.splice(capI,1);}else snd('mv');
     const ap=pcs.find(x=>x.id===p.id);if(ap){ap.r=mr;ap.c=mc;}
     // Lật sau khi đến ô mới
-    if(wasHidden){p.hidden=false;p.revealed=true;snd('flip');}
+    if(wasHidden){p.hidden=false;p.revealed=true;p.posType=null;snd('flip');}
     aiBusy=false;
     turn='r'; // đổi lượt trước
     const hiddenLeft=isHidden?pcs.filter(x=>x.hidden).length:0;
@@ -1778,24 +1781,36 @@ function setStatus(msg,alert){
 // INIT GAME (VS AI)
 // ══════════════════════════════════════════
 // ── CỜ ÚP: xáo trộn trong sân mỗi phe, tướng ngửa ──
+// posType = loại quân của ô đang đứng (theo bố cục gốc)
+// Khi úp: đi theo posType. Khi lật: đi theo t (loại thật)
 function applyHiddenMode(board){
+  // Bản đồ vị trí gốc → loại quân
+  const originalBoard=mkBoard();
+  const posToType={};
+  originalBoard.forEach(p=>{ posToType[`${p.s}_${p.r}_${p.c}`]=p.t; });
+
   ['r','b'].forEach(side=>{
-    // Lấy quân không phải tướng của phe này
     const pieces=board.filter(p=>p.s===side&&p.t!=='K');
-    // Lấy vị trí hiện tại của chúng (vẫn trong sân mình)
+    // Lấy vị trí gốc của chúng
     const positions=pieces.map(p=>({r:p.r,c:p.c}));
-    // Fisher-Yates shuffle CHỈ trong danh sách vị trí của phe đó
+    // Shuffle
     for(let i=positions.length-1;i>0;i--){
       const j=Math.floor(Math.random()*(i+1));
       [positions[i],positions[j]]=[positions[j],positions[i]];
     }
-    // Gán vị trí mới — vẫn trong sân mình
-    pieces.forEach((p,i)=>{p.r=positions[i].r;p.c=positions[i].c;});
-    // Úp tất cả trừ tướng
-    pieces.forEach(p=>{p.hidden=true;p.revealed=false;});
+    // Gán vị trí mới + lưu posType = loại quân của ô đó trong bố cục gốc
+    pieces.forEach((p,i)=>{
+      const newPos=positions[i];
+      p.r=newPos.r; p.c=newPos.c;
+      // posType = loại quân gốc tại ô mới này
+      p.posType = posToType[`${side}_${newPos.r}_${newPos.c}`] || p.t;
+      p.hidden=true; p.revealed=false;
+    });
   });
-  // Tướng luôn ngửa
-  board.filter(p=>p.t==='K').forEach(p=>{p.hidden=false;p.revealed=true;});
+  // Tướng luôn ngửa, không có posType
+  board.filter(p=>p.t==='K').forEach(p=>{
+    p.hidden=false; p.revealed=true; p.posType=null;
+  });
 }
 
 function initGame(){
