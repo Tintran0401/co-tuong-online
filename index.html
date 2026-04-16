@@ -1250,16 +1250,15 @@ function handleClick(evt){
 // ══════════════════════════════════════════
 function execMove(piece,toR,toC){
   const wasHidden = isHidden && piece.hidden;
+  const movedSide = piece.s; // lưu lại trước khi thay đổi
 
   if(isOnline){
     socket.emit('move',{roomId:myRoomId,pieceId:piece.id,toR,toC});
-    // Optimistic update
     lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
     const capI=pcs.findIndex(p=>p.r===toR&&p.c===toC&&p.s!==piece.s);
     if(capI!==-1){snd('cap');pcs.splice(capI,1);}
     const mp=pcs.find(p=>p.id===piece.id);
     if(mp){mp.r=toR;mp.c=toC;}
-    // Lật sau khi đến ô mới
     if(wasHidden){piece.hidden=false;piece.revealed=true;snd('flip');}
     else snd('mv');
     turn=turn==='r'?'b':'r';
@@ -1267,15 +1266,22 @@ function execMove(piece,toR,toC){
   } else {
     mvHist.push({pcs:clone(pcs),turn});
     lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
+    // Bắt quân
     const capI=pcs.findIndex(p=>p.r===toR&&p.c===toC&&p.s!==piece.s);
     if(capI!==-1){snd('cap');pcs.splice(capI,1);}else snd('mv');
+    // Di chuyển
     const mp=pcs.find(p=>p.id===piece.id);
     if(mp){mp.r=toR;mp.c=toC;}
     // Lật sau khi đến ô mới
     if(wasHidden){piece.hidden=false;piece.revealed=true;snd('flip');}
     sel=null;
-    if(checkGameResult(turn==='r'?'r':'b'))return; // turn chưa đổi = phe vừa đi
-    turn=turn==='r'?'b':'r';
+    // Đổi lượt trước
+    turn=movedSide==='r'?'b':'r';
+    // Kiểm tra kết quả — bỏ qua nếu còn nhiều quân úp (game chưa ổn định)
+    const hiddenLeft=isHidden?pcs.filter(p=>p.hidden).length:0;
+    if(hiddenLeft<3){
+      if(checkGameResult(movedSide))return;
+    }
     setTurnUI();draw();
     setTimeout(aiTurn,isHidden?700:680);
   }
@@ -1428,8 +1434,12 @@ function aiTurn(){
     // Lật sau khi đến ô mới
     if(wasHidden){p.hidden=false;p.revealed=true;snd('flip');}
     aiBusy=false;
-    if(checkGameResult('b'))return;
-    turn='r';setTurnUI();draw();
+    turn='r'; // đổi lượt trước
+    const hiddenLeft=isHidden?pcs.filter(x=>x.hidden).length:0;
+    if(hiddenLeft<3){
+      if(checkGameResult('b'))return;
+    }
+    setTurnUI();draw();
     if(gameOn&&Math.random()<.2)
       setTimeout(()=>addChatMsg('Bot',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),600+Math.random()*1000);
   },isHidden?500:40);
