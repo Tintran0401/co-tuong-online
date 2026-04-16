@@ -1692,18 +1692,33 @@ function setStatus(msg,alert){
 // ══════════════════════════════════════════
 // INIT GAME (VS AI)
 // ══════════════════════════════════════════
+// ── CỜ ÚP: xáo trộn trong sân mỗi phe, tướng ngửa ──
+function applyHiddenMode(board){
+  ['r','b'].forEach(side=>{
+    // Lấy quân không phải tướng của phe này
+    const pieces=board.filter(p=>p.s===side&&p.t!=='K');
+    // Lấy vị trí hiện tại của chúng (vẫn trong sân mình)
+    const positions=pieces.map(p=>({r:p.r,c:p.c}));
+    // Fisher-Yates shuffle CHỈ trong danh sách vị trí của phe đó
+    for(let i=positions.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [positions[i],positions[j]]=[positions[j],positions[i]];
+    }
+    // Gán vị trí mới — vẫn trong sân mình
+    pieces.forEach((p,i)=>{p.r=positions[i].r;p.c=positions[i].c;});
+    // Úp tất cả trừ tướng
+    pieces.forEach(p=>{p.hidden=true;p.revealed=false;});
+  });
+  // Tướng luôn ngửa
+  board.filter(p=>p.t==='K').forEach(p=>{p.hidden=false;p.revealed=true;});
+}
+
 function initGame(){
   isOnline=false;
   mySide='r';
   isHidden=mode==='hidden';
   pcs=mkBoard();
-  if(isHidden){
-    const nk=pcs.filter(p=>p.t!=='K');
-    const pos=nk.map(p=>({r:p.r,c:p.c}));
-    for(let i=pos.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pos[i],pos[j]]=[pos[j],pos[i]];}
-    nk.forEach((p,i)=>{p.r=pos[i].r;p.c=pos[i].c;});
-    pcs.forEach(p=>{if(p.t==='K'){p.hidden=false;p.revealed=true;}else{p.hidden=true;p.revealed=false;}});
-  }
+  if(isHidden) applyHiddenMode(pcs);
   sel=null;turn='r';mvHist=[];lastMv=null;aiBusy=false;gameOn=true;gameStartTime=Date.now();
   clearInterval(timerInt);
   document.getElementById('relo').textContent=`ELO ${elo}`;
