@@ -1209,10 +1209,7 @@ function tryVibrate(){if(navigator.vibrate)navigator.vibrate(50);}
 function handleClick(evt){
   if(!gameOn||aiBusy)return;
 
-  // Xác định phe của người chơi
   const playerSide = isOnline ? mySide : 'r';
-
-  // Chỉ cho đi khi đúng lượt
   if(turn !== playerSide) return;
 
   const rect=cv.getBoundingClientRect();
@@ -1223,17 +1220,48 @@ function handleClick(evt){
   const col=Math.round((px-ox)/cell),row=Math.round((py-oy)/cell);
   if(!onB(row,col))return;
 
+  const clicked=at(row,col,pcs);
+
+  // ── CHẾ ĐỘ CỜ ÚP ──
+  if(isHidden){
+    if(sel){
+      // Đang có quân được chọn (đã lật) → thử đi
+      const moves=safeMoves(sel,pcs);
+      if(moves.some(([mr,mc])=>mr===row&&mc===col)){
+        execMove(sel,row,col);return;
+      }
+      // Bấm vào quân khác cùng phe đã lật → chọn quân đó
+      if(clicked&&clicked.s===playerSide&&!clicked.hidden){
+        sel=clicked;draw();return;
+      }
+      // Bấm vào quân cùng phe đang úp → lật luôn (đó là nước đi: lật tại chỗ)
+      if(clicked&&clicked.s===playerSide&&clicked.hidden){
+        sel=null;
+        execMove(clicked,clicked.r,clicked.c); // lật tại chỗ = di chuyển về vị trí hiện tại
+        return;
+      }
+      sel=null;draw();
+    } else {
+      if(!clicked||clicked.s!==playerSide)return;
+      if(clicked.hidden){
+        // Quân úp → lật tại chỗ
+        execMove(clicked,clicked.r,clicked.c);
+      } else {
+        // Quân đã lật → chọn để di chuyển
+        sel=clicked;draw();
+      }
+    }
+    return;
+  }
+
+  // ── CHẾ ĐỘ THƯỜNG ──
   if(sel){
-    // Thử đi nước
     const moves=safeMoves(sel,pcs);
     if(moves.some(([mr,mc])=>mr===row&&mc===col)){
       execMove(sel,row,col);return;
     }
-    // Chọn quân khác cùng phe
-    const clicked=at(row,col,pcs);
     sel=(clicked&&clicked.s===playerSide)?clicked:null;
   } else {
-    const clicked=at(row,col,pcs);
     if(clicked&&clicked.s===playerSide)sel=clicked;
   }
   draw();
@@ -1243,29 +1271,33 @@ function handleClick(evt){
 // EXECUTE MOVE (dùng cho cả online lẫn offline)
 // ══════════════════════════════════════════
 function execMove(piece,toR,toC){
+  // Cờ Úp: lật tại chỗ = chỉ reveal, đổi lượt, không di chuyển
+  const isFlipInPlace = isHidden && piece.hidden && toR===piece.r && toC===piece.c;
+
   if(isOnline){
-    // Gửi lên server, server broadcast cho cả 2
     socket.emit('move',{roomId:myRoomId,pieceId:piece.id,toR,toC});
-    // Optimistic: di chuyển quân ngay trên máy mình
-    if(isHidden&&piece.hidden&&!piece.revealed){piece.hidden=false;piece.revealed=true;snd('flip');}
+    if(piece.hidden){piece.hidden=false;piece.revealed=true;snd('flip');}
     lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
-    const mp=pcs.find(p=>p.id===piece.id);
-    if(mp){mp.r=toR;mp.c=toC;}
+    if(!isFlipInPlace){const mp=pcs.find(p=>p.id===piece.id);if(mp){mp.r=toR;mp.c=toC;}}
     turn=turn==='r'?'b':'r';
-    sel=null;snd('mv');setTurnUI();draw();
+    sel=null;snd(isFlipInPlace?'flip':'mv');setTurnUI();draw();
   } else {
-    // VS AI: thực hiện luôn
     mvHist.push({pcs:clone(pcs),turn});
-    if(isHidden&&piece.hidden&&!piece.revealed){piece.hidden=false;piece.revealed=true;snd('flip');}
+    if(piece.hidden){piece.hidden=false;piece.revealed=true;}
     lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
-    const capI=pcs.findIndex(p=>p.r===toR&&p.c===toC&&p.s!==piece.s);
-    if(capI!==-1){snd('cap');pcs.splice(capI,1);}else snd('mv');
-    const mp=pcs.find(p=>p.id===piece.id);if(mp){mp.r=toR;mp.c=toC;}
+    if(!isFlipInPlace){
+      const capI=pcs.findIndex(p=>p.r===toR&&p.c===toC&&p.s!==piece.s);
+      if(capI!==-1){snd('cap');pcs.splice(capI,1);}else snd('mv');
+      const mp=pcs.find(p=>p.id===piece.id);if(mp){mp.r=toR;mp.c=toC;}
+    } else {
+      snd('flip');
+    }
     sel=null;
-    // Kiểm tra kết quả ngay sau nước đi của người chơi (đỏ vừa đi)
-    if(checkGameResult('r'))return;
-    turn='b';setTurnUI();draw();
-    setTimeout(aiTurn,isHidden?600:680);
+    if(checkGameResult(isFlipInPlace?turn:piece.s))return;
+    turn=turn==='r'?'b':'r';
+    setTurnUI();draw();
+    if(!isFlipInPlace) setTimeout(aiTurn,isHidden?700:680);
+    else { setTurnUI();draw(); setTimeout(aiTurn,500); }
   }
 }
 
@@ -1401,29 +1433,99 @@ function aiTurn(){
   if(!gameOn||isOnline)return;
   aiBusy=true;setStatus('Đối thủ đang suy nghĩ... 🤔',false);
   setTimeout(()=>{
+    // Cờ Úp: nếu AI còn quân úp → lật 1 quân ngẫu nhiên trước
+    if(isHidden){
+      const hiddenPieces=pcs.filter(p=>p.s==='b'&&p.hidden&&!p.revealed);
+      if(hiddenPieces.length>0){
+        const pick=hiddenPieces[Math.floor(Math.random()*hiddenPieces.length)];
+        pick.hidden=false;pick.revealed=true;
+        snd('flip');lastMv={f:{r:pick.r,c:pick.c},t:{r:pick.r,c:pick.c}};
+        aiBusy=false;
+        if(checkGameResult('b'))return;
+        turn='r';setTurnUI();draw();return;
+      }
+    }
     const depth=mode==='flash'?2:3;
     const best=minimax(pcs,depth,-Infinity,Infinity,true);
     if(!best.p){
-      // AI không còn nước đi = người chơi thắng
-      aiBusy=false;
-      clearInterval(timerInt);
-      gameOn=false;
-      showCheckmateBanner(true,()=>showGameOverModal(true));
-      return;
+      aiBusy=false;clearInterval(timerInt);gameOn=false;
+      showCheckmateBanner(true,()=>showGameOverModal(true));return;
     }
     const{p,m:[mr,mc]}=best;
-    if(isHidden&&p.hidden&&!p.revealed){p.hidden=false;p.revealed=true;snd('flip');}
     lastMv={f:{r:p.r,c:p.c},t:{r:mr,c:mc}};
     const capI=pcs.findIndex(x=>x.r===mr&&x.c===mc&&x.s==='r');
     if(capI!==-1){snd('cap');pcs.splice(capI,1);}else snd('mv');
     const ap=pcs.find(x=>x.id===p.id);if(ap){ap.r=mr;ap.c=mc;}
     aiBusy=false;
-    // Kiểm tra kết quả ngay sau nước đi của AI (đen vừa đi)
     if(checkGameResult('b'))return;
     turn='r';setTurnUI();draw();
     if(gameOn&&Math.random()<.2)
       setTimeout(()=>addChatMsg('Bot',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),600+Math.random()*1000);
-  },40);
+  },isHidden?600:40);
+}
+
+// ── ĐỐI PHƯƠNG THOÁT GAME ──
+function showOpponentQuit(){
+  if(!gameOn)return;
+  gameOn=false;
+  clearInterval(timerInt);
+  clearTimeout(checkPopupTimer);
+  document.getElementById('checkPopup').classList.remove('show');
+
+  const eloChg=calcElo(true); // thắng
+  elo=Math.max(100,elo+eloChg);
+  recordStat('win',eloChg);
+  lastWonMode=mode;
+  snd('win');
+  if(navigator.vibrate)navigator.vibrate([100,50,200]);
+
+  const elapsed=Math.floor((Date.now()-gameStartTime)/1000);
+  const elapsedStr=`${Math.floor(elapsed/60)}p${String(elapsed%60).padStart(2,'0')}s`;
+
+  // Banner đặc biệt
+  const el=document.createElement('div');
+  el.id='_checkmateBanner';
+  el.style.cssText=`position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:14px;transition:background .3s ease;font-family:'Be Vietnam Pro',sans-serif;`;
+  el.innerHTML=`
+    <div id="_cmEmoji" style="font-size:72px;transform:scale(0);transition:transform .4s cubic-bezier(.34,1.56,.64,1) .1s">🏃</div>
+    <div style="font-family:'Noto Serif SC',serif;font-size:26px;font-weight:900;
+      letter-spacing:1px;transform:translateY(30px);opacity:0;
+      transition:all .4s ease .3s;color:#F0C870;
+      text-shadow:0 0 30px rgba(240,200,112,.8);" id="_cmTitle">ĐỐI PHƯƠNG THOÁT!</div>
+    <div style="font-size:14px;color:rgba(255,255,255,.65);transform:translateY(20px);
+      opacity:0;transition:all .4s ease .45s;" id="_cmSub">Bạn giành chiến thắng 🏆</div>`;
+  document.body.appendChild(el);
+  el.getBoundingClientRect();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    el.style.background='rgba(0,0,0,.88)';
+    const emoji=document.getElementById('_cmEmoji');
+    const title=document.getElementById('_cmTitle');
+    const sub=document.getElementById('_cmSub');
+    if(emoji)emoji.style.transform='scale(1)';
+    if(title){title.style.transform='translateY(0)';title.style.opacity='1';}
+    if(sub){sub.style.transform='translateY(0)';sub.style.opacity='1';}
+  }));
+  setTimeout(()=>{
+    el.style.transition='opacity .4s ease';el.style.opacity='0';
+    setTimeout(()=>{
+      el.remove();
+      document.getElementById('overIcon').textContent='🏆';
+      document.getElementById('overTitle').textContent='Chiến Thắng!';
+      document.getElementById('overTitle').style.color='var(--gold)';
+      document.getElementById('overDesc').textContent='Đối phương đã thoát game!';
+      document.getElementById('overStats').innerHTML=`
+        <div class="over-stat"><div class="over-stat-val" style="color:var(--green)">+${eloChg}</div><div class="over-stat-lbl">ELO</div></div>
+        <div class="over-stat"><div class="over-stat-val">${elo}</div><div class="over-stat-lbl">ELO Mới</div></div>
+        <div class="over-stat"><div class="over-stat-val">${elapsedStr}</div><div class="over-stat-lbl">Thời Gian</div></div>`;
+      const btn=document.getElementById('btnVanMoi');
+      btn.textContent='⚔️ Ván Mới';
+      btn.onclick=()=>{closeModal('modOver');doNewGame();};
+      showModal('modOver');
+    },400);
+  },2000);
+  isOnline=false;myRoomId=null;
 }
 
 // ══════════════════════════════════════════
@@ -1818,6 +1920,12 @@ function connectSocket(cb){
 
   socket.on('game_over',({winner,reason})=>{
     if(!gameOn)return;
+
+    // Đối phương thoát → hiện popup đặc biệt ngay
+    if(winner===mySide&&(reason==='Đối thủ mất kết nối'||reason==='Đầu hàng'||reason==='opponent_quit')){
+      showOpponentQuit();return;
+    }
+
     gameOn=false;
     clearInterval(timerInt); // dừng đồng hồ ngay
     clearTimeout(checkPopupTimer);
