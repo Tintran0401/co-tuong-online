@@ -1141,11 +1141,18 @@ function draw(){
   if(sel){
     ctx.fillStyle='rgba(255,228,60,.38)';
     ctx.beginPath();ctx.arc(cx(sel.c),cy(sel.r),cell*.47,0,Math.PI*2);ctx.fill();
+    // Luôn hiện gợi ý nước đi — kể cả quân úp (đi theo luật thật của quân đó)
     safeMoves(sel,pcs).forEach(([mr,mc])=>{
       const occ=at(mr,mc,pcs);
-      if(occ&&occ.s!==sel.s){ctx.strokeStyle='rgba(255,60,60,.8)';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(cx(mc),cy(mr),cell*.47,0,Math.PI*2);ctx.stroke();}
-      else{ctx.fillStyle='rgba(255,228,60,.45)';ctx.beginPath();ctx.arc(cx(mc),cy(mr),cell*.15,0,Math.PI*2);ctx.fill();}});}
-  pcs.forEach(p=>drawPiece(p));
+      if(occ&&occ.s!==sel.s){
+        ctx.strokeStyle='rgba(255,60,60,.8)';ctx.lineWidth=2.5;
+        ctx.beginPath();ctx.arc(cx(mc),cy(mr),cell*.47,0,Math.PI*2);ctx.stroke();
+      } else {
+        ctx.fillStyle='rgba(255,228,60,.45)';
+        ctx.beginPath();ctx.arc(cx(mc),cy(mr),cell*.15,0,Math.PI*2);ctx.fill();
+      }
+    });
+  }
 }
 
 function dot(col,row){
@@ -1223,11 +1230,8 @@ function handleClick(evt){
   const clicked=at(row,col,pcs);
 
   if(sel){
-    // Thử đi đến ô được bấm
-    const moves=isHidden&&sel.hidden
-      ? hiddenMoves(sel,pcs)     // quân úp: đi theo luật Tốt 1 ô
-      : safeMoves(sel,pcs);      // quân đã lật: đi theo đúng loại quân
-
+    // Tính nước đi hợp lệ theo đúng loại quân (úp hay ngửa đều dùng luật thật)
+    const moves=safeMoves(sel,pcs);
     if(moves.some(([mr,mc])=>mr===row&&mc===col)){
       execMove(sel,row,col);return;
     }
@@ -1239,17 +1243,7 @@ function handleClick(evt){
   draw();
 }
 
-// Quân úp chưa biết loại → đi như Tốt: 1 ô thẳng về phía trước
-// (khi đến ô mới mới lật mặt ra)
-function hiddenMoves(p,ps){
-  const mv=[];
-  const dir = p.s==='r' ? -1 : 1; // đỏ đi lên, đen đi xuống
-  const nr=p.r+dir, nc=p.c;
-  if(!onB(nr,nc))return mv;
-  const tg=at(nr,nc,ps);
-  if(!tg||tg.s!==p.s) mv.push([nr,nc]); // đi thẳng, có thể bắt quân địch
-  return mv;
-}
+// Không cần hiddenMoves nữa — quân úp đi theo luật thật của nó
 
 // ══════════════════════════════════════════
 // EXECUTE MOVE (dùng cho cả online lẫn offline)
@@ -1280,8 +1274,7 @@ function execMove(piece,toR,toC){
     // Lật sau khi đến ô mới
     if(wasHidden){piece.hidden=false;piece.revealed=true;snd('flip');}
     sel=null;
-    const justMoved=isOnline?mySide:(turn==='r'?'r':'b');
-    if(checkGameResult(turn))return;
+    if(checkGameResult(turn==='r'?'r':'b'))return; // turn chưa đổi = phe vừa đi
     turn=turn==='r'?'b':'r';
     setTurnUI();draw();
     setTimeout(aiTurn,isHidden?700:680);
@@ -1420,34 +1413,6 @@ function aiTurn(){
   if(!gameOn||isOnline)return;
   aiBusy=true;setStatus('Đối thủ đang suy nghĩ... 🤔',false);
   setTimeout(()=>{
-    if(isHidden){
-      // Cờ Úp: ưu tiên di chuyển quân úp 1 ô (lật khi đến nơi)
-      const hiddenPieces=pcs.filter(p=>p.s==='b'&&p.hidden);
-      const revealedPieces=pcs.filter(p=>p.s==='b'&&!p.hidden);
-
-      // 50% đi quân đã lật, 50% đi quân úp (nếu có)
-      const useHidden = hiddenPieces.length>0 && (revealedPieces.length===0 || Math.random()<0.5);
-
-      if(useHidden){
-        // Chọn ngẫu nhiên 1 quân úp và đi 1 ô
-        const pick=hiddenPieces[Math.floor(Math.random()*hiddenPieces.length)];
-        const moves=hiddenMoves(pick,pcs);
-        if(moves.length>0){
-          const[mr,mc]=moves[Math.floor(Math.random()*moves.length)];
-          lastMv={f:{r:pick.r,c:pick.c},t:{r:mr,c:mc}};
-          const capI=pcs.findIndex(x=>x.r===mr&&x.c===mc&&x.s==='r');
-          if(capI!==-1){snd('cap');pcs.splice(capI,1);}else snd('mv');
-          const ap=pcs.find(x=>x.id===pick.id);if(ap){ap.r=mr;ap.c=mc;}
-          // Lật sau khi đến ô mới
-          pick.hidden=false;pick.revealed=true;snd('flip');
-          aiBusy=false;
-          if(checkGameResult('b'))return;
-          turn='r';setTurnUI();draw();return;
-        }
-      }
-    }
-
-    // Đi quân đã lật bằng Minimax
     const depth=mode==='flash'?2:3;
     const best=minimax(pcs,depth,-Infinity,Infinity,true);
     if(!best.p){
@@ -1455,10 +1420,13 @@ function aiTurn(){
       showCheckmateBanner(true,()=>showGameOverModal(true));return;
     }
     const{p,m:[mr,mc]}=best;
+    const wasHidden=isHidden&&p.hidden;
     lastMv={f:{r:p.r,c:p.c},t:{r:mr,c:mc}};
     const capI=pcs.findIndex(x=>x.r===mr&&x.c===mc&&x.s==='r');
     if(capI!==-1){snd('cap');pcs.splice(capI,1);}else snd('mv');
     const ap=pcs.find(x=>x.id===p.id);if(ap){ap.r=mr;ap.c=mc;}
+    // Lật sau khi đến ô mới
+    if(wasHidden){p.hidden=false;p.revealed=true;snd('flip');}
     aiBusy=false;
     if(checkGameResult('b'))return;
     turn='r';setTurnUI();draw();
