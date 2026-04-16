@@ -527,6 +527,13 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
   pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ── AI MODE BTN ── */
+.ai-mode-btn{display:flex;align-items:center;gap:12px;
+  background:var(--surf);border:1px solid rgba(212,168,67,.13);
+  border-radius:13px;padding:12px 14px;cursor:pointer;
+  transition:all .18s;text-align:left}
+.ai-mode-btn:active{transform:scale(.97);opacity:.88}
+
 /* ── UTIL ── */
 .back-btn{width:38px;height:38px;border-radius:11px;
   background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.18);
@@ -588,7 +595,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 
     <div class="section-lbl" style="margin-top:6px">Khám Phá</div>
     <div class="quick-btns">
-      <div class="qbtn" onclick="startVsAI()"><div class="qi">🤖</div><div class="ql">VS Máy</div></div>
+      <div class="qbtn" onclick="showModal('modVsAI')"><div class="qi">🤖</div><div class="ql">VS Máy</div></div>
       <div class="qbtn" onclick="nav('spectate',document.getElementById('ni2'))"><div class="qi">📺</div><div class="ql">Xem Live</div></div>
       <div class="qbtn qbtn-locked" onclick="toast('🔒 Shop sắp ra mắt!')"><div class="qi">🛍️</div><div class="ql">Shop</div><div class="lock-tag">Sắp Ra Mắt</div></div>
       <div class="qbtn" onclick="nav('lb',document.getElementById('ni4b'))"><div class="qi">🏆</div><div class="ql">Xếp Hạng</div></div>
@@ -937,6 +944,42 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
       <div class="check-title" id="checkTitle">Chiếu Tướng!</div>
       <div class="check-sub" id="checkSub">Tướng đang bị chiếu</div>
     </div>
+  </div>
+</div>
+
+<!-- Modal chọn chế độ VS AI -->
+<div class="overlay center" id="modVsAI">
+  <div class="modal" style="max-width:340px">
+    <div class="micon">🤖</div>
+    <div class="mtitle">Chọn Chế Độ</div>
+    <div class="mdesc" style="margin-bottom:14px">Chơi với AI ở chế độ nào?</div>
+    <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:18px">
+      <div class="ai-mode-btn" onclick="startVsAI('flash')">
+        <div style="font-size:22px">⚡</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#FF6B35">Cờ Chớp</div>
+          <div style="font-size:11px;color:var(--dim)">Phản xạ tốc chiến · 1'+0"</div>
+        </div>
+        <div style="margin-left:auto;font-size:11px;font-weight:700;color:#FF6B35;border:1px solid rgba(255,107,53,.35);border-radius:20px;padding:3px 10px;background:rgba(255,107,53,.08)">1'+0"</div>
+      </div>
+      <div class="ai-mode-btn" onclick="startVsAI('normal')">
+        <div style="font-size:22px">♟️</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--gold)">Cờ Thường</div>
+          <div style="font-size:11px;color:var(--dim)">Chuẩn thi đấu · 10'+5"</div>
+        </div>
+        <div style="margin-left:auto;font-size:11px;font-weight:700;color:var(--gold);border:1px solid rgba(212,168,67,.35);border-radius:20px;padding:3px 10px;background:rgba(212,168,67,.08)">10'+5"</div>
+      </div>
+      <div class="ai-mode-btn" onclick="startVsAI('hidden')">
+        <div style="font-size:22px">🎭</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--purple)">Cờ Úp</div>
+          <div style="font-size:11px;color:var(--dim)">Quân úp mặt · bí ẩn · 5'+3"</div>
+        </div>
+        <div style="margin-left:auto;font-size:11px;font-weight:700;color:var(--purple);border:1px solid rgba(155,127,238,.35);border-radius:20px;padding:3px 10px;background:rgba(155,127,238,.08)">5'+3"</div>
+      </div>
+    </div>
+    <button class="mbtn ghost" onclick="closeModal('modVsAI')">Hủy</button>
   </div>
 </div>
 
@@ -2047,9 +2090,11 @@ function cancelMM(){
   nav('home',document.getElementById('ni1'));
 }
 
-function startVsAI(){
-  isOnline=false;mode='normal';
-  document.getElementById('gmode').textContent='🤖 VS MÁY';
+function startVsAI(m='normal'){
+  closeModal('modVsAI');
+  isOnline=false; mode=m;
+  const lbl={flash:'⚡ VS MÁY · CỜ CHỚP',normal:'🤖 VS MÁY · CỜ THƯỜNG',hidden:'🎭 VS MÁY · CỜ ÚP'}[m];
+  document.getElementById('gmode').textContent=lbl;
   showGameScreen();initGame();
 }
 
