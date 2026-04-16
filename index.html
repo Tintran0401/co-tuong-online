@@ -2344,26 +2344,11 @@ function buildSplash(){
 }
 
 buildSplash();
-playerName = localStorage.getItem('playerName') || '';
-setTimeout(()=>{
-  document.getElementById('splash').classList.remove('active');
-  // Nếu đã có tên → vào Home luôn, chưa có → vào Login
-  if(playerName){
-    document.getElementById('home').classList.add('active');
-    document.getElementById('ni1').classList.add('on');
-    document.getElementById('homeName').textContent=playerName;
-    document.getElementById('profName').textContent=playerName;
-    refreshProfile();
-  } else {
-    document.getElementById('login').classList.add('active');
-    buildLoginParticles();
-    setTimeout(()=>document.getElementById('loginName').focus(),300);
-  }
-},2400);
+playerName='';
 
 function buildLoginParticles(){
   const bg=document.getElementById('loginBg');
-  if(bg.children.length>0)return;
+  if(!bg||bg.children.length>0)return;
   const chars=['車','馬','砲','將','帥','象','士','卒','兵'];
   for(let i=0;i<14;i++){
     const d=document.createElement('div');
@@ -2382,7 +2367,6 @@ function buildLoginParticles(){
 function doLogin(){
   const name=(document.getElementById('loginName').value.trim()||'Người Chơi').slice(0,16);
   playerName=name;
-  localStorage.setItem('playerName',name);
   document.getElementById('homeName').textContent=name;
   document.getElementById('profName').textContent=name;
   document.getElementById('login').classList.remove('active');
@@ -2390,14 +2374,12 @@ function doLogin(){
   document.getElementById('ni1').classList.add('on');
   refreshProfile();
 }
+
 setTimeout(()=>{
   document.getElementById('splash').classList.remove('active');
-  document.getElementById('home').classList.add('active');
-  document.getElementById('ni1').classList.add('on');
-  // Áp dụng tên
-  document.getElementById('homeName').textContent=playerName;
-  document.getElementById('profName').textContent=playerName;
-  refreshProfile();
+  document.getElementById('login').classList.add('active');
+  buildLoginParticles();
+  setTimeout(()=>{ document.getElementById('loginName')?.focus(); },300);
 },2400);
 </script>
 </body>
