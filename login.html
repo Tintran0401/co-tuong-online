@@ -130,12 +130,22 @@ for(let i=0;i<16;i++){
 }
 
 function doStart(){
-  const name=(document.getElementById('nameInp').value.trim()||'Người Chơi')
-    .slice(0,16);
+  const name=(document.getElementById('nameInp').value.trim()||'Người Chơi').slice(0,16);
   sessionStorage.setItem('playerName', name);
-  // Dùng đường dẫn tuyệt đối
-  const base=window.location.origin+window.location.pathname.replace('login.html','');
-  window.location.href=base+'index.html';
+  localStorage.setItem('playerName', name); // backup thêm localStorage
+  // Log để debug
+  console.log('Name:', name, '| Going to index.html');
+  console.log('Current URL:', window.location.href);
+  // Thử nhiều cách redirect
+  try {
+    window.location.replace('/index.html');
+  } catch(e) {
+    try {
+      window.location.href='/index.html';
+    } catch(e2) {
+      document.location='/index.html';
+    }
+  }
 }
 
 // Focus input sau 400ms
