@@ -1040,17 +1040,16 @@ function rawMoves(p,ps){
   if(t==='K'){[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;if(inP(nr,nc,s))add(nr,nc);});}
   else if(t==='A'){[[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;
-    // Cờ Úp: đi chéo toàn bàn (cả khi úp lẫn sau khi lật)
-    // Cờ Thường: chỉ trong cung
-    if(isHidden) add(nr,nc);
-    else if(inP(nr,nc,s)) add(nr,nc);
+    if(isHidden&&!p.hidden) add(nr,nc);      // đã lật trong cờ úp: tự do toàn bàn
+    else if(inP(nr,nc,s)) add(nr,nc);        // úp (đi theo posType=A) hoặc cờ thường: trong cung
   });}
   else if(t==='B'){[[2,2],[2,-2],[-2,2],[-2,-2]].forEach(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;if(!onB(nr,nc))return;
     if(at(r+dr/2,c+dc/2,ps))return;
-    // Cờ Úp: đi toàn bàn (cả khi úp lẫn sau khi lật)
-    // Cờ Thường: không qua sông
-    if(!isHidden){
+    if(isHidden&&!p.hidden){
+      // Đã lật trong cờ úp: đi toàn bàn không giới hạn
+    } else {
+      // Còn úp (posType=B) hoặc cờ thường: không qua sông
       if(s==='r'&&nr<5)return;
       if(s==='b'&&nr>4)return;
     }
