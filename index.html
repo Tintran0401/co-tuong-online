@@ -1,1 +1,1533 @@
 
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Cờ Tướng Online</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Be+Vietnam+Pro:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#D4A843; --gold-l:#F0C870; --gold-d:#A07830;
+  --red:#C0392B; --red-d:#8B2020;
+  --bg:#0D0600; --surf:#2A1A06; --surf2:#1A0D02;
+  --text:#F5E6C8; --dim:#A08060;
+  --green:#4CAF50; --blue:#5599FF; --purple:#9B7FEE;
+  --safe-top: env(safe-area-inset-top, 44px);
+  --safe-bot: env(safe-area-inset-bottom, 20px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;touch-action:manipulation}
+body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--text);
+  display:flex;flex-direction:column;align-items:center}
+
+/* ── SCREENS ── */
+.screen{display:none;flex-direction:column;width:100%;max-width:430px;
+  height:100%;position:absolute;top:0;left:50%;transform:translateX(-50%)}
+.screen.active{display:flex}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding-bottom:calc(70px + var(--safe-bot))}
+
+/* ── SPLASH ── */
+#splash{background:radial-gradient(ellipse at 50% 30%,#3A1800 0%,#0D0600 65%);
+  align-items:center;justify-content:center;gap:0}
+.splash-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.splash-particle{position:absolute;border-radius:50%;animation:float linear infinite;opacity:0}
+@keyframes float{0%{transform:translateY(100vh) rotate(0deg);opacity:0}
+  10%{opacity:0.6}90%{opacity:0.3}100%{transform:translateY(-10vh) rotate(720deg);opacity:0}}
+.splash-logo{font-family:'Noto Serif SC',serif;font-size:80px;font-weight:900;
+  color:var(--gold);text-shadow:0 0 60px rgba(212,168,67,.7),0 4px 0 var(--gold-d);
+  letter-spacing:12px;animation:logoPulse 2.5s ease-in-out infinite;z-index:1}
+@keyframes logoPulse{0%,100%{text-shadow:0 0 40px rgba(212,168,67,.5),0 4px 0 var(--gold-d)}
+  50%{text-shadow:0 0 80px rgba(240,200,112,.9),0 4px 0 var(--gold-d)}}
+.splash-title{font-size:14px;letter-spacing:6px;color:var(--dim);margin-top:8px;
+  text-transform:uppercase;z-index:1}
+.splash-sub{font-size:11px;color:rgba(160,128,96,.6);margin-top:4px;z-index:1;
+  letter-spacing:2px}
+.splash-progress{width:160px;height:3px;background:rgba(212,168,67,.15);
+  border-radius:2px;margin-top:48px;overflow:hidden;z-index:1}
+.splash-fill{height:100%;background:linear-gradient(90deg,var(--gold-d),var(--gold));
+  border-radius:2px;animation:loadFill 2.2s ease forwards}
+@keyframes loadFill{from{width:0}to{width:100%}}
+.splash-version{position:absolute;bottom:calc(var(--safe-bot)+12px);
+  font-size:10px;color:rgba(160,128,96,.4);letter-spacing:2px}
+
+/* ── NAV BAR ── */
+.nav-bar{width:100%;display:flex;justify-content:space-around;
+  padding:8px 0 calc(6px + var(--safe-bot));
+  border-top:1px solid rgba(212,168,67,.12);
+  background:rgba(10,5,0,.96);backdrop-filter:blur(24px);
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  max-width:430px;z-index:30}
+.nav-i{display:flex;flex-direction:column;align-items:center;gap:2px;
+  cursor:pointer;padding:4px 12px;border-radius:12px;
+  transition:all .2s;position:relative;color:var(--dim)}
+.nav-i.on{color:var(--gold)}
+.nav-i .ni{font-size:22px;transition:transform .25s}
+.nav-i.on .ni{transform:scale(1.18) translateY(-1px)}
+.nav-i .nl{font-size:9px;font-weight:700;letter-spacing:.5px;transition:color .2s}
+.nav-dot{position:absolute;top:3px;right:8px;width:7px;height:7px;
+  border-radius:50%;background:#FF4444;border:1.5px solid var(--bg)}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  padding:calc(var(--safe-top) + 10px) 16px 10px;
+  background:rgba(13,6,0,.7);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(212,168,67,.1);flex-shrink:0}
+.tb-btn{width:38px;height:38px;border-radius:11px;
+  background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.18);
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;cursor:pointer;flex-shrink:0;transition:all .15s}
+.tb-btn:active{background:rgba(212,168,67,.2);transform:scale(.93)}
+.tb-title{font-size:17px;font-weight:800;color:var(--gold);letter-spacing:.5px}
+
+/* ── HOME ── */
+#home{background:radial-gradient(ellipse at top,#2A1500 0%,#0D0600 55%);
+  align-items:center;padding-top:calc(var(--safe-top)+8px)}
+.home-hero{width:100%;text-align:center;padding:16px 20px 8px}
+.home-logo{font-family:'Noto Serif SC',serif;font-size:44px;font-weight:900;
+  color:var(--gold);text-shadow:0 0 30px rgba(212,168,67,.45),0 2px 0 var(--gold-d);
+  letter-spacing:8px;animation:logoPulse 3s ease-in-out infinite}
+.home-sub{font-size:11px;letter-spacing:4px;color:var(--dim);margin-top:4px;
+  text-transform:uppercase}
+
+.player-card-home{display:flex;align-items:center;gap:12px;
+  background:var(--surf);border:1px solid rgba(212,168,67,.2);
+  border-radius:16px;padding:12px 16px;width:calc(100% - 32px);
+  margin:12px 0 4px;cursor:pointer;transition:all .2s}
+.player-card-home:active{transform:scale(.98)}
+.av-home{width:50px;height:50px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#8B2020,#C0392B);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Serif SC',serif;font-size:24px;font-weight:900;
+  color:#FFD700;border:2.5px solid var(--gold)}
+.pname{font-size:15px;font-weight:700}
+.pbadge{display:flex;align-items:center;gap:6px;margin-top:3px}
+.rank-chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;
+  background:rgba(212,168,67,.12);border:1px solid rgba(212,168,67,.25);color:var(--gold)}
+.pelo{font-size:11px;color:var(--dim)}
+
+.section-lbl{font-size:10px;letter-spacing:3px;color:var(--dim);
+  text-transform:uppercase;padding:0 20px;margin:12px 0 8px;
+  align-self:flex-start;font-weight:700}
+.rank-list{display:flex;flex-direction:column;gap:9px;width:calc(100% - 32px)}
+.rcard{background:var(--surf);border:1px solid rgba(212,168,67,.13);
+  border-radius:14px;padding:13px 15px;display:flex;align-items:center;gap:13px;
+  cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.rcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.rcard.flash::before{background:#FF6B35}.rcard.normal::before{background:var(--gold)}
+.rcard.hidden::before{background:var(--purple)}
+.rcard:active{transform:scale(.98);opacity:.88}
+.ricon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;font-size:22px;flex-shrink:0}
+.rcard.flash .ricon{background:rgba(255,107,53,.12)}
+.rcard.normal .ricon{background:rgba(212,168,67,.12)}
+.rcard.hidden .ricon{background:rgba(155,127,238,.12)}
+.rinfo{flex:1}
+.rname{font-size:14px;font-weight:700}
+.rdesc{font-size:11px;color:var(--dim);margin-top:2px}
+.rtime{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;border:1px solid}
+.rcard.flash .rtime{color:#FF6B35;border-color:rgba(255,107,53,.35);background:rgba(255,107,53,.08)}
+.rcard.normal .rtime{color:var(--gold);border-color:rgba(212,168,67,.35);background:rgba(212,168,67,.08)}
+.rcard.hidden .rtime{color:var(--purple);border-color:rgba(155,127,238,.35);background:rgba(155,127,238,.08)}
+
+.quick-btns{display:grid;grid-template-columns:1fr 1fr;gap:9px;
+  width:calc(100% - 32px);margin-top:0}
+.qbtn{background:var(--surf);border:1px solid rgba(212,168,67,.12);
+  border-radius:12px;padding:14px 10px;display:flex;flex-direction:column;
+  align-items:center;gap:5px;cursor:pointer;transition:all .18s}
+.qbtn:active{transform:scale(.95);opacity:.85}
+.qbtn .qi{font-size:26px}
+.qbtn .ql{font-size:11px;font-weight:600;color:var(--dim)}
+
+/* ── GAME SCREEN ── */
+#game{background:#0D0600}
+.game-top{display:flex;align-items:center;justify-content:space-between;
+  padding:calc(var(--safe-top)+6px) 14px 8px;background:rgba(13,6,0,.8);
+  backdrop-filter:blur(20px);border-bottom:1px solid rgba(212,168,67,.1);flex-shrink:0}
+.gmode{font-size:11px;font-weight:800;letter-spacing:2px;color:var(--gold)}
+
+.pbar{display:flex;align-items:center;gap:8px;padding:8px 12px;flex-shrink:0}
+.pcrd{flex:1;background:var(--surf);border-radius:12px;padding:7px 11px;
+  display:flex;align-items:center;gap:8px;border:2px solid transparent;
+  transition:all .3s}
+.pcrd.on{border-color:var(--gold);box-shadow:0 0 14px rgba(212,168,67,.25)}
+.mav{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-family:'Noto Serif SC',serif;font-size:14px;font-weight:900}
+.mav.r{background:linear-gradient(135deg,#8B2020,#C0392B);color:#FFD700;
+  border:1.5px solid #C0392B}
+.mav.b{background:linear-gradient(135deg,#1A0A00,#3D2010);color:var(--gold);
+  border:1.5px solid #3D2010}
+.pn{font-size:12px;font-weight:600;flex:1}
+.ptm{font-size:14px;font-weight:800;font-family:'Noto Serif SC',serif;
+  color:var(--gold);min-width:34px;text-align:right}
+.ptm.urg{color:#FF5533;animation:blink .5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.vs{font-size:10px;font-weight:800;color:var(--dim)}
+
+.sbar{width:100%;text-align:center;padding:5px 12px;font-size:11px;
+  font-weight:600;letter-spacing:.5px;background:rgba(212,168,67,.06);
+  color:var(--dim);min-height:26px;flex-shrink:0;transition:color .3s}
+.sbar.alert{color:#FFB83F;animation:fadePulse 1.5s ease infinite}
+@keyframes fadePulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+.board-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 6px}
+#cv{border-radius:8px;
+  box-shadow:0 0 50px rgba(212,168,67,.18),0 12px 40px rgba(0,0,0,.85);
+  touch-action:none;max-width:100%;max-height:100%}
+
+.gctrl{display:flex;justify-content:center;gap:8px;
+  padding:8px 14px calc(var(--safe-bot)+8px);flex-shrink:0}
+.gbtn{flex:1;max-width:85px;padding:9px 4px;border-radius:10px;
+  background:var(--surf);border:1px solid rgba(212,168,67,.18);
+  color:var(--text);font-family:'Be Vietnam Pro',sans-serif;
+  font-size:11px;font-weight:700;cursor:pointer;display:flex;
+  flex-direction:column;align-items:center;gap:2px;transition:all .18s}
+.gbtn:active{transform:scale(.94);opacity:.85}
+.gbtn .gi{font-size:18px}
+.gbtn.red{border-color:rgba(192,57,43,.4);color:#FF7070}
+.gbtn.blue{border-color:rgba(85,153,255,.3);color:#88AAFF}
+
+/* ── CHAT PANEL ── */
+.chat-panel{position:absolute;bottom:0;left:0;right:0;z-index:20;
+  background:var(--surf2);border-top:1px solid rgba(212,168,67,.18);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);transform:translateY(100%)}
+.chat-panel.open{transform:translateY(0)}
+.chat-tab{position:absolute;top:-32px;right:14px;background:var(--surf2);
+  border:1px solid rgba(212,168,67,.22);border-bottom:none;
+  border-radius:9px 9px 0 0;padding:5px 13px;font-size:11px;font-weight:700;
+  color:var(--gold);cursor:pointer;display:flex;align-items:center;gap:5px}
+.cunread{background:#FF4444;color:#fff;border-radius:50%;width:15px;height:15px;
+  font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.cunread.hide{display:none}
+.quick-e{display:flex;gap:4px;padding:7px 12px 4px;overflow-x:auto;scrollbar-width:none}
+.quick-e::-webkit-scrollbar{display:none}
+.ebtn{flex-shrink:0;width:34px;height:34px;border-radius:8px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .14s}
+.ebtn:active{transform:scale(.86);background:rgba(212,168,67,.15)}
+.cmessages{height:130px;overflow-y:auto;padding:8px 12px;
+  display:flex;flex-direction:column;gap:5px;-webkit-overflow-scrolling:touch}
+.cmsg{display:flex;gap:6px}
+.cmsg.me{flex-direction:row-reverse}
+.cbubble{max-width:72%;padding:6px 10px;border-radius:11px;
+  font-size:12px;line-height:1.4;background:rgba(255,255,255,.07);color:var(--text)}
+.cmsg.me .cbubble{background:rgba(212,168,67,.18);border:1px solid rgba(212,168,67,.22)}
+.cname{font-size:9px;color:var(--dim);margin-bottom:2px}
+.cinput-row{display:flex;gap:7px;padding:7px 12px 10px;
+  border-top:1px solid rgba(255,255,255,.05)}
+.cinp{flex:1;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);border-radius:20px;
+  padding:8px 13px;font-size:13px;color:var(--text);
+  font-family:'Be Vietnam Pro',sans-serif;outline:none}
+.cinp:focus{border-color:rgba(212,168,67,.35)}
+.csend{width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--gold-d),var(--gold));
+  border:none;color:#1A0A00;font-size:15px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+
+/* ── MODALS ── */
+.overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.88);
+  backdrop-filter:blur(8px);display:none;align-items:flex-end;
+  justify-content:center}
+.overlay.on{display:flex}
+.overlay.center{align-items:center}
+.modal{background:#1C0E02;border:1px solid rgba(212,168,67,.28);
+  border-radius:22px;padding:26px 22px;width:calc(100% - 32px);
+  max-width:340px;text-align:center;animation:modalIn .25s ease}
+@keyframes modalIn{from{transform:scale(.92) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.overlay:not(.center) .modal{border-radius:22px 22px 0 0;padding-bottom:calc(var(--safe-bot)+24px);
+  width:100%;max-width:430px;animation:sheetIn .3s ease}
+@keyframes sheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.micon{font-size:50px;margin-bottom:10px}
+.mtitle{font-size:21px;font-weight:800;color:var(--gold);margin-bottom:7px}
+.mdesc{font-size:13px;color:var(--dim);line-height:1.6;margin-bottom:22px}
+.mbtns{display:flex;gap:10px}
+.mbtn{flex:1;padding:13px;border-radius:13px;font-family:'Be Vietnam Pro',sans-serif;
+  font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .18s}
+.mbtn:active{transform:scale(.96)}
+.mbtn.gold{background:linear-gradient(135deg,var(--gold-d),var(--gold));color:#1A0A00}
+.mbtn.red{background:linear-gradient(135deg,#8B2020,#C0392B);color:#fff}
+.mbtn.ghost{background:rgba(255,255,255,.07);color:var(--text);
+  border:1px solid rgba(255,255,255,.1)}
+.sheet-handle{width:44px;height:4px;background:rgba(255,255,255,.18);
+  border-radius:2px;margin:0 auto 18px}
+.sheet-title{font-size:17px;font-weight:800;color:var(--gold);margin-bottom:16px;text-align:left}
+.set-row{display:flex;align-items:center;justify-content:space-between;
+  padding:13px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.set-lbl{font-size:14px;font-weight:600}
+.set-sub{font-size:11px;color:var(--dim);margin-top:2px}
+.tog{width:46px;height:26px;border-radius:13px;background:rgba(255,255,255,.1);
+  position:relative;cursor:pointer;transition:background .3s;flex-shrink:0}
+.tog.on{background:rgba(212,168,67,.5)}
+.tog::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;
+  border-radius:50%;background:#fff;transition:transform .3s;
+  box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.tog.on::after{transform:translateX(20px)}
+
+/* ── MATCHMAKING ── */
+.mm-overlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.94);
+  backdrop-filter:blur(12px);display:none;flex-direction:column;
+  align-items:center;justify-content:center;gap:20px}
+.mm-overlay.on{display:flex}
+.mm-ring{width:90px;height:90px;border-radius:50%;
+  border:3px solid rgba(212,168,67,.15);border-top-color:var(--gold);
+  animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mm-inner{display:flex;flex-direction:column;align-items:center;gap:6px}
+.mm-title{font-size:20px;font-weight:800;color:var(--gold)}
+.mm-desc{font-size:12px;color:var(--dim)}
+.mm-clock{font-size:40px;font-weight:900;font-family:'Noto Serif SC',serif;
+  color:var(--gold);text-shadow:0 0 20px rgba(212,168,67,.4)}
+.mm-players{display:flex;align-items:center;gap:16px}
+.mm-av{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-family:'Noto Serif SC',serif;font-size:22px;font-weight:900}
+.mm-av.r{background:linear-gradient(135deg,#8B2020,#C0392B);color:#FFD700;
+  border:2px solid #C0392B}
+.mm-av.b{background:linear-gradient(135deg,#1A0A00,#3A2010);color:var(--gold);
+  border:2px solid var(--gold-d);animation:spinSlow 3s linear infinite}
+@keyframes spinSlow{to{transform:rotate(360deg)}}
+.mm-vs{font-size:12px;font-weight:800;color:var(--dim)}
+.mm-cancel{padding:12px 36px;border-radius:14px;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.12);color:var(--text);
+  font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+
+/* ── SPECTATE ── */
+#spectate{background:var(--bg)}
+.live-badge{display:flex;align-items:center;gap:5px;background:rgba(192,57,43,.12);
+  border:1px solid rgba(192,57,43,.35);border-radius:20px;padding:4px 10px;
+  font-size:11px;font-weight:700;color:#FF7070}
+.ldot{width:6px;height:6px;border-radius:50%;background:#FF4040;
+  animation:blink 1s ease-in-out infinite}
+.lgcard{background:var(--surf);border:1px solid rgba(212,168,67,.13);
+  border-radius:14px;padding:14px;cursor:pointer;transition:all .18s;
+  margin:0 16px 10px}
+.lgcard:active{transform:scale(.98)}
+.lghead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.lgmode{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--dim)}
+.lgview{font-size:11px;color:var(--dim)}
+.lgplayers{display:flex;align-items:center;gap:8px}
+.lgp{flex:1;display:flex;align-items:center;gap:7px}
+.lgp.right{flex-direction:row-reverse;text-align:right}
+.lgav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-family:'Noto Serif SC',serif;font-size:14px;font-weight:900;flex-shrink:0}
+.lgav.r{background:linear-gradient(135deg,#8B2020,#C0392B);color:#FFD700}
+.lgav.b{background:linear-gradient(135deg,#1A0A00,#3A2010);color:var(--gold)}
+.lgpn{font-size:13px;font-weight:600}
+.lgelo{font-size:10px;color:var(--gold)}
+.lgvs{font-size:11px;font-weight:800;color:var(--dim)}
+.lgfoot{display:flex;justify-content:space-between;align-items:center;
+  margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05)}
+.lgmove{font-size:11px;color:var(--dim)}
+.wbtn{padding:6px 14px;border-radius:20px;background:rgba(212,168,67,.12);
+  border:1px solid rgba(212,168,67,.28);color:var(--gold);font-size:11px;
+  font-weight:700;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif}
+
+/* ── SHOP ── */
+#shop{background:radial-gradient(ellipse at top,#1A0800 0%,#0D0600 60%)}
+.shop-head{display:flex;align-items:center;gap:12px;
+  padding:calc(var(--safe-top)+12px) 16px 10px}
+.coinbox{display:flex;align-items:center;gap:5px;background:rgba(212,168,67,.1);
+  border:1px solid rgba(212,168,67,.28);border-radius:20px;padding:6px 12px;
+  font-size:13px;font-weight:700;color:var(--gold)}
+.stabs{display:flex;gap:7px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none}
+.stabs::-webkit-scrollbar{display:none}
+.stab{padding:7px 15px;border-radius:20px;font-size:11px;font-weight:700;
+  cursor:pointer;border:1px solid rgba(212,168,67,.18);background:transparent;
+  color:var(--dim);white-space:nowrap;transition:all .18s;
+  font-family:'Be Vietnam Pro',sans-serif}
+.stab.on{background:rgba(212,168,67,.14);border-color:var(--gold);color:var(--gold)}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:0 16px}
+.scard{background:var(--surf);border:1px solid rgba(212,168,67,.13);
+  border-radius:15px;overflow:hidden;cursor:pointer;transition:all .18s;position:relative}
+.scard.owned{border-color:var(--gold)}
+.scard.equipped{border-color:var(--green);box-shadow:0 0 14px rgba(76,175,80,.25)}
+.scard:active{transform:scale(.97)}
+.sprev{width:100%;aspect-ratio:1;display:flex;align-items:center;
+  justify-content:center;font-size:54px;position:relative}
+.sprev.classic{background:linear-gradient(135deg,#C4953A,#E8C878)}
+.sprev.jade{background:linear-gradient(135deg,#1A3A2A,#2E7D52)}
+.sprev.obsidian{background:linear-gradient(135deg,#1A1A2E,#16213E)}
+.sprev.gold3d{background:linear-gradient(135deg,#2A1A00,#503800)}
+.sprev.crystal{background:linear-gradient(135deg,#1A2A3A,#162030)}
+.sprev.cherry{background:linear-gradient(135deg,#3A1020,#6B1230)}
+.sbadge{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.72);
+  border-radius:6px;padding:2px 7px;font-size:9px;font-weight:700;letter-spacing:.5px}
+.sbadge.free{color:var(--green)}.sbadge.owned{color:var(--gold)}
+.sbadge.prem{color:#FF6B35}.sbadge.eq{color:var(--green)}
+.sinfo{padding:9px 11px 11px}
+.sname{font-size:13px;font-weight:700;margin-bottom:3px}
+.stype{font-size:10px;color:var(--dim);margin-bottom:8px}
+.sact{width:100%;padding:8px;border-radius:8px;font-size:11px;font-weight:700;
+  font-family:'Be Vietnam Pro',sans-serif;cursor:pointer;border:none;transition:all .18s}
+.sact.buy{background:linear-gradient(135deg,var(--gold-d),var(--gold));color:#1A0A00}
+.sact.equip{background:rgba(212,168,67,.12);border:1px solid rgba(212,168,67,.3);color:var(--gold)}
+.sact.eqd{background:rgba(76,175,80,.12);border:1px solid rgba(76,175,80,.3);color:var(--green)}
+
+/* ── LEADERBOARD ── */
+#lb{background:radial-gradient(ellipse at top,#1A0A00 0%,#0D0600 70%)}
+.lbtabs{display:flex;gap:6px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none}
+.lbtabs::-webkit-scrollbar{display:none}
+.lbtab{padding:7px 14px;border-radius:20px;font-size:11px;font-weight:700;
+  cursor:pointer;border:1px solid rgba(212,168,67,.18);background:transparent;
+  color:var(--dim);white-space:nowrap;transition:all .18s;
+  font-family:'Be Vietnam Pro',sans-serif}
+.lbtab.on{background:rgba(212,168,67,.13);border-color:var(--gold);color:var(--gold)}
+.podium{display:flex;align-items:flex-end;justify-content:center;
+  gap:8px;padding:10px 16px 20px}
+.pod{flex:1;max-width:115px;display:flex;flex-direction:column;align-items:center;gap:5px}
+.pod.p1{order:2}.pod.p2{order:1}.pod.p3{order:3}
+.pod-av{border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Serif SC',serif;font-weight:900;position:relative}
+.pod.p1 .pod-av{width:62px;height:62px;font-size:26px;
+  background:linear-gradient(135deg,#C8900A,#F0C840);
+  border:2.5px solid #F0C840;color:#3A2000;
+  box-shadow:0 0 22px rgba(240,200,64,.38)}
+.pod.p2 .pod-av{width:50px;height:50px;font-size:20px;
+  background:linear-gradient(135deg,#505060,#8080A0);
+  border:2px solid #9090A0;color:#1A1A2A}
+.pod.p3 .pod-av{width:46px;height:46px;font-size:18px;
+  background:linear-gradient(135deg,#7A4020,#B06030);
+  border:2px solid #B06030;color:#3A1800}
+.pod-crown{position:absolute;top:-17px;font-size:18px}
+.pod-name{font-size:11px;font-weight:700;text-align:center}
+.pod-elo{font-size:10px;color:var(--gold);font-weight:700}
+.pod-block{width:100%;border-radius:8px 8px 0 0;display:flex;align-items:center;
+  justify-content:center;font-size:16px;font-weight:900;color:rgba(255,255,255,.35)}
+.pod.p1 .pod-block{height:54px;background:linear-gradient(180deg,rgba(240,200,64,.25),rgba(212,168,67,.08))}
+.pod.p2 .pod-block{height:36px;background:rgba(144,144,160,.1)}
+.pod.p3 .pod-block{height:24px;background:rgba(176,96,48,.1)}
+.lb-rows{padding:0 16px;display:flex;flex-direction:column;gap:7px}
+.lbrow{background:var(--surf);border:1px solid rgba(212,168,67,.1);
+  border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:11px;
+  cursor:pointer;transition:all .18s}
+.lbrow:active{transform:scale(.98)}
+.lbrow.me{border-color:rgba(212,168,67,.45);background:rgba(212,168,67,.06)}
+.lbnum{font-size:13px;font-weight:800;color:var(--dim);min-width:22px;text-align:center;
+  font-family:'Noto Serif SC',serif}
+.lbnum.t{color:var(--gold)}
+.lbav{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;
+  font-size:15px;font-weight:900;background:linear-gradient(135deg,#3A2000,#6A4010);
+  border:1.5px solid rgba(212,168,67,.25);color:var(--gold)}
+.lbinfo{flex:1}
+.lbname{font-size:13px;font-weight:700}
+.lbsub{font-size:10px;color:var(--dim);margin-top:1px}
+.lbelo{font-size:14px;font-weight:800;color:var(--gold);font-family:'Noto Serif SC',serif}
+.lbtrend{font-size:10px;font-weight:700;text-align:right}
+.lbtrend.up{color:var(--green)}.lbtrend.dn{color:#FF6060}
+.sep{text-align:center;padding:8px;font-size:11px;color:var(--dim)}
+
+/* ── PROFILE ── */
+#profile{background:radial-gradient(ellipse at top,#200A00 0%,#0D0600 55%)}
+.prof-hero{display:flex;flex-direction:column;align-items:center;
+  padding:20px 20px 14px;gap:10px}
+.prof-av{width:90px;height:90px;border-radius:50%;
+  background:linear-gradient(135deg,#8B2020,#C0392B);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Serif SC',serif;font-size:42px;font-weight:900;
+  color:#FFD700;border:3px solid var(--gold);
+  box-shadow:0 0 28px rgba(212,168,67,.28);position:relative;cursor:pointer}
+.av-edit{position:absolute;bottom:0;right:0;width:26px;height:26px;
+  border-radius:50%;background:var(--gold);color:#1A0A00;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;border:2px solid var(--bg)}
+.prof-name{font-size:20px;font-weight:800}
+.rank-pill{display:flex;align-items:center;gap:7px;
+  background:rgba(212,168,67,.09);border:1px solid rgba(212,168,67,.22);
+  border-radius:20px;padding:6px 14px}
+.rk-icon{font-size:18px}.rk-name{font-size:13px;font-weight:700;color:var(--gold)}
+.rk-elo{font-size:11px;color:var(--dim)}
+.elo-prog{width:100%;max-width:300px}
+.ep-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--dim);margin-bottom:5px}
+.ep-bar{height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+.ep-fill{height:100%;background:linear-gradient(90deg,var(--gold-d),var(--gold-l));
+  border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:0 16px 14px}
+.stc{background:var(--surf);border:1px solid rgba(212,168,67,.1);
+  border-radius:12px;padding:13px 8px;text-align:center}
+.stv{font-size:22px;font-weight:800;color:var(--gold);
+  font-family:'Noto Serif SC',serif}
+.stl{font-size:10px;color:var(--dim);margin-top:3px}
+.hist-section{padding:0 16px 16px}
+.sec-title{font-size:11px;font-weight:700;letter-spacing:2.5px;
+  color:var(--dim);text-transform:uppercase;margin-bottom:10px}
+.hrow{background:var(--surf);border-radius:10px;padding:10px 12px;
+  margin-bottom:7px;display:flex;align-items:center;gap:9px;
+  border-left:3px solid transparent}
+.hrow.win{border-left-color:var(--green)}.hrow.lose{border-left-color:#FF5050}
+.hrow.draw{border-left-color:var(--gold)}
+.hbadge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;min-width:38px;text-align:center}
+.hrow.win .hbadge{background:rgba(76,175,80,.14);color:var(--green)}
+.hrow.lose .hbadge{background:rgba(255,80,80,.12);color:#FF6060}
+.hrow.draw .hbadge{background:rgba(212,168,67,.12);color:var(--gold)}
+.hopp{flex:1}.honme{font-size:12px;font-weight:600}.hmode{font-size:10px;color:var(--dim)}
+.helo{font-size:12px;font-weight:700}
+.hrow.win .helo{color:var(--green)}.hrow.lose .helo{color:#FF6060}
+.hrow.draw .helo{color:var(--gold)}
+.empty-hist{text-align:center;padding:24px;color:var(--dim);font-size:13px;line-height:1.7}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:calc(var(--safe-bot)+80px);left:50%;
+  transform:translateX(-50%) translateY(14px);
+  background:rgba(28,12,0,.97);border:1px solid rgba(212,168,67,.28);
+  border-radius:12px;padding:10px 20px;font-size:13px;font-weight:600;
+  color:var(--gold);z-index:200;opacity:0;transition:all .28s;
+  pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── UTIL ── */
+.back-btn{width:38px;height:38px;border-radius:11px;
+  background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.18);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;cursor:pointer;flex-shrink:0;transition:all .15s}
+.back-btn:active{background:rgba(212,168,67,.2);transform:scale(.93)}
+.page-title{font-size:21px;font-weight:800;color:var(--gold);flex:1}
+</style>
+</head>
+<body>
+
+<!-- ══ SPLASH ══ -->
+<div id="splash" class="screen active">
+  <div class="splash-bg" id="splashBg"></div>
+  <div class="splash-logo">象棋</div>
+  <div class="splash-title">Cờ Tướng Online</div>
+  <div class="splash-sub">Phiên bản 1.0 · Mùa 12</div>
+  <div class="splash-progress"><div class="splash-fill"></div></div>
+  <div class="splash-version">v1.0.0 FINAL</div>
+</div>
+
+<!-- ══ HOME ══ -->
+<div id="home" class="screen">
+  <div class="scroll">
+    <div class="home-hero">
+      <div class="home-logo">象棋</div>
+      <div class="home-sub">Cờ Tướng Online</div>
+    </div>
+
+    <div class="player-card-home" onclick="nav('profile',document.getElementById('ni4'))">
+      <div class="av-home" id="homeAv">帥</div>
+      <div>
+        <div class="pname" id="homeName">Người Chơi</div>
+        <div class="pbadge">
+          <span class="rank-chip" id="homeRankChip">🥉 Tân Thủ</span>
+          <span class="pelo" id="homeElo">ELO 1200</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-lbl">Chế Độ Xếp Hạng</div>
+    <div class="rank-list">
+      <div class="rcard flash" onclick="findMatch('flash')">
+        <div class="ricon">⚡</div>
+        <div class="rinfo"><div class="rname">Cờ Chớp</div><div class="rdesc">Phản xạ tốc chiến · 1 phút</div></div>
+        <div class="rtime" style="color:#FF6B35;border-color:rgba(255,107,53,.35);background:rgba(255,107,53,.08)">1'+0"</div>
+      </div>
+      <div class="rcard normal" onclick="findMatch('normal')">
+        <div class="ricon">♟️</div>
+        <div class="rinfo"><div class="rname">Cờ Thường</div><div class="rdesc">Chuẩn thi đấu xếp hạng</div></div>
+        <div class="rtime" style="color:var(--gold);border-color:rgba(212,168,67,.35);background:rgba(212,168,67,.08)">10'+5"</div>
+      </div>
+      <div class="rcard hidden" onclick="findMatch('hidden')">
+        <div class="ricon">🎭</div>
+        <div class="rinfo"><div class="rname">Cờ Úp</div><div class="rdesc">Quân úp mặt · bí ẩn</div></div>
+        <div class="rtime" style="color:var(--purple);border-color:rgba(155,127,238,.35);background:rgba(155,127,238,.08)">5'+3"</div>
+      </div>
+    </div>
+
+    <div class="section-lbl" style="margin-top:6px">Khám Phá</div>
+    <div class="quick-btns">
+      <div class="qbtn" onclick="startVsAI()"><div class="qi">🤖</div><div class="ql">VS Máy</div></div>
+      <div class="qbtn" onclick="nav('spectate',document.getElementById('ni2'))"><div class="qi">📺</div><div class="ql">Xem Live</div></div>
+      <div class="qbtn" onclick="nav('shop',document.getElementById('ni3'))"><div class="qi">🛍️</div><div class="ql">Cửa Hàng</div></div>
+      <div class="qbtn" onclick="nav('lb',document.getElementById('ni4b'))"><div class="qi">🏆</div><div class="ql">Xếp Hạng</div></div>
+    </div>
+  </div>
+
+  <nav class="nav-bar">
+    <div class="nav-i on" id="ni1" onclick="nav('home',this)">
+      <div class="ni">🏠</div><div class="nl">Trang Chủ</div>
+    </div>
+    <div class="nav-i" id="ni2" onclick="nav('spectate',this)">
+      <div class="ni">📺</div><div class="nl">Live</div>
+      <div class="nav-dot"></div>
+    </div>
+    <div class="nav-i" id="ni3" onclick="nav('shop',this)">
+      <div class="ni">🛒</div><div class="nl">Shop</div>
+    </div>
+    <div class="nav-i" id="ni4b" onclick="nav('lb',this)">
+      <div class="ni">🏆</div><div class="nl">Xếp Hạng</div>
+    </div>
+    <div class="nav-i" id="ni4" onclick="nav('profile',this)">
+      <div class="ni">👤</div><div class="nl">Hồ Sơ</div>
+    </div>
+  </nav>
+</div>
+
+<!-- ══ GAME ══ -->
+<div id="game" class="screen">
+  <div class="game-top">
+    <div class="tb-btn" onclick="confirmBack()">←</div>
+    <div class="gmode" id="gmode">♟ CỜ THƯỜNG</div>
+    <div class="tb-btn" onclick="openSettings()">⚙</div>
+  </div>
+
+  <div class="pbar">
+    <div class="pcrd" id="bcrd">
+      <div class="mav b">將</div>
+      <div><div class="pn">Đối Thủ</div><div style="font-size:10px;color:var(--dim)" id="belo">ELO 1380</div></div>
+      <div class="ptm" id="btm">10:00</div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="pcrd on" id="rcrd">
+      <div class="mav r">帥</div>
+      <div><div class="pn">Bạn</div><div style="font-size:10px;color:var(--dim)" id="relo">ELO 1200</div></div>
+      <div class="ptm" id="rtm">10:00</div>
+    </div>
+  </div>
+
+  <div class="sbar" id="sbar">Lượt của bạn (Đỏ) — Chọn quân cờ ♟</div>
+
+  <div class="board-wrap">
+    <canvas id="cv"></canvas>
+  </div>
+
+  <div class="gctrl">
+    <button class="gbtn" onclick="undoMove()"><div class="gi">↩️</div>Hoàn Tác</button>
+    <button class="gbtn blue" onclick="toggleChat()"><div class="gi">💬</div>Chat<span id="cunreadBadge" class="cunread hide" style="font-size:9px;padding:0 4px;border-radius:8px;background:#FF4444;color:#fff;display:none"></span></button>
+    <button class="gbtn" onclick="offerDraw()"><div class="gi">🤝</div>Cầu Hòa</button>
+    <button class="gbtn red" onclick="showModal('resign')"><div class="gi">🏳️</div>Đầu Hàng</button>
+  </div>
+
+  <!-- chat -->
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-tab" onclick="toggleChat()">
+      💬 Chat <span id="cunread" class="cunread hide">0</span>
+    </div>
+    <div class="quick-e">
+      <button class="ebtn" onclick="qChat('👍')">👍</button>
+      <button class="ebtn" onclick="qChat('😄')">😄</button>
+      <button class="ebtn" onclick="qChat('🤔')">🤔</button>
+      <button class="ebtn" onclick="qChat('😮')">😮</button>
+      <button class="ebtn" onclick="qChat('👏')">👏</button>
+      <button class="ebtn" onclick="qChat('🎯')">🎯</button>
+      <button class="ebtn" onclick="qChat('Hay lắm!')">Hay!</button>
+      <button class="ebtn" onclick="qChat('GG!')">GG</button>
+      <button class="ebtn" onclick="qChat('Ván tốt!')">⚔️</button>
+    </div>
+    <div class="cmessages" id="cmsg"></div>
+    <div class="cinput-row">
+      <input class="cinp" id="cinp" placeholder="Nhắn tin..." maxlength="60"
+        onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="csend" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SPECTATE ══ -->
+<div id="spectate" class="screen">
+  <div class="topbar">
+    <div class="back-btn" onclick="nav('home',document.getElementById('ni1'))">←</div>
+    <div class="tb-title">Theo Dõi Live</div>
+    <div class="live-badge"><div class="ldot"></div>LIVE</div>
+  </div>
+  <div class="scroll">
+    <div style="padding:12px 0">
+      <div class="lgcard" onclick="watchGame()">
+        <div class="lghead"><div class="lgmode">⚡ CỜ CHỚP</div><div class="lgview">👁 312 người xem</div></div>
+        <div class="lgplayers">
+          <div class="lgp"><div class="lgav r">帥</div><div><div class="lgpn">DragonMaster</div><div class="lgelo">★ 2215</div></div></div>
+          <div class="lgvs">VS</div>
+          <div class="lgp right"><div class="lgav b">將</div><div><div class="lgpn">Phoenix99</div><div class="lgelo">★ 2089</div></div></div>
+        </div>
+        <div class="lgfoot"><div class="lgmove">Nước 41 · Đang căng thẳng 🔥</div><button class="wbtn">Xem →</button></div>
+      </div>
+      <div class="lgcard" onclick="watchGame()">
+        <div class="lghead"><div class="lgmode">♟ CỜ THƯỜNG</div><div class="lgview">👁 148 người xem</div></div>
+        <div class="lgplayers">
+          <div class="lgp"><div class="lgav r">帥</div><div><div class="lgpn">GrandMaster_VN</div><div class="lgelo">★ 1940</div></div></div>
+          <div class="lgvs">VS</div>
+          <div class="lgp right"><div class="lgav b">將</div><div><div class="lgpn">TrungQuoc88</div><div class="lgelo">★ 1875</div></div></div>
+        </div>
+        <div class="lgfoot"><div class="lgmove">Nước 22 · Đang thi đấu</div><button class="wbtn">Xem →</button></div>
+      </div>
+      <div class="lgcard" onclick="watchGame()">
+        <div class="lghead"><div class="lgmode">🎭 CỜ ÚP</div><div class="lgview">👁 527 người xem</div></div>
+        <div class="lgplayers">
+          <div class="lgp"><div class="lgav r">帥</div><div><div class="lgpn">SaoKhuya</div><div class="lgelo">★ 1820</div></div></div>
+          <div class="lgvs">VS</div>
+          <div class="lgp right"><div class="lgav b">將</div><div><div class="lgpn">BạchHổ</div><div class="lgelo">★ 1755</div></div></div>
+        </div>
+        <div class="lgfoot"><div class="lgmove">Nước 61 · Sắp kết thúc ⚡</div><button class="wbtn">Xem →</button></div>
+      </div>
+      <div class="lgcard" onclick="watchGame()">
+        <div class="lghead"><div class="lgmode">⚡ CỜ CHỚP</div><div class="lgview">👁 89 người xem</div></div>
+        <div class="lgplayers">
+          <div class="lgp"><div class="lgav r">帥</div><div><div class="lgpn">HoàngLong</div><div class="lgelo">★ 1710</div></div></div>
+          <div class="lgvs">VS</div>
+          <div class="lgp right"><div class="lgav b">將</div><div><div class="lgpn">NamQuốc</div><div class="lgelo">★ 1680</div></div></div>
+        </div>
+        <div class="lgfoot"><div class="lgmove">Nước 15 · Khai cuộc</div><button class="wbtn">Xem →</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SHOP ══ -->
+<div id="shop" class="screen">
+  <div class="shop-head">
+    <div class="back-btn" onclick="nav('home',document.getElementById('ni1'))">←</div>
+    <div class="page-title">Cửa Hàng Skin</div>
+    <div class="coinbox">🪙 <span id="coinAmt">2,500</span></div>
+  </div>
+  <div class="scroll">
+    <div class="stabs">
+      <button class="stab on" onclick="filterSkins(this,'all')">Tất Cả</button>
+      <button class="stab" onclick="filterSkins(this,'2d')">2D Cổ Điển</button>
+      <button class="stab" onclick="filterSkins(this,'3d')">3D</button>
+    </div>
+    <div class="sgrid">
+      <div class="scard equipped" data-type="2d">
+        <div class="sprev classic">♟<span class="sbadge eq">✓ Đang Dùng</span></div>
+        <div class="sinfo"><div class="sname">Cổ Điển</div><div class="stype">2D · Mặc định</div>
+        <button class="sact eqd">Đang Trang Bị</button></div>
+      </div>
+      <div class="scard owned" data-type="2d">
+        <div class="sprev jade">♟<span class="sbadge owned">★ Sở Hữu</span></div>
+        <div class="sinfo"><div class="sname">Ngọc Bích</div><div class="stype">2D · Jade Series</div>
+        <button class="sact equip" onclick="equipSkin(this,'Ngọc Bích')">Trang Bị</button></div>
+      </div>
+      <div class="scard" data-type="2d">
+        <div class="sprev obsidian">♟<span class="sbadge prem">🖤 800🪙</span></div>
+        <div class="sinfo"><div class="sname">Hắc Diệu</div><div class="stype">2D · Dark Series</div>
+        <button class="sact buy" onclick="buySkin(this,'Hắc Diệu',800)">Mua 800🪙</button></div>
+      </div>
+      <div class="scard" data-type="3d">
+        <div class="sprev gold3d">♟<span class="sbadge prem">🔥 1200🪙</span></div>
+        <div class="sinfo"><div class="sname">Hoàng Kim 3D</div><div class="stype">3D · Premium</div>
+        <button class="sact buy" onclick="buySkin(this,'Hoàng Kim 3D',1200)">Mua 1200🪙</button></div>
+      </div>
+      <div class="scard" data-type="3d">
+        <div class="sprev crystal">♟<span class="sbadge prem">💎 1800🪙</span></div>
+        <div class="sinfo"><div class="sname">Tinh Thể 3D</div><div class="stype">3D · Legendary</div>
+        <button class="sact buy" onclick="buySkin(this,'Tinh Thể 3D',1800)">Mua 1800🪙</button></div>
+      </div>
+      <div class="scard" data-type="3d">
+        <div class="sprev cherry">♟<span class="sbadge prem">🌸 1500🪙</span></div>
+        <div class="sinfo"><div class="sname">Hoa Anh Đào</div><div class="stype">3D · Seasonal</div>
+        <button class="sact buy" onclick="buySkin(this,'Hoa Anh Đào',1500)">Mua 1500🪙</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LEADERBOARD ══ -->
+<div id="lb" class="screen">
+  <div class="topbar">
+    <div class="back-btn" onclick="nav('home',document.getElementById('ni1'))">←</div>
+    <div class="tb-title">Bảng Xếp Hạng</div>
+    <div style="font-size:11px;color:var(--dim);font-weight:700">MÙA 12</div>
+  </div>
+  <div class="scroll">
+    <div class="lbtabs">
+      <button class="lbtab on" onclick="lbTab(this)">♟ Cờ Thường</button>
+      <button class="lbtab" onclick="lbTab(this)">⚡ Cờ Chớp</button>
+      <button class="lbtab" onclick="lbTab(this)">🎭 Cờ Úp</button>
+    </div>
+    <div class="podium">
+      <div class="pod p2">
+        <div class="pod-av">帥<span class="pod-crown" style="right:-2px;top:-16px">🥈</span></div>
+        <div class="pod-name">Phoenix99</div><div class="pod-elo">2089</div>
+        <div class="pod-block">2</div>
+      </div>
+      <div class="pod p1">
+        <div class="pod-av">將<span class="pod-crown">👑</span></div>
+        <div class="pod-name">DragonMaster</div><div class="pod-elo">2215</div>
+        <div class="pod-block">1</div>
+      </div>
+      <div class="pod p3">
+        <div class="pod-av">帥<span class="pod-crown" style="right:-2px;top:-16px">🥉</span></div>
+        <div class="pod-name">GrandMaster</div><div class="pod-elo">1940</div>
+        <div class="pod-block">3</div>
+      </div>
+    </div>
+    <div class="lb-rows">
+      <div class="lbrow"><div class="lbnum t">4</div><div class="lbav">帥</div><div class="lbinfo"><div class="lbname">TrungQuoc88</div><div class="lbsub">318 ván · 68%</div></div><div><div class="lbelo">1875</div><div class="lbtrend up">▲+12</div></div></div>
+      <div class="lbrow"><div class="lbnum t">5</div><div class="lbav">將</div><div class="lbinfo"><div class="lbname">SaoKhuya</div><div class="lbsub">241 ván · 65%</div></div><div><div class="lbelo">1820</div><div class="lbtrend up">▲+8</div></div></div>
+      <div class="lbrow"><div class="lbnum">6</div><div class="lbav">帥</div><div class="lbinfo"><div class="lbname">BạchHổ</div><div class="lbsub">195 ván · 61%</div></div><div><div class="lbelo">1755</div><div class="lbtrend dn">▼−5</div></div></div>
+      <div class="lbrow"><div class="lbnum">7</div><div class="lbav">將</div><div class="lbinfo"><div class="lbname">HoàngLong</div><div class="lbsub">289 ván · 59%</div></div><div><div class="lbelo">1710</div><div class="lbtrend up">▲+3</div></div></div>
+      <div class="lbrow"><div class="lbnum">8</div><div class="lbav">帥</div><div class="lbinfo"><div class="lbname">NamQuốc</div><div class="lbsub">155 ván · 57%</div></div><div><div class="lbelo">1680</div><div class="lbtrend dn">▼−9</div></div></div>
+      <div class="lbrow"><div class="lbnum">9</div><div class="lbav">將</div><div class="lbinfo"><div class="lbname">TiênLong99</div><div class="lbsub">210 ván · 55%</div></div><div><div class="lbelo">1640</div><div class="lbtrend up">▲+16</div></div></div>
+      <div class="lbrow"><div class="lbnum">10</div><div class="lbav">帥</div><div class="lbinfo"><div class="lbname">MinhKhoa2k</div><div class="lbsub">178 ván · 54%</div></div><div><div class="lbelo">1615</div><div class="lbtrend dn">▼−2</div></div></div>
+      <div class="sep">· · ·</div>
+      <div class="lbrow me" id="myLbRow">
+        <div class="lbnum" style="color:var(--gold)">#</div>
+        <div class="lbav" style="background:linear-gradient(135deg,#8B2020,#C0392B);border-color:#C0392B;color:#FFD700">帥</div>
+        <div class="lbinfo"><div class="lbname">Bạn</div><div class="lbsub" id="myLbSub">0 ván · —</div></div>
+        <div><div class="lbelo" id="myLbElo">1200</div><div class="lbtrend" style="color:var(--dim)">—</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROFILE ══ -->
+<div id="profile" class="screen">
+  <div class="topbar">
+    <div class="back-btn" onclick="nav('home',document.getElementById('ni1'))">←</div>
+    <div class="tb-title">Hồ Sơ</div>
+    <div class="tb-btn" onclick="toast('✏️ Chỉnh sửa hồ sơ')">✏️</div>
+  </div>
+  <div class="scroll">
+    <div class="prof-hero">
+      <div class="prof-av" onclick="toast('🖼️ Đổi avatar')">帥<div class="av-edit">✏</div></div>
+      <div class="prof-name" id="profName">Người Chơi</div>
+      <div class="rank-pill">
+        <div class="rk-icon" id="profRkIcon">🥉</div>
+        <div class="rk-name" id="profRkName">Tân Thủ</div>
+        <div class="rk-elo">ELO <span id="profElo">1200</span></div>
+      </div>
+      <div class="elo-prog">
+        <div class="ep-labels"><span id="epCur">Tân Thủ</span><span id="epNext">Sơ Cấp (1400)</span></div>
+        <div class="ep-bar"><div class="ep-fill" id="epFill" style="width:10%"></div></div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stc"><div class="stv" id="sw">0</div><div class="stl">Thắng</div></div>
+      <div class="stc"><div class="stv" id="sl">0</div><div class="stl">Thua</div></div>
+      <div class="stc"><div class="stv" id="sd">0</div><div class="stl">Hòa</div></div>
+      <div class="stc"><div class="stv" id="swr">—</div><div class="stl">Tỉ Lệ Thắng</div></div>
+      <div class="stc"><div class="stv" id="sst">0</div><div class="stl">Chuỗi Thắng</div></div>
+      <div class="stc"><div class="stv" id="sb">1200</div><div class="stl">ELO Cao Nhất</div></div>
+    </div>
+    <div class="hist-section">
+      <div class="sec-title">Lịch Sử Thi Đấu</div>
+      <div id="histList"><div class="empty-hist">Chưa có lịch sử thi đấu.<br>Hãy chơi ván đầu tiên! 🎮</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MATCHMAKING ══ -->
+<div class="mm-overlay" id="mmOv">
+  <div class="mm-inner">
+    <div class="mm-title" id="mmTitle">Đang Tìm Đối Thủ</div>
+    <div class="mm-desc" id="mmDesc">Cờ Thường · 10'+5"</div>
+  </div>
+  <div class="mm-players">
+    <div style="text-align:center">
+      <div class="mm-av r">帥</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:4px">Bạn</div>
+    </div>
+    <div class="mm-vs">VS</div>
+    <div style="text-align:center">
+      <div class="mm-av b">？</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:4px">Đang tìm...</div>
+    </div>
+  </div>
+  <div class="mm-ring"></div>
+  <div class="mm-clock" id="mmClock">00:00</div>
+  <button class="mm-cancel" onclick="cancelMM()">Hủy Tìm</button>
+</div>
+
+<!-- ══ MODALS ══ -->
+<div class="overlay center" id="modResign">
+  <div class="modal">
+    <div class="micon">🏳️</div>
+    <div class="mtitle">Xác Nhận Đầu Hàng</div>
+    <div class="mdesc">Bạn sẽ thua ván này và mất điểm ELO. Tiếp tục đầu hàng?</div>
+    <div class="mbtns">
+      <button class="mbtn ghost" onclick="closeModal('modResign')">Tiếp Tục Chơi</button>
+      <button class="mbtn red" onclick="doResign()">Đầu Hàng</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay center" id="modDraw">
+  <div class="modal">
+    <div class="micon">🤝</div>
+    <div class="mtitle">Đề Xuất Cầu Hòa</div>
+    <div class="mdesc">Đối thủ đề xuất hòa cờ. Bạn có đồng ý không?</div>
+    <div class="mbtns">
+      <button class="mbtn ghost" onclick="closeModal('modDraw')">Từ Chối</button>
+      <button class="mbtn gold" onclick="doAcceptDraw()">Đồng Ý Hòa</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay center" id="modBack">
+  <div class="modal">
+    <div class="micon">🚪</div>
+    <div class="mtitle">Thoát Ván Cờ?</div>
+    <div class="mdesc">Bạn đang chơi dở. Thoát ra sẽ tính thua và mất ELO.</div>
+    <div class="mbtns">
+      <button class="mbtn ghost" onclick="closeModal('modBack')">Ở Lại</button>
+      <button class="mbtn red" onclick="doQuit()">Thoát</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay center" id="modOver">
+  <div class="modal">
+    <div class="micon" id="overIcon">🏆</div>
+    <div class="mtitle" id="overTitle">Chiến Thắng!</div>
+    <div class="mdesc" id="overDesc">Bạn đã chiếu hết đối thủ. ELO +18</div>
+    <div class="mbtns">
+      <button class="mbtn ghost" onclick="closeModal('modOver');nav('home',document.getElementById('ni1'))">Về Nhà</button>
+      <button class="mbtn gold" onclick="closeModal('modOver');findMatch(currentMode)">Ván Mới</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings sheet -->
+<div class="overlay" id="modSettings" onclick="if(event.target===this)closeModal('modSettings')">
+  <div class="modal" style="border-radius:22px 22px 0 0;padding-bottom:calc(var(--safe-bot)+24px);width:100%;max-width:430px">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">⚙️ Cài Đặt</div>
+    <div class="set-row"><div><div class="set-lbl">🔊 Âm Thanh</div><div class="set-sub">Di quân · chiếu hết · lật quân</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="set-row"><div><div class="set-lbl">✨ Hiệu Ứng</div><div class="set-sub">Highlight nước đi cuối</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="set-row"><div><div class="set-lbl">🔵 Gợi Ý</div><div class="set-sub">Hiện nước đi hợp lệ</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="set-row"><div><div class="set-lbl">📳 Rung Thiết Bị</div><div class="set-sub">Rung khi bị chiếu</div></div><div class="tog on" onclick="this.classList.toggle('on');tryVibrate()"></div></div>
+    <div style="height:14px"></div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   CỜ TƯỚNG ONLINE  ·  v1.0 FINAL
+   Minimax AI (depth 3) · 3 rank modes
+   Cờ Úp · ELO · Chat · Profile · Shop
+══════════════════════════════════════════ */
+
+// ── CONSTANTS ──
+const COLS=9,ROWS=10;
+const LBL={r:{K:'帥',A:'仕',B:'相',N:'馬',R:'車',C:'炮',P:'兵'},b:{K:'將',A:'士',B:'象',N:'馬',R:'車',C:'砲',P:'卒'}};
+const VAL={K:10000,R:900,C:450,N:400,B:200,A:200,P:100};
+const RANKS=[
+  {min:0,   name:'Tân Thủ',   icon:'🥉',next:1400},
+  {min:1400,name:'Sơ Cấp',    icon:'🥈',next:1600},
+  {min:1600,name:'Trung Cấp', icon:'🥇',next:1800},
+  {min:1800,name:'Cao Thủ',   icon:'💎',next:2000},
+  {min:2000,name:'Đại Sư',    icon:'👑',next:2200},
+  {min:2200,name:'Huyền Thoại',icon:'🏆',next:9999}
+];
+
+// ── STATE ──
+let mode='normal',gameOn=false,aiBusy=false;
+let turn='r'; // r=red(player), b=black(AI)
+let sel=null,pcs=[],lastMv=null,mvHist=[];
+let rTime=600,bTime=600;
+let timerInt=null,mmInt=null,mmSec=0;
+let elo=1200,coins=2500;
+let stats={w:0,l:0,d:0,streak:0,best:1200,hist:[]};
+let isHidden=false;
+let chatOpen=false,unread=0;
+let cv,ctx,cell,ox,oy;
+const aiReplies=['👍','😄','Hay lắm!','Ván tốt!','🤔','GG!','😮','🎯','Chơi tốt!','Cảm ơn!'];
+
+// ── BOARD INIT ──
+function mkBoard(){
+  const b=[
+    {t:'R',s:'b',r:0,c:0,id:0},{t:'N',s:'b',r:0,c:1,id:1},{t:'B',s:'b',r:0,c:2,id:2},
+    {t:'A',s:'b',r:0,c:3,id:3},{t:'K',s:'b',r:0,c:4,id:4},{t:'A',s:'b',r:0,c:5,id:5},
+    {t:'B',s:'b',r:0,c:6,id:6},{t:'N',s:'b',r:0,c:7,id:7},{t:'R',s:'b',r:0,c:8,id:8},
+    {t:'C',s:'b',r:2,c:1,id:9},{t:'C',s:'b',r:2,c:7,id:10},
+    {t:'P',s:'b',r:3,c:0,id:11},{t:'P',s:'b',r:3,c:2,id:12},{t:'P',s:'b',r:3,c:4,id:13},
+    {t:'P',s:'b',r:3,c:6,id:14},{t:'P',s:'b',r:3,c:8,id:15},
+    {t:'P',s:'r',r:6,c:0,id:16},{t:'P',s:'r',r:6,c:2,id:17},{t:'P',s:'r',r:6,c:4,id:18},
+    {t:'P',s:'r',r:6,c:6,id:19},{t:'P',s:'r',r:6,c:8,id:20},
+    {t:'C',s:'r',r:7,c:1,id:21},{t:'C',s:'r',r:7,c:7,id:22},
+    {t:'R',s:'r',r:9,c:0,id:23},{t:'N',s:'r',r:9,c:1,id:24},{t:'B',s:'r',r:9,c:2,id:25},
+    {t:'A',s:'r',r:9,c:3,id:26},{t:'K',s:'r',r:9,c:4,id:27},{t:'A',s:'r',r:9,c:5,id:28},
+    {t:'B',s:'r',r:9,c:6,id:29},{t:'N',s:'r',r:9,c:7,id:30},{t:'R',s:'r',r:9,c:8,id:31}
+  ];
+  return b;
+}
+function clone(ps){return ps.map(p=>({...p}))}
+function at(r,c,ps){return(ps||pcs).find(p=>p.r===r&&p.c===c)||null}
+function onB(r,c){return r>=0&&r<ROWS&&c>=0&&c<COLS}
+function inP(r,c,s){return s==='r'?(r>=7&&r<=9&&c>=3&&c<=5):(r>=0&&r<=2&&c>=3&&c<=5)}
+
+// ── MOVE RULES ──
+function rawMoves(p,ps){
+  const mv=[],{t,s,r,c}=p;
+  const add=(nr,nc)=>{
+    if(!onB(nr,nc))return;
+    const tg=at(nr,nc,ps);
+    if(tg&&tg.s===s)return;
+    mv.push([nr,nc]);
+  };
+  if(t==='K'){[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;if(inP(nr,nc,s))add(nr,nc)});}
+  else if(t==='A'){[[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;if(inP(nr,nc,s))add(nr,nc)});}
+  else if(t==='B'){[[2,2],[2,-2],[-2,2],[-2,-2]].forEach(([dr,dc])=>{
+    const nr=r+dr,nc=c+dc;if(!onB(nr,nc))return;
+    if(at(r+dr/2,c+dc/2,ps))return;
+    if(s==='r'&&nr<5)return;if(s==='b'&&nr>4)return;add(nr,nc);});}
+  else if(t==='N'){[[1,2],[1,-2],[-1,2],[-1,-2],[2,1],[2,-1],[-2,1],[-2,-1]].forEach(([dr,dc])=>{
+    const nr=r+dr,nc=c+dc;if(!onB(nr,nc))return;
+    const blk=Math.abs(dr)===2?at(r+(dr>0?1:-1),c,ps):at(r,c+(dc>0?1:-1),ps);
+    if(blk)return;add(nr,nc);});}
+  else if(t==='R'){[[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{
+    let nr=r+dr,nc=c+dc;
+    while(onB(nr,nc)){const tg=at(nr,nc,ps);if(tg){if(tg.s!==s)mv.push([nr,nc]);break;}mv.push([nr,nc]);nr+=dr;nc+=dc;}});}
+  else if(t==='C'){[[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{
+    let nr=r+dr,nc=c+dc,j=false;
+    while(onB(nr,nc)){const tg=at(nr,nc,ps);if(!j){if(tg)j=true;else mv.push([nr,nc]);}
+    else{if(tg){if(tg.s!==s)mv.push([nr,nc]);break;}}nr+=dr;nc+=dc;}});}
+  else if(t==='P'){
+    if(s==='r'){if(r>0)add(r-1,c);if(r<=4){add(r,c+1);add(r,c-1);}}
+    else{if(r<9)add(r+1,c);if(r>=5){add(r,c+1);add(r,c-1);}}}
+  return mv;
+}
+
+function inCheck(s,ps){
+  const k=ps.find(p=>p.t==='K'&&p.s===s);
+  if(!k)return false;
+  const opp=s==='r'?'b':'r';
+  return ps.filter(p=>p.s===opp).some(p=>rawMoves(p,ps).some(([mr,mc])=>mr===k.r&&mc===k.c));
+}
+
+function safeMoves(p,ps){
+  return rawMoves(p,ps).filter(([mr,mc])=>{
+    const sim=clone(ps).filter(x=>!(x.r===mr&&x.c===mc&&x.s!==p.s));
+    const mp=sim.find(x=>x.id===p.id);
+    if(!mp)return false;mp.r=mr;mp.c=mc;return!inCheck(p.s,sim);
+  });
+}
+
+// ── CANVAS ──
+function setupCanvas(){
+  cv=document.getElementById('cv');
+  const wrap=cv.parentElement;
+  const mxW=Math.min(wrap.clientWidth-8,420);
+  const mxH=wrap.clientHeight-8;
+  cell=Math.floor(Math.min(mxW/(COLS-1+1.3),mxH/(ROWS-1+1.3)));
+  cell=Math.max(cell,28);
+  cv.width=Math.round(cell*(COLS-1+1.3));
+  cv.height=Math.round(cell*(ROWS-1+1.3));
+  ox=cell*0.65;oy=cell*0.65;
+  ctx=cv.getContext('2d');
+}
+const cx=c=>Math.round(ox+c*cell);
+const cy=r=>Math.round(oy+r*cell);
+
+function draw(){
+  if(!ctx)return;
+  const W=cv.width,H=cv.height;
+  // board bg
+  const bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#D8A840');bg.addColorStop(.5,'#EBC878');bg.addColorStop(1,'#C29030');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  // grain
+  ctx.strokeStyle='rgba(150,110,30,.09)';ctx.lineWidth=1;
+  for(let i=0;i<H;i+=5){ctx.beginPath();ctx.moveTo(0,i+Math.sin(i*.08)*1.5);ctx.lineTo(W,i+Math.sin(i*.08+1.8)*1.5);ctx.stroke();}
+  // border
+  ctx.strokeStyle='#5A3A08';ctx.lineWidth=4;
+  ctx.strokeRect(ox-8,oy-8,(COLS-1)*cell+16,(ROWS-1)*cell+16);
+  ctx.strokeStyle='#C8900A';ctx.lineWidth=1.5;
+  ctx.strokeRect(ox-5,oy-5,(COLS-1)*cell+10,(ROWS-1)*cell+10);
+  // grid
+  ctx.strokeStyle='#7A5520';ctx.lineWidth=1.2;
+  for(let r=0;r<ROWS;r++){ctx.beginPath();ctx.moveTo(cx(0),cy(r));ctx.lineTo(cx(COLS-1),cy(r));ctx.stroke();}
+  for(let c=0;c<COLS;c++){
+    if(c===0||c===COLS-1){ctx.beginPath();ctx.moveTo(cx(c),cy(0));ctx.lineTo(cx(c),cy(ROWS-1));ctx.stroke();}
+    else{ctx.beginPath();ctx.moveTo(cx(c),cy(0));ctx.lineTo(cx(c),cy(4));ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx(c),cy(5));ctx.lineTo(cx(c),cy(ROWS-1));ctx.stroke();}
+  }
+  // river
+  ctx.fillStyle='rgba(80,140,220,.1)';ctx.fillRect(cx(0),cy(4)+1,(COLS-1)*cell,cell-2);
+  ctx.fillStyle='rgba(70,110,190,.38)';
+  ctx.font=`bold ${Math.round(cell*.43)}px Noto Serif SC`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('楚 河',cx(2),cy(4)+cell/2);ctx.fillText('漢 界',cx(6),cy(4)+cell/2);
+  // palace X
+  ctx.strokeStyle='#7A5520';ctx.lineWidth=1.2;
+  [[0,3,2,5],[7,3,9,5]].forEach(([r1,c1,r2,c2])=>{
+    ctx.beginPath();ctx.moveTo(cx(c1),cy(r1));ctx.lineTo(cx(c2),cy(r2));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx(c2),cy(r1));ctx.lineTo(cx(c1),cy(r2));ctx.stroke();
+  });
+  // star dots
+  [[2,1],[2,7],[7,1],[7,7],[3,0],[3,2],[3,4],[3,6],[3,8],[6,0],[6,2],[6,4],[6,6],[6,8]]
+    .forEach(([r,c])=>dot(c,r));
+  // last move highlight
+  if(lastMv){
+    ctx.fillStyle='rgba(255,200,0,.2)';
+    [lastMv.f,lastMv.t].forEach(p=>{ctx.beginPath();ctx.arc(cx(p.c),cy(p.r),cell*.46,0,Math.PI*2);ctx.fill();});
+  }
+  // selection + hints
+  if(sel){
+    ctx.fillStyle='rgba(255,228,60,.38)';
+    ctx.beginPath();ctx.arc(cx(sel.c),cy(sel.r),cell*.47,0,Math.PI*2);ctx.fill();
+    safeMoves(sel,pcs).forEach(([mr,mc])=>{
+      const occ=at(mr,mc,pcs);
+      if(occ&&occ.s!==sel.s){ctx.strokeStyle='rgba(255,60,60,.8)';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(cx(mc),cy(mr),cell*.47,0,Math.PI*2);ctx.stroke();}
+      else{ctx.fillStyle='rgba(255,228,60,.42)';ctx.beginPath();ctx.arc(cx(mc),cy(mr),cell*.15,0,Math.PI*2);ctx.fill();}
+    });
+  }
+  // pieces
+  pcs.forEach(p=>drawPiece(p));
+}
+
+function dot(col,row){
+  const x=cx(col),y=cy(row),s=2.5;
+  const offs=col===0?[[s,s],[s,-s]]:col===COLS-1?[[-s,s],[-s,-s]]:[[-s,s],[-s,-s],[s,s],[s,-s]];
+  ctx.fillStyle='#4A2E0A';
+  offs.forEach(([dx,dy])=>ctx.fillRect(x+dx-1,y+dy-1,2,2));
+}
+
+function drawPiece(p){
+  const x=cx(p.c),y=cy(p.r),r=cell*.43,isSel=sel===p;
+  // shadow
+  ctx.fillStyle='rgba(0,0,0,.26)';
+  ctx.beginPath();ctx.ellipse(x+2,y+3,r,r*.64,0,0,Math.PI*2);ctx.fill();
+  // hidden piece
+  if(isHidden&&p.hidden&&!p.revealed&&p.s==='b'){
+    const g=ctx.createRadialGradient(x-r*.28,y-r*.28,0,x,y,r);
+    g.addColorStop(0,'#787878');g.addColorStop(.6,'#333');g.addColorStop(1,'#111');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(160,160,160,.4)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(x,y,r*.83,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='#888';ctx.font=`900 ${Math.round(cell*.41)}px Noto Serif SC`;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('？',x,y+1);return;
+  }
+  // body gradient
+  const g=ctx.createRadialGradient(x-r*.28,y-r*.28,0,x,y,r);
+  if(p.s==='r'){g.addColorStop(0,isSel?'#FF9070':'#DD5540');g.addColorStop(.55,isSel?'#CC3020':'#9B2828');g.addColorStop(1,'#5A1212');}
+  else{g.addColorStop(0,isSel?'#909080':'#606050');g.addColorStop(.55,isSel?'#505040':'#302010');g.addColorStop(1,'#1A0A00');}
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  // ring
+  ctx.strokeStyle=p.s==='r'?'rgba(255,180,100,.65)':'rgba(212,168,67,.55)';
+  ctx.lineWidth=1.8;ctx.beginPath();ctx.arc(x,y,r*.84,0,Math.PI*2);ctx.stroke();
+  // glow when selected
+  if(isSel){ctx.strokeStyle=p.s==='r'?'rgba(255,200,100,.55)':'rgba(200,180,80,.55)';
+    ctx.lineWidth=2.8;ctx.beginPath();ctx.arc(x,y,r+3,0,Math.PI*2);ctx.stroke();}
+  // label
+  ctx.fillStyle=p.s==='r'?'#FFD888':'#D4A843';
+  ctx.font=`900 ${Math.round(cell*.41)}px Noto Serif SC`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(LBL[p.s][p.t],x,y+1);
+}
+
+// ── SOUND ──
+let ac=null;
+function snd(type){
+  try{
+    if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    if(type==='mv'){o.frequency.value=660;g.gain.value=.07;o.start();o.stop(ac.currentTime+.07);}
+    else if(type==='cap'){o.frequency.value=300;g.gain.value=.14;o.frequency.exponentialRampToValueAtTime(120,ac.currentTime+.16);o.start();o.stop(ac.currentTime+.18);}
+    else if(type==='chk'){o.frequency.value=900;g.gain.value=.11;o.frequency.exponentialRampToValueAtTime(440,ac.currentTime+.26);o.start();o.stop(ac.currentTime+.3);}
+    else if(type==='flip'){o.frequency.value=440;g.gain.value=.09;o.frequency.linearRampToValueAtTime(880,ac.currentTime+.1);o.start();o.stop(ac.currentTime+.13);}
+    else if(type==='win'){o.frequency.value=523;g.gain.value=.12;o.frequency.linearRampToValueAtTime(1047,ac.currentTime+.4);o.start();o.stop(ac.currentTime+.5);}
+    else if(type==='lose'){o.frequency.value=400;g.gain.value=.1;o.frequency.exponentialRampToValueAtTime(180,ac.currentTime+.4);o.start();o.stop(ac.currentTime+.5);}
+  }catch(e){}
+}
+
+function tryVibrate(){if(navigator.vibrate)navigator.vibrate(50);}
+
+// ── PLAYER CLICK ──
+function handleClick(evt){
+  if(!gameOn||turn!=='r'||aiBusy)return;
+  const rect=cv.getBoundingClientRect();
+  const px=(evt.clientX-rect.left)*(cv.width/rect.width);
+  const py=(evt.clientY-rect.top)*(cv.height/rect.height);
+  const col=Math.round((px-ox)/cell),row=Math.round((py-oy)/cell);
+  if(!onB(row,col))return;
+
+  if(sel){
+    const moves=safeMoves(sel,pcs);
+    if(moves.some(([mr,mc])=>mr===row&&mc===col)){
+      doMove(sel,row,col,true);return;
+    }
+    const clicked=at(row,col,pcs);
+    sel=(clicked&&clicked.s==='r')?clicked:null;
+  } else {
+    const clicked=at(row,col,pcs);
+    if(clicked&&clicked.s==='r')sel=clicked;
+  }
+  draw();
+}
+
+function doMove(piece,toR,toC,recordHist){
+  if(recordHist)mvHist.push({pcs:clone(pcs),turn});
+  if(isHidden&&piece.hidden&&!piece.revealed){piece.hidden=false;piece.revealed=true;snd('flip');}
+  lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
+  const capI=pcs.findIndex(p=>p.r===toR&&p.c===toC&&p.s!==piece.s);
+  let capT=null;
+  if(capI!==-1){capT=pcs[capI].t;pcs.splice(capI,1);}
+  const mp=pcs.find(p=>p.id===piece.id);
+  if(mp){mp.r=toR;mp.c=toC;}
+  sel=null;
+  if(capT)snd('cap');else snd('mv');
+  if(!pcs.find(p=>p.t==='K'&&p.s==='b')){draw();setTimeout(()=>gameEnd(true),80);return;}
+  if(!pcs.find(p=>p.t==='K'&&p.s==='r')){draw();setTimeout(()=>gameEnd(false),80);return;}
+  if(inCheck('b',pcs)){snd('chk');setStatus('Chiếu tướng! ⚡',true);if(navigator.vibrate)navigator.vibrate([30,30,60]);}
+  turn='b';setTurnUI();draw();
+  setTimeout(aiTurn,isHidden?500:680);
+}
+
+// ── AI (Minimax depth 3) ──
+function evalBoard(ps){
+  let sc=0;
+  ps.forEach(p=>{
+    let v=VAL[p.t]||0;
+    if(p.t==='P'){const br=p.s==='r'?(ROWS-1-p.r):p.r;v+=Math.min(br*3,30);}
+    sc+=p.s==='b'?v:-v;
+  });
+  return sc;
+}
+
+function allMoves(side,ps){
+  const res=[];
+  ps.filter(p=>p.s===side).forEach(p=>safeMoves(p,ps).forEach(m=>res.push({p,m})));
+  return res;
+}
+
+function minimax(ps,depth,alpha,beta,max){
+  if(depth===0)return{sc:evalBoard(ps)};
+  const side=max?'b':'r';
+  const moves=allMoves(side,ps);
+  if(!moves.length)return{sc:max?-9999:9999};
+  let best={sc:max?-Infinity:Infinity};
+  for(const{p,m:[mr,mc]}of moves){
+    const sim=clone(ps).filter(x=>!(x.r===mr&&x.c===mc&&x.s!==p.s));
+    const sp=sim.find(x=>x.id===p.id);if(!sp)continue;sp.r=mr;sp.c=mc;
+    const res=minimax(sim,depth-1,alpha,beta,!max);
+    if(max){if(res.sc>best.sc)best={sc:res.sc,p,m:[mr,mc]};alpha=Math.max(alpha,res.sc);}
+    else{if(res.sc<best.sc)best={sc:res.sc,p,m:[mr,mc]};beta=Math.min(beta,res.sc);}
+    if(beta<=alpha)break;
+  }
+  return best;
+}
+
+function aiTurn(){
+  if(!gameOn)return;
+  aiBusy=true;setStatus('Đối thủ đang suy nghĩ... 🤔',false);
+  setTimeout(()=>{
+    const depth=mode==='flash'?2:3;
+    const best=minimax(pcs,depth,-Infinity,Infinity,true);
+    if(!best.p){aiBusy=false;gameEnd(true);return;}
+    const{p,m:[mr,mc]}=best;
+    if(isHidden&&p.hidden&&!p.revealed){p.hidden=false;p.revealed=true;snd('flip');}
+    lastMv={f:{r:p.r,c:p.c},t:{r:mr,c:mc}};
+    const capI=pcs.findIndex(x=>x.r===mr&&x.c===mc&&x.s==='r');
+    if(capI!==-1){const ct=pcs[capI].t;pcs.splice(capI,1);snd('cap');if(ct==='K'){aiBusy=false;draw();setTimeout(()=>gameEnd(false),80);return;}}
+    else snd('mv');
+    const ap=pcs.find(x=>x.id===p.id);if(ap){ap.r=mr;ap.c=mc;}
+    if(!pcs.find(x=>x.t==='K'&&x.s==='r')){aiBusy=false;draw();setTimeout(()=>gameEnd(false),80);return;}
+    if(inCheck('r',pcs)){snd('chk');setStatus('Bạn đang bị chiếu! ⚠️',true);if(navigator.vibrate)navigator.vibrate([50,30,100]);}
+    turn='r';aiBusy=false;setTurnUI();draw();
+    // AI occasionally sends a chat message
+    if(gameOn&&Math.random()<.2){
+      setTimeout(()=>{
+        addChatMsg('Đối Thủ',aiReplies[Math.floor(Math.random()*aiReplies.length)],false);
+      },400+Math.random()*1200);
+    }
+  },40);
+}
+
+// ── GAME END ──
+function gameEnd(playerWon){
+  gameOn=false;clearInterval(timerInt);
+  const eloChg=calcElo(playerWon);
+  elo=Math.max(100,elo+eloChg);
+  recordStat(playerWon?'win':'lose',eloChg);
+  if(playerWon)snd('win');else snd('lose');
+  setTimeout(()=>{
+    document.getElementById('overIcon').textContent=playerWon?'🏆':'😔';
+    document.getElementById('overTitle').textContent=playerWon?'Chiến Thắng!':'Thất Bại';
+    document.getElementById('overDesc').textContent=playerWon
+      ?`Bạn đã chiếu hết đối thủ! ELO +${eloChg} → ${elo}`
+      :`Bạn đã bị chiếu hết. ELO ${eloChg} → ${elo}`;
+    showModal('modOver');
+  },300);
+}
+
+function calcElo(won){
+  const k={flash:20,normal:15,hidden:25}[mode]||15;
+  return won?Math.round(k*.9):-Math.round(k*.7);
+}
+
+// ── UNDO ──
+function undoMove(){
+  if(mvHist.length<2||turn!=='r'||aiBusy){toast('Không thể hoàn tác!');return;}
+  mvHist.pop();const prev=mvHist.pop();
+  pcs=prev.pcs;turn='r';sel=null;lastMv=null;
+  setTurnUI();draw();toast('↩️ Đã hoàn tác nước đi');
+}
+
+// ── DRAW / RESIGN ──
+function offerDraw(){showModal('modDraw');}
+function doAcceptDraw(){
+  closeModal('modDraw');gameOn=false;clearInterval(timerInt);
+  recordStat('draw',0);
+  setTimeout(()=>{
+    document.getElementById('overIcon').textContent='🤝';
+    document.getElementById('overTitle').textContent='Hòa Cờ!';
+    document.getElementById('overDesc').textContent='Trận đấu kết thúc hòa. ELO ±0';
+    showModal('modOver');
+  },200);
+}
+function doResign(){
+  closeModal('modResign');gameOn=false;clearInterval(timerInt);
+  const ch=calcElo(false);elo=Math.max(100,elo+ch);recordStat('lose',ch);
+  setTimeout(()=>{
+    document.getElementById('overIcon').textContent='🏳️';
+    document.getElementById('overTitle').textContent='Đầu Hàng';
+    document.getElementById('overDesc').textContent=`Bạn đã đầu hàng. ELO ${ch} → ${elo}`;
+    showModal('modOver');
+  },150);
+}
+function confirmBack(){if(gameOn)showModal('modBack');else nav('home',document.getElementById('ni1'));}
+function doQuit(){closeModal('modBack');gameOn=false;clearInterval(timerInt);nav('home',document.getElementById('ni1'));}
+
+// ── TIMER ──
+function startTimer(){
+  const base={flash:60,normal:600,hidden:300}[mode]||600;
+  rTime=base;bTime=base;updateTimer();clearInterval(timerInt);
+  timerInt=setInterval(()=>{
+    if(!gameOn)return;
+    if(turn==='r'){rTime=Math.max(0,rTime-1);if(rTime===0){updateTimer();clearInterval(timerInt);gameEnd(false);return;}}
+    else{bTime=Math.max(0,bTime-1);if(bTime===0){updateTimer();clearInterval(timerInt);gameEnd(true);return;}}
+    updateTimer();
+  },1000);
+}
+function updateTimer(){
+  const f=t=>`${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
+  const re=document.getElementById('rtm'),be=document.getElementById('btm');
+  re.textContent=f(rTime);be.textContent=f(bTime);
+  re.className='ptm'+(rTime<=15?' urg':'');be.className='ptm'+(bTime<=15?' urg':'');
+}
+
+// ── TURN UI ──
+function setTurnUI(){
+  document.getElementById('rcrd').classList.toggle('on',turn==='r');
+  document.getElementById('bcrd').classList.toggle('on',turn==='b');
+  if(turn==='r')setStatus('Lượt của bạn (Đỏ) ♟',false);
+  else setStatus('Đối thủ đang suy nghĩ...',false);
+}
+function setStatus(msg,alert){
+  const el=document.getElementById('sbar');
+  el.textContent=msg;el.className='sbar'+(alert?' alert':'');
+}
+
+// ── MATCHMAKING ──
+function findMatch(m){
+  mode=m;mmSec=0;
+  const desc={flash:'Cờ Chớp · 1\'+0"',normal:'Cờ Thường · 10\'+5"',hidden:'Cờ Úp · 5\'+3"'}[m];
+  document.getElementById('mmDesc').textContent=desc;
+  document.getElementById('mmClock').textContent='00:00';
+  document.getElementById('mmOv').classList.add('on');
+  clearInterval(mmInt);
+  mmInt=setInterval(()=>{
+    mmSec++;
+    document.getElementById('mmClock').textContent=
+      `${String(Math.floor(mmSec/60)).padStart(2,'0')}:${String(mmSec%60).padStart(2,'0')}`;
+    if(mmSec>=2+Math.floor(Math.random()*3)){
+      clearInterval(mmInt);
+      document.getElementById('mmOv').classList.remove('on');
+      const lbl={flash:'⚡ CỜ CHỚP',normal:'♟ CỜ THƯỜNG',hidden:'🎭 CỜ ÚP'}[m];
+      document.getElementById('gmode').textContent=lbl;
+      showGameScreen();initGame();
+    }
+  },1000);
+}
+function cancelMM(){clearInterval(mmInt);document.getElementById('mmOv').classList.remove('on');}
+function startVsAI(){mode='normal';document.getElementById('gmode').textContent='🤖 VS MÁY';showGameScreen();initGame();}
+
+function showGameScreen(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('game').classList.add('active');
+  document.querySelectorAll('.nav-i').forEach(n=>n.classList.remove('on'));
+}
+
+function initGame(){
+  isHidden=mode==='hidden';
+  pcs=mkBoard();
+  if(isHidden)pcs.forEach(p=>{p.hidden=true;p.revealed=false;});
+  sel=null;turn='r';mvHist=[];lastMv=null;aiBusy=false;gameOn=true;
+  clearInterval(timerInt);
+  setupCanvas();draw();setTurnUI();startTimer();
+  document.getElementById('relo').textContent=`ELO ${elo}`;
+  if(isHidden){pcs.filter(p=>p.s==='r').forEach(p=>{p.hidden=false;p.revealed=true;});}
+  if(isHidden)setStatus('🎭 Cờ Úp — Quân đen úp mặt! Bắt để lật.',false);
+  // Reset chat
+  document.getElementById('cmsg').innerHTML='';unread=0;chatOpen=false;
+  document.getElementById('chatPanel').classList.remove('open');
+  document.getElementById('cunread').classList.add('hide');
+  // Touch
+  cv.ontouchstart=e=>{e.preventDefault();const t=e.touches[0];handleClick({clientX:t.clientX,clientY:t.clientY});};
+  cv.onclick=handleClick;
+  // AI welcome chat
+  setTimeout(()=>{addChatMsg('Đối Thủ',aiReplies[Math.floor(Math.random()*aiReplies.length)],false);},2500+Math.random()*1500);
+}
+
+// ── CHAT ──
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chatPanel').classList.toggle('open',chatOpen);
+  if(chatOpen){unread=0;document.getElementById('cunread').classList.add('hide');
+    document.getElementById('cunreadBadge').style.display='none';
+    setTimeout(()=>{const c=document.getElementById('cmsg');c.scrollTop=c.scrollHeight;},100);}
+}
+function sendChat(){
+  const inp=document.getElementById('cinp');const txt=inp.value.trim();
+  if(!txt)return;addChatMsg('Bạn',txt,true);inp.value='';
+  if(gameOn)setTimeout(()=>{addChatMsg('Đối Thủ',aiReplies[Math.floor(Math.random()*aiReplies.length)],false);},700+Math.random()*1200);
+}
+function qChat(msg){
+  addChatMsg('Bạn',msg,true);
+  if(gameOn)setTimeout(()=>{addChatMsg('Đối Thủ',aiReplies[Math.floor(Math.random()*aiReplies.length)],false);},500+Math.random()*1000);
+}
+function addChatMsg(sender,text,isMe){
+  const c=document.getElementById('cmsg');
+  const d=document.createElement('div');d.className='cmsg'+(isMe?' me':'');
+  d.innerHTML=`<div>${!isMe?`<div class="cname">${sender}</div>`:''}<div class="cbubble">${text}</div></div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+  if(!isMe&&!chatOpen){
+    unread++;
+    const u=document.getElementById('cunread');u.textContent=unread;u.classList.remove('hide');
+    const ub=document.getElementById('cunreadBadge');ub.textContent=unread;ub.style.display='flex';
+  }
+}
+
+// ── SHOP ──
+function buySkin(btn,name,price){
+  if(coins<price){toast('Không đủ xu! 🪙');return;}
+  coins-=price;document.getElementById('coinAmt').textContent=coins.toLocaleString('vi');
+  const card=btn.closest('.scard');card.classList.add('owned');
+  card.querySelector('.sbadge').textContent='★ Sở Hữu';
+  card.querySelector('.sbadge').className='sbadge owned';
+  btn.textContent='Trang Bị';btn.className='sact equip';
+  btn.onclick=()=>equipSkin(btn,name);toast(`✨ Đã mua skin ${name}!`);
+}
+function equipSkin(btn,name){
+  document.querySelectorAll('.scard').forEach(c=>{
+    c.classList.remove('equipped');const b=c.querySelector('.sact');
+    if(b?.classList.contains('eqd')){b.textContent='Trang Bị';b.className='sact equip';
+      const bg=c.querySelector('.sbadge');if(bg){bg.textContent='★ Sở Hữu';bg.className='sbadge owned';}}
+  });
+  const card=btn.closest('.scard');card.classList.add('equipped');
+  btn.textContent='Đang Trang Bị';btn.className='sact eqd';
+  const bg=card.querySelector('.sbadge');if(bg){bg.textContent='✓ Đang Dùng';bg.className='sbadge eq';}
+  toast(`🎨 Đã trang bị ${name}`);
+}
+function filterSkins(btn,type){
+  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('on'));btn.classList.add('on');
+  document.querySelectorAll('.scard').forEach(c=>c.style.display=(type==='all'||c.dataset.type===type)?'':'none');
+}
+
+// ── LB ──
+function lbTab(btn){
+  document.querySelectorAll('.lbtab').forEach(t=>t.classList.remove('on'));btn.classList.add('on');
+  toast(`📊 ${btn.textContent}`);
+}
+
+// ── PROFILE ──
+function recordStat(result,eloChg){
+  if(result==='win'){stats.w++;stats.streak++;}
+  else if(result==='lose'){stats.l++;stats.streak=0;}
+  else{stats.d++;stats.streak=0;}
+  stats.best=Math.max(stats.best,elo);
+  const ml={flash:'⚡',normal:'♟',hidden:'🎭'}[mode]||'♟';
+  const eStr=eloChg>0?`+${eloChg}`:eloChg<0?`${eloChg}`:'±0';
+  stats.hist.unshift({result,opp:'Bot AI',mode:ml,elo:eStr});
+  if(stats.hist.length>20)stats.hist.pop();
+  refreshProfile();
+}
+function refreshProfile(){
+  document.getElementById('profElo').textContent=elo;
+  document.getElementById('sw').textContent=stats.w;
+  document.getElementById('sl').textContent=stats.l;
+  document.getElementById('sd').textContent=stats.d;
+  document.getElementById('sst').textContent=stats.streak;
+  document.getElementById('sb').textContent=stats.best;
+  const tot=stats.w+stats.l+stats.d;
+  document.getElementById('swr').textContent=tot>0?Math.round(stats.w/tot*100)+'%':'—';
+  const rk=[...RANKS].reverse().find(r=>elo>=r.min)||RANKS[0];
+  const nxt=RANKS[RANKS.indexOf(rk)+1];
+  document.getElementById('profRkIcon').textContent=rk.icon;
+  document.getElementById('profRkName').textContent=rk.name;
+  document.getElementById('epCur').textContent=rk.name;
+  document.getElementById('epNext').textContent=nxt?`${nxt.name} (${nxt.min})`:'MAX';
+  const pct=nxt?Math.min(100,((elo-rk.min)/(nxt.min-rk.min))*100):100;
+  document.getElementById('epFill').style.width=pct+'%';
+  // home header
+  document.getElementById('homeRankChip').textContent=`${rk.icon} ${rk.name}`;
+  document.getElementById('homeElo').textContent=`ELO ${elo}`;
+  // lb row
+  document.getElementById('myLbElo').textContent=elo;
+  document.getElementById('myLbSub').textContent=`${tot} ván · ${tot>0?Math.round(stats.w/tot*100)+'%':'—'}`;
+  // history
+  const hl=document.getElementById('histList');
+  if(!stats.hist.length){hl.innerHTML='<div class="empty-hist">Chưa có lịch sử thi đấu.<br>Hãy chơi ván đầu tiên! 🎮</div>';return;}
+  hl.innerHTML=stats.hist.map(h=>`
+    <div class="hrow ${h.result}">
+      <div class="hbadge">${h.result==='win'?'THẮNG':h.result==='lose'?'THUA':'HÒA'}</div>
+      <div class="hopp"><div class="honme">${h.opp}</div><div class="hmode">${h.mode}</div></div>
+      <div class="helo">${h.elo}</div>
+    </div>`).join('');
+}
+
+// ── NAV ──
+function nav(screenId,navEl){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  document.querySelectorAll('.nav-i').forEach(n=>n.classList.remove('on'));
+  if(navEl)navEl.classList.add('on');
+  if(screenId==='game'&&cv)draw();
+  if(screenId==='profile')refreshProfile();
+}
+
+// ── MODALS ──
+function showModal(id){document.getElementById(id).classList.add('on');}
+function closeModal(id){document.getElementById(id).classList.remove('on');}
+function openSettings(){showModal('modSettings');}
+
+// ── SETTINGS ──
+// Watch game
+function watchGame(){toast('📡 Đang kết nối phòng...');}
+
+// ── TOAST ──
+let toastTimer=null;
+function toast(msg){
+  const el=document.getElementById('toastEl');
+  el.textContent=msg;el.classList.add('on');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('on'),2600);
+}
+
+// ── RESIZE ──
+window.addEventListener('resize',()=>{
+  if(document.getElementById('game').classList.contains('active')&&ctx){setupCanvas();draw();}
+});
+
+// ── SPLASH ──
+function buildSplash(){
+  const bg=document.getElementById('splashBg');
+  const chars=['車','馬','砲','將','帥','象','士','卒','兵'];
+  for(let i=0;i<18;i++){
+    const d=document.createElement('div');
+    d.className='splash-particle';
+    d.style.cssText=`left:${Math.random()*100}%;width:${20+Math.random()*16}px;height:${20+Math.random()*16}px;
+      font-size:${14+Math.random()*10}px;display:flex;align-items:center;justify-content:center;
+      color:rgba(212,168,67,${.2+Math.random()*.3});
+      animation-duration:${6+Math.random()*10}s;animation-delay:${Math.random()*5}s;`;
+    d.textContent=chars[Math.floor(Math.random()*chars.length)];
+    bg.appendChild(d);
+  }
+}
+
+// ── INIT ──
+buildSplash();
+setTimeout(()=>{
+  document.getElementById('splash').classList.remove('active');
+  document.getElementById('home').classList.add('active');
+  refreshProfile();
+},2400);
+</script>
+</body>
+</html>
