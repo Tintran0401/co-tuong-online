@@ -1274,44 +1274,47 @@ function execMove(piece,toR,toC){
 // Check: chiếu bí, hết nước, tướng bị bắt
 // ══════════════════════════════════════════
 function checkGameResult(justMovedSide){
-  // Phe vừa đi xong → giờ là lượt phe còn lại
   const nextSide = justMovedSide==='r' ? 'b' : 'r';
   const playerIsNext = (!isOnline && nextSide==='r') || (isOnline && nextSide===mySide);
 
-  // 1. Tướng bị bắt (không còn trên bàn)
-  if(!pcs.find(p=>p.t==='K'&&p.s==='b')){
-    // Đỏ thắng
-    clearInterval(timerInt);
+  // ── ONLINE: Server quyết định kết quả, client chỉ check chiếu để hiện popup ──
+  if(isOnline){
+    if(inCheck(nextSide,pcs)){
+      showCheckPopup(playerIsNext);
+    }
     draw();
-    gameOn=false;
-    showCheckmateBanner(isOnline ? mySide==='r' : true, ()=>showGameOverModal(isOnline ? mySide==='r' : true));
+    return false; // server sẽ gửi game_over về
+  }
+
+  // ── OFFLINE (vs AI): Client tự xử lý ──
+
+  // 1. Tướng bị bắt
+  if(!pcs.find(p=>p.t==='K'&&p.s==='b')){
+    clearInterval(timerInt);
+    draw(); gameOn=false;
+    showCheckmateBanner(true,()=>showGameOverModal(true));
     return true;
   }
   if(!pcs.find(p=>p.t==='K'&&p.s==='r')){
-    // Đen thắng
     clearInterval(timerInt);
-    draw();
-    gameOn=false;
-    showCheckmateBanner(isOnline ? mySide==='b' : false, ()=>showGameOverModal(isOnline ? mySide==='b' : false));
+    draw(); gameOn=false;
+    showCheckmateBanner(false,()=>showGameOverModal(false));
     return true;
   }
 
-  // 2. Check chiếu bí — phe tiếp theo không còn nước đi hợp lệ nào
-  const nextMoves = allMoves(nextSide, pcs);
+  // 2. Chiếu bí — phe tiếp theo không còn nước đi
+  const nextMoves=allMoves(nextSide,pcs);
   if(nextMoves.length===0){
-    // Chiếu bí hoặc hết nước
     clearInterval(timerInt);
-    draw();
-    gameOn=false;
-    const nextLoses = true; // phe không còn nước đi = thua
-    const playerWon = playerIsNext ? false : true;
-    showCheckmateBanner(playerWon, ()=>showGameOverModal(playerWon));
+    draw(); gameOn=false;
+    const playerWon=!playerIsNext;
+    showCheckmateBanner(playerWon,()=>showGameOverModal(playerWon));
     return true;
   }
 
-  // 3. Chiếu tướng (còn nước đi nhưng đang bị chiếu)
-  if(inCheck(nextSide, pcs)){
-    showCheckPopup(playerIsNext); // popup cảnh báo nhưng game tiếp tục
+  // 3. Đang bị chiếu nhưng còn nước đi
+  if(inCheck(nextSide,pcs)){
+    showCheckPopup(playerIsNext);
   }
 
   return false;
@@ -1801,7 +1804,7 @@ function connectSocket(cb){
   socket.on('game_over',({winner,reason})=>{
     if(!gameOn)return;
     gameOn=false;
-    clearInterval(timerInt);
+    clearInterval(timerInt); // dừng đồng hồ ngay
     clearTimeout(checkPopupTimer);
     document.getElementById('checkPopup').classList.remove('show');
 
@@ -1811,7 +1814,6 @@ function connectSocket(cb){
     elo=Math.max(100,elo+eloChg);
     recordStat(isDraw?'draw':(playerWon?'win':'lose'),eloChg);
     lastWonMode=mode;
-    snd(isDraw?'mv':playerWon?'win':'lose');
 
     const elapsed=Math.floor((Date.now()-gameStartTime)/1000);
     const elapsedStr=`${Math.floor(elapsed/60)}p${String(elapsed%60).padStart(2,'0')}s`;
@@ -1821,7 +1823,8 @@ function connectSocket(cb){
       const titleEl=document.getElementById('overTitle');
       titleEl.textContent=isDraw?'Hòa Cờ!':(playerWon?'Chiến Thắng!':'Thất Bại');
       titleEl.style.color=isDraw?'var(--gold)':(playerWon?'var(--gold)':'#FF7070');
-      document.getElementById('overDesc').textContent=isDraw?'Trận đấu kết thúc hòa.':`${reason}`;
+      document.getElementById('overDesc').textContent=
+        isDraw?'Trận đấu kết thúc hòa.':(playerWon?'Bạn đã chiếu hết tướng địch!':'Tướng của bạn đã bị chiếu hết!');
       document.getElementById('overStats').innerHTML=`
         <div class="over-stat">
           <div class="over-stat-val" style="color:${eloChg>=0?'var(--green)':'#FF7070'}">${eloChg>=0?'+':''}${eloChg}</div>
@@ -1835,22 +1838,20 @@ function connectSocket(cb){
           <div class="over-stat-val">${elapsedStr}</div>
           <div class="over-stat-lbl">Thời Gian</div>
         </div>`;
-      const btnVanMoi=document.getElementById('btnVanMoi');
-      if(playerWon||isDraw){
-        btnVanMoi.textContent='🏠 Về Nhà';
-        btnVanMoi.onclick=()=>{closeModal('modOver');nav('home',document.getElementById('ni1'));};
-      } else {
-        btnVanMoi.textContent='⚔️ Ván Mới';
-        btnVanMoi.onclick=()=>{closeModal('modOver');doNewGame();};
-      }
+      const btn=document.getElementById('btnVanMoi');
+      // Cả 2 bên đều có nút Ván Mới
+      btn.textContent='⚔️ Ván Mới';
+      btn.onclick=()=>{closeModal('modOver');doNewGame();};
+      // Nút Về Nhà giữ nguyên
       showModal('modOver');
     };
 
-    // Chiếu hết → banner trước, hòa/đầu hàng/mất mạng → modal ngay
-    if(reason==='Chiếu hết'&&!isDraw){
+    // Tất cả kết thúc đều hiện banner ngay
+    if(!isDraw){
       showCheckmateBanner(playerWon, showResult);
     } else {
-      setTimeout(showResult, 400);
+      snd('mv');
+      showResult();
     }
     isOnline=false;myRoomId=null;
   });
@@ -1890,6 +1891,8 @@ function cancelMM(){
   clearInterval(mmInt);
   document.getElementById('mmOv').classList.remove('on');
   if(socket&&socket.connected)socket.emit('cancel_find');
+  // Về màn hình chính
+  nav('home',document.getElementById('ni1'));
 }
 
 function startVsAI(){
