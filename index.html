@@ -1184,13 +1184,21 @@ function tryVibrate(){if(navigator.vibrate)navigator.vibrate(50);}
 
 // ── PLAYER CLICK ──
 function handleClick(evt){
-  if(!gameOn||turn!=='r'||aiBusy)return;
+  if(!gameOn||aiBusy)return;
+
+  // Online: chỉ đi khi đúng lượt mình
+  // Offline: luôn là phe đỏ
+  const myTurn = isOnline ? (turn === mySide) : (turn === 'r');
+  if(!myTurn)return;
+
   const rect=cv.getBoundingClientRect();
-  // Dùng rect.width/height (CSS pixels) — không nhân DPR
-  const px=(evt.clientX-rect.left)*(parseFloat(cv.style.width)/rect.width);
-  const py=(evt.clientY-rect.top)*(parseFloat(cv.style.height)/rect.height);
+  const px=(evt.clientX-rect.left)*(parseFloat(cv.style.width)||cv.width)/rect.width;
+  const py=(evt.clientY-rect.top)*(parseFloat(cv.style.height)||cv.height)/rect.height;
   const col=Math.round((px-ox)/cell),row=Math.round((py-oy)/cell);
   if(!onB(row,col))return;
+
+  // Phe của người chơi hiện tại
+  const mySideNow = isOnline ? mySide : 'r';
 
   if(sel){
     const moves=safeMoves(sel,pcs);
@@ -1198,28 +1206,23 @@ function handleClick(evt){
       doMove(sel,row,col,true);return;
     }
     const clicked=at(row,col,pcs);
-    // Cờ Úp: vẫn chọn được quân đỏ kể cả khi đang úp
-    sel=(clicked&&clicked.s==='r')?clicked:null;
+    sel=(clicked&&clicked.s===mySideNow)?clicked:null;
   } else {
     const clicked=at(row,col,pcs);
-    if(clicked&&clicked.s==='r')sel=clicked;
+    if(clicked&&clicked.s===mySideNow)sel=clicked;
   }
   draw();
 }
 
 function doMove(piece,toR,toC,recordHist){
   if(recordHist)mvHist.push({pcs:clone(pcs),turn});
-  // Cờ Úp: lật quân khi di chuyển lần đầu
   if(isHidden&&piece.hidden&&!piece.revealed){
     piece.hidden=false;piece.revealed=true;snd('flip');
   }
   lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
   const capI=pcs.findIndex(p=>p.r===toR&&p.c===toC&&p.s!==piece.s);
   let capT=null;
-  if(capI!==-1){
-    // Cờ Úp: lật quân bị bắt trước khi xóa (hiện ra 1 tích tắc)
-    capT=pcs[capI].t;pcs.splice(capI,1);
-  }
+  if(capI!==-1){capT=pcs[capI].t;pcs.splice(capI,1);}
   const mp=pcs.find(p=>p.id===piece.id);
   if(mp){mp.r=toR;mp.c=toC;}
   sel=null;
@@ -1229,6 +1232,20 @@ function doMove(piece,toR,toC,recordHist){
   if(inCheck('b',pcs)){snd('chk');setStatus('Chiếu tướng! ⚡',true);if(navigator.vibrate)navigator.vibrate([30,30,60]);}
   turn='b';setTurnUI();draw();
   setTimeout(aiTurn,isHidden?600:680);
+}
+
+// doMove dành riêng cho AI (không bị override bởi online mode)
+function doMoveAI(piece,toR,toC){
+  if(isHidden&&piece.hidden&&!piece.revealed){piece.hidden=false;piece.revealed=true;snd('flip');}
+  lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
+  const capI=pcs.findIndex(p=>p.r===toR&&p.c===toC&&p.s!==piece.s);
+  if(capI!==-1){const ct=pcs[capI].t;pcs.splice(capI,1);snd('cap');
+    if(ct==='K'){draw();setTimeout(()=>gameEnd(false),80);return;}
+  } else snd('mv');
+  const ap=pcs.find(x=>x.id===piece.id);if(ap){ap.r=toR;ap.c=toC;}
+  if(!pcs.find(x=>x.t==='K'&&x.s==='r')){draw();setTimeout(()=>gameEnd(false),80);return;}
+  if(inCheck('r',pcs)){snd('chk');setStatus('Bạn đang bị chiếu! ⚠️',true);if(navigator.vibrate)navigator.vibrate([50,30,100]);}
+  turn='r';aiBusy=false;setTurnUI();draw();
 }
 
 // ── AI (Minimax depth 3) ──
@@ -1266,24 +1283,13 @@ function minimax(ps,depth,alpha,beta,max){
 }
 
 function aiTurn(){
-  if(!gameOn)return;
+  if(!gameOn||isOnline)return; // online mode: không dùng AI
   aiBusy=true;setStatus('Đối thủ đang suy nghĩ... 🤔',false);
   setTimeout(()=>{
     const depth=mode==='flash'?2:3;
     const best=minimax(pcs,depth,-Infinity,Infinity,true);
     if(!best.p){aiBusy=false;gameEnd(true);return;}
-    const{p,m:[mr,mc]}=best;
-    // Cờ Úp: lật quân AI khi di chuyển
-    if(isHidden&&p.hidden&&!p.revealed){p.hidden=false;p.revealed=true;snd('flip');}
-    lastMv={f:{r:p.r,c:p.c},t:{r:mr,c:mc}};
-    const capI=pcs.findIndex(x=>x.r===mr&&x.c===mc&&x.s==='r');
-    if(capI!==-1){const ct=pcs[capI].t;pcs.splice(capI,1);snd('cap');if(ct==='K'){aiBusy=false;draw();setTimeout(()=>gameEnd(false),80);return;}}
-    else snd('mv');
-    const ap=pcs.find(x=>x.id===p.id);if(ap){ap.r=mr;ap.c=mc;}
-    if(!pcs.find(x=>x.t==='K'&&x.s==='r')){aiBusy=false;draw();setTimeout(()=>gameEnd(false),80);return;}
-    if(inCheck('r',pcs)){snd('chk');setStatus('Bạn đang bị chiếu! ⚠️',true);if(navigator.vibrate)navigator.vibrate([50,30,100]);}
-    turn='r';aiBusy=false;setTurnUI();draw();
-    // AI occasionally sends a chat message
+    doMoveAI(best.p,best.m[0],best.m[1]);
     if(gameOn&&Math.random()<.2){
       setTimeout(()=>{
         addChatMsg('Đối Thủ',aiReplies[Math.floor(Math.random()*aiReplies.length)],false);
@@ -1367,10 +1373,54 @@ function updateTimer(){
 
 // ── TURN UI ──
 function setTurnUI(){
-  document.getElementById('rcrd').classList.toggle('on',turn==='r');
-  document.getElementById('bcrd').classList.toggle('on',turn==='b');
-  if(turn==='r')setStatus('Lượt của bạn (Đỏ) ♟',false);
-  else setStatus('Đối thủ đang suy nghĩ...',false);
+  if(isOnline){
+    const myTurn=(turn===mySide);
+    document.getElementById('rcrd').classList.toggle('on',turn==='r');
+    document.getElementById('bcrd').classList.toggle('on',turn==='b');
+    setStatus(myTurn?'Lượt của bạn ♟ — Chọn quân':'Đối thủ đang suy nghĩ...',false);
+  } else {
+    document.getElementById('rcrd').classList.toggle('on',turn==='r');
+    document.getElementById('bcrd').classList.toggle('on',turn==='b');
+    if(turn==='r')setStatus('Lượt của bạn (Đỏ) ♟',false);
+    else setStatus('Đối thủ đang suy nghĩ...',false);
+  }
+}
+
+// ── TẮT APP / RỜI TRANG → TỰ THUA ──
+// Khi người dùng tắt app, rời trang, hoặc mất mạng trong ván online
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='hidden' && isOnline && gameOn && myRoomId){
+    // Gửi resign ngay trước khi trang bị ẩn
+    if(socket && socket.connected){
+      socket.emit('resign', { roomId: myRoomId });
+    }
+  }
+});
+
+window.addEventListener('beforeunload', ()=>{
+  if(isOnline && gameOn && myRoomId && socket && socket.connected){
+    socket.emit('resign', { roomId: myRoomId });
+  }
+});
+
+// Mất kết nối quá 15 giây = tự thua
+let disconnectTimer = null;
+function setupDisconnectTimer(){
+  if(!isOnline||!gameOn)return;
+  clearTimeout(disconnectTimer);
+  disconnectTimer=setTimeout(()=>{
+    if(isOnline&&gameOn){
+      toast('⚠️ Mất kết nối — tính thua');
+      gameOn=false; clearInterval(timerInt);
+      const ch=calcElo(false); elo=Math.max(100,elo+ch);
+      recordStat('lose',ch);
+      document.getElementById('overIcon').textContent='📶';
+      document.getElementById('overTitle').textContent='Mất Kết Nối';
+      document.getElementById('overDesc').textContent=`Mất kết nối quá lâu. ELO ${ch} → ${elo}`;
+      showModal('modOver');
+      isOnline=false; myRoomId=null;
+    }
+  }, 15000);
 }
 function setStatus(msg,alert){
   const el=document.getElementById('sbar');
@@ -1379,7 +1429,7 @@ function setStatus(msg,alert){
 
 // ── SOCKET.IO MULTIPLAYER ──
 // ⚠️ Thay YOUR_RAILWAY_URL bằng URL Railway sau khi deploy server
-const SERVER_URL = 'https://co-tuong-server-production.up.railway.app';
+const SERVER_URL = 'https://YOUR_RAILWAY_URL.railway.app';
 
 let socket = null;
 let myRoomId = null;
@@ -1390,15 +1440,17 @@ function connectSocket() {
   if (socket && socket.connected) return;
   socket = io(SERVER_URL, { transports: ['websocket'], reconnection: true });
 
-  socket.on('connect', () => {
-    console.log('✅ Kết nối server thành công:', socket.id);
-  });
-
   socket.on('disconnect', () => {
     console.log('❌ Mất kết nối server');
     if (gameOn && isOnline) {
       toast('⚠️ Mất kết nối! Đang thử lại...');
+      setupDisconnectTimer(); // bắt đầu đếm 15 giây
     }
+  });
+
+  socket.on('connect', () => {
+    console.log('✅ Kết nối server thành công:', socket.id);
+    clearTimeout(disconnectTimer); // kết nối lại → huỷ timer thua
   });
 
   // Server tìm thấy trận
@@ -1553,11 +1605,15 @@ function showGameScreen() {
 const _doMoveOriginal = doMove;
 function doMove(piece, toR, toC, recordHist) {
   if (isOnline) {
-    // Chỉ cho đi nếu đúng lượt
-    if (piece.s !== mySide) return;
-    // Gửi lên server — server sẽ broadcast lại cho cả 2
+    if (!myRoomId || !socket) return;
+    // Gửi lên server — server validate và broadcast cho cả 2
     socket.emit('move', { roomId: myRoomId, pieceId: piece.id, toR, toC });
-    sel = null; draw();
+    // Optimistic UI: hiện quân di chuyển ngay, không chờ server
+    if(isHidden&&piece.hidden&&!piece.revealed){piece.hidden=false;piece.revealed=true;snd('flip');}
+    lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
+    const mp=pcs.find(p=>p.id===piece.id);
+    if(mp){mp.r=toR;mp.c=toC;}
+    sel=null; snd('mv'); draw();
   } else {
     _doMoveOriginal(piece, toR, toC, recordHist);
   }
