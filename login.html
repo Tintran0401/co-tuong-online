@@ -132,10 +132,10 @@ for(let i=0;i<16;i++){
 function doStart(){
   const name=(document.getElementById('nameInp').value.trim()||'Người Chơi')
     .slice(0,16);
-  // Lưu tên vào sessionStorage để index.html đọc
   sessionStorage.setItem('playerName', name);
-  // Chuyển sang game
-  window.location.href='index.html';
+  // Dùng đường dẫn tuyệt đối
+  const base=window.location.origin+window.location.pathname.replace('login.html','');
+  window.location.href=base+'index.html';
 }
 
 // Focus input sau 400ms
