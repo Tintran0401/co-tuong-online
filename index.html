@@ -481,32 +481,37 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 .hrow.draw .helo{color:var(--gold)}
 .empty-hist{text-align:center;padding:24px;color:var(--dim);font-size:13px;line-height:1.7}
 
-/* ── TOAST ── */
-.toast{position:fixed;bottom:calc(var(--safe-bot)+80px);left:50%;
-
 /* ── CHECK POPUP ── */
 .check-popup{
   position:fixed;top:0;left:50%;transform:translateX(-50%);
-  width:100%;max-width:430px;z-index:150;
+  width:100%;max-width:430px;z-index:999;
   pointer-events:none;
 }
 .check-popup-inner{
-  margin:calc(var(--safe-top) + 60px) 20px 0;
-  background:rgba(20,0,0,.95);
+  margin:calc(var(--safe-top) + 55px) 16px 0;
+  background:linear-gradient(135deg,rgba(40,0,0,.97),rgba(20,0,0,.97));
   border:2px solid #FF4444;
-  border-radius:16px;padding:14px 20px;
+  border-radius:16px;padding:14px 18px;
   display:flex;align-items:center;gap:12px;
-  box-shadow:0 0 30px rgba(255,68,68,.4);
-  transform:translateY(-120px);opacity:0;
-  transition:all .35s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 0 40px rgba(255,68,68,.5),0 8px 32px rgba(0,0,0,.8);
+  transform:translateY(-140px) scale(.9);opacity:0;
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s ease;
 }
 .check-popup.show .check-popup-inner{
-  transform:translateY(0);opacity:1;
+  transform:translateY(0) scale(1);opacity:1;
 }
-.check-icon{font-size:28px;flex-shrink:0;animation:shakePop .4s ease}
-@keyframes shakePop{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
-.check-title{font-size:16px;font-weight:800;color:#FF6060}
-.check-sub{font-size:11px;color:rgba(255,150,150,.7);margin-top:2px}
+.check-icon{font-size:30px;flex-shrink:0}
+.check-icon.anim{animation:shakeIcon .5s ease}
+@keyframes shakeIcon{
+  0%{transform:rotate(0) scale(1)}
+  20%{transform:rotate(-15deg) scale(1.2)}
+  40%{transform:rotate(15deg) scale(1.2)}
+  60%{transform:rotate(-10deg) scale(1.1)}
+  80%{transform:rotate(10deg) scale(1.1)}
+  100%{transform:rotate(0) scale(1)}
+}
+.check-title{font-size:16px;font-weight:800}
+.check-sub{font-size:11px;color:rgba(255,200,200,.7);margin-top:2px}
 
 /* ── OVER STATS ── */
 .over-stat{text-align:center}
@@ -927,9 +932,11 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 <!-- POPUP CHIẾU TƯỚNG -->
 <div class="check-popup" id="checkPopup">
   <div class="check-popup-inner">
-    <div class="check-icon">⚠️</div>
-    <div class="check-title" id="checkTitle">Chiếu Tướng!</div>
-    <div class="check-sub" id="checkSub">Tướng của bạn đang bị chiếu</div>
+    <div class="check-icon" id="checkIcon">⚠️</div>
+    <div>
+      <div class="check-title" id="checkTitle">Chiếu Tướng!</div>
+      <div class="check-sub" id="checkSub">Tướng đang bị chiếu</div>
+    </div>
   </div>
 </div>
 
@@ -1330,32 +1337,95 @@ function showCheckPopup(isMyKingChecked){
   const popup=document.getElementById('checkPopup');
   const title=document.getElementById('checkTitle');
   const sub=document.getElementById('checkSub');
+  const icon=document.getElementById('checkIcon');
+
+  // Set nội dung
   if(isMyKingChecked){
-    title.textContent='⚠️ Tướng Bạn Bị Chiếu!';
+    icon.textContent='⚠️';
+    title.textContent='Tướng Bạn Bị Chiếu!';
     title.style.color='#FF6060';
     sub.textContent='Hãy đỡ chiếu ngay!';
-    if(navigator.vibrate)navigator.vibrate([80,40,80,40,120]);
+    // Rung mạnh khi bị chiếu
+    if(navigator.vibrate)navigator.vibrate([100,50,100,50,150]);
   } else {
-    title.textContent='♟ Chiếu Tướng Địch!';
+    icon.textContent='⚔️';
+    title.textContent='Chiếu Tướng Địch!';
     title.style.color='#FFD060';
     sub.textContent='Tướng đối thủ đang bị chiếu!';
-    if(navigator.vibrate)navigator.vibrate([60]);
+    if(navigator.vibrate)navigator.vibrate([80]);
   }
+
+  // Restart animation bằng cách remove rồi add lại class
+  icon.classList.remove('anim');
+  void icon.offsetWidth; // force reflow
+  icon.classList.add('anim');
+
   snd('chk');
+
+  // Hiện popup
+  popup.classList.remove('show');
+  void popup.offsetWidth; // force reflow
   popup.classList.add('show');
+
   clearTimeout(checkPopupTimer);
-  checkPopupTimer=setTimeout(()=>popup.classList.remove('show'),2500);
+  checkPopupTimer=setTimeout(()=>popup.classList.remove('show'), 2800);
 }
 
 let gameStartTime=0;
 let lastWonMode=null;
 
+// ── CHIẾU HẾT CỜ POPUP (hiện trước modal thắng/thua) ──
+function showCheckmateBanner(playerWon, cb){
+  // Dừng đồng hồ ngay lập tức
+  clearInterval(timerInt);
+
+  // Rung
+  if(navigator.vibrate){
+    if(playerWon) navigator.vibrate([200,100,200]);
+    else navigator.vibrate([500]);
+  }
+
+  // Tạo banner full-screen tạm thời
+  const banner = document.createElement('div');
+  banner.style.cssText=`
+    position:fixed;inset:0;z-index:500;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:16px;
+    background:rgba(0,0,0,.85);backdrop-filter:blur(6px);
+    animation:fadeInBanner .3s ease;
+  `;
+  banner.innerHTML=`
+    <style>
+      @keyframes fadeInBanner{from{opacity:0}to{opacity:1}}
+      @keyframes zoomIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+      @keyframes pulse2{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+    </style>
+    <div style="font-size:72px;animation:zoomIn .4s cubic-bezier(.34,1.56,.64,1)">${playerWon?'🏆':'💀'}</div>
+    <div style="font-family:'Noto Serif SC',serif;font-size:28px;font-weight:900;
+      color:${playerWon?'#F0C870':'#FF6060'};letter-spacing:2px;
+      text-shadow:0 0 30px ${playerWon?'rgba(240,200,112,.6)':'rgba(255,96,96,.6)'};
+      animation:pulse2 1s ease infinite">
+      ${playerWon?'CHIẾU HẾT CỜ!':'BỊ CHIẾU HẾT!'}
+    </div>
+    <div style="font-size:14px;color:rgba(255,255,255,.6);letter-spacing:1px">
+      ${playerWon?'Bạn đã thắng ván này!':'Tướng của bạn đã bị chiếu hết'}
+    </div>
+  `;
+  document.body.appendChild(banner);
+
+  // Sau 1.8s thì tắt banner và hiện modal thắng/thua
+  setTimeout(()=>{
+    banner.style.animation='fadeInBanner .3s ease reverse';
+    setTimeout(()=>{ banner.remove(); cb&&cb(); }, 300);
+  }, 1800);
+}
+
 function gameEnd(playerWon){
   if(!gameOn)return;
   gameOn=false;
-  clearInterval(timerInt); // ⏸ Đồng hồ dừng lại
+  clearInterval(timerInt); // ⏸ Đồng hồ dừng ngay
 
-  // Ẩn popup chiếu nếu đang hiện
+  // Ẩn popup chiếu
   clearTimeout(checkPopupTimer);
   document.getElementById('checkPopup').classList.remove('show');
 
@@ -1365,24 +1435,17 @@ function gameEnd(playerWon){
   lastWonMode=mode;
   snd(playerWon?'win':'lose');
 
-  // Tính thời gian ván đấu
   const elapsed=Math.floor((Date.now()-gameStartTime)/1000);
-  const elapsedStr=`${Math.floor(elapsed/60)}p${elapsed%60}s`;
-  const totalMoves=mvHist.length;
+  const elapsedStr=`${Math.floor(elapsed/60)}p${String(elapsed%60).padStart(2,'0')}s`;
 
-  setTimeout(()=>{
-    if(playerWon){
-      document.getElementById('overIcon').textContent='🏆';
-      document.getElementById('overTitle').textContent='Chiến Thắng!';
-      document.getElementById('overTitle').style.color='var(--gold)';
-      document.getElementById('overDesc').textContent='Bạn đã chiếu hết đối thủ!';
-    } else {
-      document.getElementById('overIcon').textContent='😔';
-      document.getElementById('overTitle').textContent='Thất Bại';
-      document.getElementById('overTitle').style.color='#FF7070';
-      document.getElementById('overDesc').textContent='Tướng của bạn đã bị chiếu hết.';
-    }
-    // Stats nhỏ: ELO thay đổi + thời gian + số nước
+  // Hiện banner chiếu hết trước, sau đó modal
+  showCheckmateBanner(playerWon, ()=>{
+    document.getElementById('overIcon').textContent=playerWon?'🏆':'😔';
+    const titleEl=document.getElementById('overTitle');
+    titleEl.textContent=playerWon?'Chiến Thắng!':'Thất Bại';
+    titleEl.style.color=playerWon?'var(--gold)':'#FF7070';
+    document.getElementById('overDesc').textContent=
+      playerWon?'Bạn đã chiếu hết tướng địch!':'Tướng của bạn đã bị chiếu hết!';
     document.getElementById('overStats').innerHTML=`
       <div class="over-stat">
         <div class="over-stat-val" style="color:${eloChg>=0?'var(--green)':'#FF7070'}">${eloChg>=0?'+':''}${eloChg}</div>
@@ -1396,7 +1459,6 @@ function gameEnd(playerWon){
         <div class="over-stat-val">${elapsedStr}</div>
         <div class="over-stat-lbl">Thời Gian</div>
       </div>`;
-    // Nút Ván Mới: bên thua mới được chơi lại, bên thắng về nhà
     const btnVanMoi=document.getElementById('btnVanMoi');
     if(playerWon){
       btnVanMoi.textContent='🏠 Về Nhà';
@@ -1406,7 +1468,8 @@ function gameEnd(playerWon){
       btnVanMoi.onclick=()=>{closeModal('modOver');doNewGame();};
     }
     showModal('modOver');
-  },500);
+  });
+
   isOnline=false;myRoomId=null;
 }
 
@@ -1616,9 +1679,11 @@ function connectSocket(cb){
 
   socket.on('game_over',({winner,reason})=>{
     if(!gameOn)return;
-    gameOn=false;clearInterval(timerInt);
+    gameOn=false;
+    clearInterval(timerInt);
     clearTimeout(checkPopupTimer);
     document.getElementById('checkPopup').classList.remove('show');
+
     const playerWon=winner===mySide;
     const isDraw=winner===null;
     const eloChg=isDraw?0:calcElo(playerWon);
@@ -1626,9 +1691,11 @@ function connectSocket(cb){
     recordStat(isDraw?'draw':(playerWon?'win':'lose'),eloChg);
     lastWonMode=mode;
     snd(isDraw?'mv':playerWon?'win':'lose');
+
     const elapsed=Math.floor((Date.now()-gameStartTime)/1000);
-    const elapsedStr=`${Math.floor(elapsed/60)}p${elapsed%60}s`;
-    setTimeout(()=>{
+    const elapsedStr=`${Math.floor(elapsed/60)}p${String(elapsed%60).padStart(2,'0')}s`;
+
+    const showResult=()=>{
       document.getElementById('overIcon').textContent=isDraw?'🤝':(playerWon?'🏆':'😔');
       const titleEl=document.getElementById('overTitle');
       titleEl.textContent=isDraw?'Hòa Cờ!':(playerWon?'Chiến Thắng!':'Thất Bại');
@@ -1656,7 +1723,14 @@ function connectSocket(cb){
         btnVanMoi.onclick=()=>{closeModal('modOver');doNewGame();};
       }
       showModal('modOver');
-    },500);
+    };
+
+    // Chiếu hết → banner trước, hòa/đầu hàng/mất mạng → modal ngay
+    if(reason==='Chiếu hết'&&!isDraw){
+      showCheckmateBanner(playerWon, showResult);
+    } else {
+      setTimeout(showResult, 400);
+    }
     isOnline=false;myRoomId=null;
   });
 
