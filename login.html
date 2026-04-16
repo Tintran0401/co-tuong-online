@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Cờ Tướng Online</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Be+Vietnam+Pro:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#D4A843;--gold-l:#F0C870;--gold-d:#A07830;
+  --bg:#0D0600;--surf:#2A1A06;--dim:#A08060;--text:#F5E6C8;
+  --safe-top:env(safe-area-inset-top,44px);
+  --safe-bot:env(safe-area-inset-bottom,20px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;touch-action:manipulation}
+body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--text);
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 50% 30%,#2A1200 0%,#0D0600 65%)}
+
+/* Particles */
+.bg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.particle{position:absolute;border-radius:50%;animation:float linear infinite;opacity:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Serif SC',serif}
+@keyframes float{
+  0%{transform:translateY(100vh) rotate(0deg);opacity:0}
+  10%{opacity:.5}90%{opacity:.2}
+  100%{transform:translateY(-10vh) rotate(720deg);opacity:0}
+}
+
+/* Wrap */
+.wrap{position:relative;z-index:1;display:flex;flex-direction:column;
+  align-items:center;width:100%;max-width:340px;
+  padding:0 28px;
+  padding-top:calc(var(--safe-top) + 20px);
+  padding-bottom:calc(var(--safe-bot) + 20px)}
+
+/* Logo */
+.logo{font-family:'Noto Serif SC',serif;font-size:76px;font-weight:900;
+  color:var(--gold);letter-spacing:12px;
+  text-shadow:0 0 60px rgba(212,168,67,.7),0 4px 0 var(--gold-d);
+  animation:pulse 3s ease-in-out infinite;margin-bottom:8px}
+@keyframes pulse{
+  0%,100%{text-shadow:0 0 40px rgba(212,168,67,.5),0 4px 0 var(--gold-d)}
+  50%{text-shadow:0 0 80px rgba(240,200,112,.9),0 4px 0 var(--gold-d)}
+}
+.title{font-size:14px;letter-spacing:5px;color:var(--dim);text-transform:uppercase;margin-bottom:4px}
+.sub{font-size:11px;color:rgba(160,128,96,.45);letter-spacing:2px;margin-bottom:52px}
+
+/* Input */
+.inp-wrap{width:100%;margin-bottom:12px}
+.inp{width:100%;background:rgba(255,255,255,.06);
+  border:1.5px solid rgba(212,168,67,.22);border-radius:14px;
+  padding:15px 18px;font-size:16px;font-weight:600;
+  color:var(--text);font-family:'Be Vietnam Pro',sans-serif;
+  outline:none;text-align:center;transition:all .25s}
+.inp:focus{border-color:rgba(212,168,67,.55);
+  background:rgba(255,255,255,.08);
+  box-shadow:0 0 0 3px rgba(212,168,67,.1)}
+.inp::placeholder{color:rgba(160,128,96,.45);font-weight:400}
+
+/* Button */
+.btn{width:100%;padding:17px;border-radius:14px;
+  background:linear-gradient(135deg,var(--gold-d),var(--gold));
+  border:none;color:#1A0800;font-family:'Be Vietnam Pro',sans-serif;
+  font-size:16px;font-weight:800;cursor:pointer;letter-spacing:.5px;
+  box-shadow:0 4px 24px rgba(212,168,67,.35);
+  transition:all .2s;position:relative;overflow:hidden}
+.btn::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);
+  border-radius:14px}
+.btn:active{transform:scale(.97);opacity:.9}
+
+/* Note */
+.note{font-size:10px;color:rgba(160,128,96,.35);
+  margin-top:18px;letter-spacing:1px;text-align:center}
+
+/* Season badge */
+.season{display:flex;align-items:center;gap:6px;margin-top:28px;
+  background:rgba(212,168,67,.07);border:1px solid rgba(212,168,67,.18);
+  border-radius:20px;padding:6px 14px}
+.season-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);
+  animation:blink2 1.5s ease-in-out infinite}
+@keyframes blink2{0%,100%{opacity:1}50%{opacity:.3}}
+.season-txt{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.5px}
+</style>
+</head>
+<body>
+
+<div class="bg" id="bg"></div>
+
+<div class="wrap">
+  <div class="logo">象棋</div>
+  <div class="title">Cờ Tướng Online</div>
+  <div class="sub">Phiên bản 1.0 · Mùa 12</div>
+
+  <div class="inp-wrap">
+    <input class="inp" id="nameInp" type="text"
+      placeholder="Nhập tên của bạn..."
+      maxlength="16" autocomplete="off" spellcheck="false"
+      onkeydown="if(event.key==='Enter')doStart()">
+  </div>
+
+  <button class="btn" onclick="doStart()">⚔️&nbsp; Bắt Đầu</button>
+
+  <div class="note">Không cần tài khoản · Chơi ngay</div>
+
+  <div class="season">
+    <div class="season-dot"></div>
+    <div class="season-txt">MÙA 12 ĐANG DIỄN RA</div>
+  </div>
+</div>
+
+<script>
+// Tạo particles
+const chars=['車','馬','砲','將','帥','象','士','卒','兵','仕','相'];
+const bg=document.getElementById('bg');
+for(let i=0;i<16;i++){
+  const d=document.createElement('div');
+  d.className='particle';
+  const sz=16+Math.random()*14;
+  d.style.cssText=`left:${Math.random()*100}%;width:${sz}px;height:${sz}px;
+    font-size:${sz*.9}px;color:rgba(212,168,67,${.15+Math.random()*.25});
+    animation-duration:${7+Math.random()*10}s;animation-delay:${Math.random()*6}s`;
+  d.textContent=chars[Math.floor(Math.random()*chars.length)];
+  bg.appendChild(d);
+}
+
+function doStart(){
+  const name=(document.getElementById('nameInp').value.trim()||'Người Chơi')
+    .slice(0,16);
+  // Lưu tên vào sessionStorage để index.html đọc
+  sessionStorage.setItem('playerName', name);
+  // Chuyển sang game
+  window.location.href='index.html';
+}
+
+// Focus input sau 400ms
+setTimeout(()=>document.getElementById('nameInp').focus(), 400);
+</script>
+</body>
+</html>
