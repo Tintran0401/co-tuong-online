@@ -475,8 +475,13 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 .hrow.win .hbadge{background:rgba(76,175,80,.14);color:var(--green)}
 .hrow.lose .hbadge{background:rgba(255,80,80,.12);color:#FF6060}
 .hrow.draw .hbadge{background:rgba(212,168,67,.12);color:var(--gold)}
-.hopp{flex:1}.honme{font-size:12px;font-weight:600}.hmode{font-size:10px;color:var(--dim)}
-.helo{font-size:12px;font-weight:700}
+.hopp{flex:1}
+.honme{font-size:12px;font-weight:600}
+.hmode-tag{display:flex;align-items:center;gap:4px;margin-top:3px;flex-wrap:wrap}
+.hmode-icon{font-size:11px}
+.hmode-tag span{font-size:10px;color:var(--dim)}
+.htime{font-size:10px;color:rgba(160,128,96,.5)!important}
+.helo{font-size:13px;font-weight:800;min-width:36px;text-align:right}
 .hrow.win .helo{color:var(--green)}.hrow.lose .helo{color:#FF6060}
 .hrow.draw .helo{color:var(--gold)}
 .empty-hist{text-align:center;padding:24px;color:var(--dim);font-size:13px;line-height:1.7}
@@ -2262,10 +2267,28 @@ function recordStat(result,eloChg){
   else if(result==='lose'){stats.l++;stats.streak=0;}
   else{stats.d++;stats.streak=0;}
   stats.best=Math.max(stats.best,elo);
-  const ml={flash:'⚡',normal:'♟',hidden:'🎭'}[mode]||'♟';
+
+  const modeInfo={
+    flash: {icon:'⚡',name:'Cờ Chớp'},
+    normal:{icon:'♟',name:'Cờ Thường'},
+    hidden:{icon:'🎭',name:'Cờ Úp'}
+  }[mode]||{icon:'♟',name:'Cờ Thường'};
+
   const eStr=eloChg>0?`+${eloChg}`:eloChg<0?`${eloChg}`:'±0';
-  stats.hist.unshift({result,opp:isOnline?'Người Chơi':'Bot AI',mode:ml,elo:eStr});
-  if(stats.hist.length>20)stats.hist.pop();
+  const now=new Date();
+  const timeStr=`${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+  const dateStr=`${now.getDate()}/${now.getMonth()+1}`;
+
+  stats.hist.unshift({
+    result,
+    opp: isOnline ? (playerName||'Người Chơi') : 'Bot AI',
+    modeIcon: modeInfo.icon,
+    modeName: modeInfo.name,
+    elo: eStr,
+    time: timeStr,
+    date: dateStr
+  });
+  if(stats.hist.length>50)stats.hist.pop();
   refreshProfile();
 }
 
@@ -2290,12 +2313,28 @@ function refreshProfile(){
   document.getElementById('homeElo').textContent=`ELO ${elo}`;
   document.getElementById('myLbElo').textContent=elo;
   document.getElementById('myLbSub').textContent=`${tot} ván · ${tot>0?Math.round(stats.w/tot*100)+'%':'—'}`;
+
   const hl=document.getElementById('histList');
-  if(!stats.hist.length){hl.innerHTML='<div class="empty-hist">Chưa có lịch sử.<br>Chơi ván đầu tiên! 🎮</div>';return;}
-  hl.innerHTML=stats.hist.map(h=>`<div class="hrow ${h.result}">
-    <div class="hbadge">${h.result==='win'?'THẮNG':h.result==='lose'?'THUA':'HÒA'}</div>
-    <div class="hopp"><div class="honme">${h.opp}</div><div class="hmode">${h.mode}</div></div>
-    <div class="helo">${h.elo}</div></div>`).join('');
+  if(!stats.hist.length){
+    hl.innerHTML='<div class="empty-hist">Chưa có lịch sử thi đấu.<br>Hãy chơi ván đầu tiên! 🎮</div>';
+    return;
+  }
+  hl.innerHTML=stats.hist.map(h=>{
+    const resultTxt=h.result==='win'?'THẮNG':h.result==='lose'?'THUA':'HÒA';
+    const eloColor=h.elo.startsWith('+')?'var(--green)':h.elo.startsWith('-')?'#FF6060':'var(--gold)';
+    return `<div class="hrow ${h.result}">
+      <div class="hbadge">${resultTxt}</div>
+      <div class="hopp">
+        <div class="honme">${h.opp}</div>
+        <div class="hmode-tag">
+          <span class="hmode-icon">${h.modeIcon||'♟'}</span>
+          <span>${h.modeName||'Cờ Thường'}</span>
+          ${h.date?`<span class="htime">· ${h.date} ${h.time}</span>`:''}
+        </div>
+      </div>
+      <div class="helo" style="color:${eloColor}">${h.elo}</div>
+    </div>`;
+  }).join('');
 }
 
 // ══════════════════════════════════════════
