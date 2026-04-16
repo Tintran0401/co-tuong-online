@@ -1222,82 +1222,69 @@ function handleClick(evt){
 
   const clicked=at(row,col,pcs);
 
-  // ── CHẾ ĐỘ CỜ ÚP ──
-  if(isHidden){
-    if(sel){
-      // Đang có quân được chọn (đã lật) → thử đi
-      const moves=safeMoves(sel,pcs);
-      if(moves.some(([mr,mc])=>mr===row&&mc===col)){
-        execMove(sel,row,col);return;
-      }
-      // Bấm vào quân khác cùng phe đã lật → chọn quân đó
-      if(clicked&&clicked.s===playerSide&&!clicked.hidden){
-        sel=clicked;draw();return;
-      }
-      // Bấm vào quân cùng phe đang úp → lật luôn (đó là nước đi: lật tại chỗ)
-      if(clicked&&clicked.s===playerSide&&clicked.hidden){
-        sel=null;
-        execMove(clicked,clicked.r,clicked.c); // lật tại chỗ = di chuyển về vị trí hiện tại
-        return;
-      }
-      sel=null;draw();
-    } else {
-      if(!clicked||clicked.s!==playerSide)return;
-      if(clicked.hidden){
-        // Quân úp → lật tại chỗ
-        execMove(clicked,clicked.r,clicked.c);
-      } else {
-        // Quân đã lật → chọn để di chuyển
-        sel=clicked;draw();
-      }
-    }
-    return;
-  }
-
-  // ── CHẾ ĐỘ THƯỜNG ──
   if(sel){
-    const moves=safeMoves(sel,pcs);
+    // Thử đi đến ô được bấm
+    const moves=isHidden&&sel.hidden
+      ? hiddenMoves(sel,pcs)     // quân úp: đi theo luật Tốt 1 ô
+      : safeMoves(sel,pcs);      // quân đã lật: đi theo đúng loại quân
+
     if(moves.some(([mr,mc])=>mr===row&&mc===col)){
       execMove(sel,row,col);return;
     }
+    // Chọn quân khác cùng phe
     sel=(clicked&&clicked.s===playerSide)?clicked:null;
   } else {
-    if(clicked&&clicked.s===playerSide)sel=clicked;
+    if(clicked&&clicked.s===playerSide) sel=clicked;
   }
   draw();
+}
+
+// Quân úp chưa biết loại → đi như Tốt: 1 ô thẳng về phía trước
+// (khi đến ô mới mới lật mặt ra)
+function hiddenMoves(p,ps){
+  const mv=[];
+  const dir = p.s==='r' ? -1 : 1; // đỏ đi lên, đen đi xuống
+  const nr=p.r+dir, nc=p.c;
+  if(!onB(nr,nc))return mv;
+  const tg=at(nr,nc,ps);
+  if(!tg||tg.s!==p.s) mv.push([nr,nc]); // đi thẳng, có thể bắt quân địch
+  return mv;
 }
 
 // ══════════════════════════════════════════
 // EXECUTE MOVE (dùng cho cả online lẫn offline)
 // ══════════════════════════════════════════
 function execMove(piece,toR,toC){
-  // Cờ Úp: lật tại chỗ = chỉ reveal, đổi lượt, không di chuyển
-  const isFlipInPlace = isHidden && piece.hidden && toR===piece.r && toC===piece.c;
+  const wasHidden = isHidden && piece.hidden;
 
   if(isOnline){
     socket.emit('move',{roomId:myRoomId,pieceId:piece.id,toR,toC});
-    if(piece.hidden){piece.hidden=false;piece.revealed=true;snd('flip');}
+    // Optimistic update
     lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
-    if(!isFlipInPlace){const mp=pcs.find(p=>p.id===piece.id);if(mp){mp.r=toR;mp.c=toC;}}
+    const capI=pcs.findIndex(p=>p.r===toR&&p.c===toC&&p.s!==piece.s);
+    if(capI!==-1){snd('cap');pcs.splice(capI,1);}
+    const mp=pcs.find(p=>p.id===piece.id);
+    if(mp){mp.r=toR;mp.c=toC;}
+    // Lật sau khi đến ô mới
+    if(wasHidden){piece.hidden=false;piece.revealed=true;snd('flip');}
+    else snd('mv');
     turn=turn==='r'?'b':'r';
-    sel=null;snd(isFlipInPlace?'flip':'mv');setTurnUI();draw();
+    sel=null;setTurnUI();draw();
   } else {
     mvHist.push({pcs:clone(pcs),turn});
-    if(piece.hidden){piece.hidden=false;piece.revealed=true;}
     lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
-    if(!isFlipInPlace){
-      const capI=pcs.findIndex(p=>p.r===toR&&p.c===toC&&p.s!==piece.s);
-      if(capI!==-1){snd('cap');pcs.splice(capI,1);}else snd('mv');
-      const mp=pcs.find(p=>p.id===piece.id);if(mp){mp.r=toR;mp.c=toC;}
-    } else {
-      snd('flip');
-    }
+    const capI=pcs.findIndex(p=>p.r===toR&&p.c===toC&&p.s!==piece.s);
+    if(capI!==-1){snd('cap');pcs.splice(capI,1);}else snd('mv');
+    const mp=pcs.find(p=>p.id===piece.id);
+    if(mp){mp.r=toR;mp.c=toC;}
+    // Lật sau khi đến ô mới
+    if(wasHidden){piece.hidden=false;piece.revealed=true;snd('flip');}
     sel=null;
-    if(checkGameResult(isFlipInPlace?turn:piece.s))return;
+    const justMoved=isOnline?mySide:(turn==='r'?'r':'b');
+    if(checkGameResult(turn))return;
     turn=turn==='r'?'b':'r';
     setTurnUI();draw();
-    if(!isFlipInPlace) setTimeout(aiTurn,isHidden?700:680);
-    else { setTurnUI();draw(); setTimeout(aiTurn,500); }
+    setTimeout(aiTurn,isHidden?700:680);
   }
 }
 
@@ -1433,18 +1420,34 @@ function aiTurn(){
   if(!gameOn||isOnline)return;
   aiBusy=true;setStatus('Đối thủ đang suy nghĩ... 🤔',false);
   setTimeout(()=>{
-    // Cờ Úp: nếu AI còn quân úp → lật 1 quân ngẫu nhiên trước
     if(isHidden){
-      const hiddenPieces=pcs.filter(p=>p.s==='b'&&p.hidden&&!p.revealed);
-      if(hiddenPieces.length>0){
+      // Cờ Úp: ưu tiên di chuyển quân úp 1 ô (lật khi đến nơi)
+      const hiddenPieces=pcs.filter(p=>p.s==='b'&&p.hidden);
+      const revealedPieces=pcs.filter(p=>p.s==='b'&&!p.hidden);
+
+      // 50% đi quân đã lật, 50% đi quân úp (nếu có)
+      const useHidden = hiddenPieces.length>0 && (revealedPieces.length===0 || Math.random()<0.5);
+
+      if(useHidden){
+        // Chọn ngẫu nhiên 1 quân úp và đi 1 ô
         const pick=hiddenPieces[Math.floor(Math.random()*hiddenPieces.length)];
-        pick.hidden=false;pick.revealed=true;
-        snd('flip');lastMv={f:{r:pick.r,c:pick.c},t:{r:pick.r,c:pick.c}};
-        aiBusy=false;
-        if(checkGameResult('b'))return;
-        turn='r';setTurnUI();draw();return;
+        const moves=hiddenMoves(pick,pcs);
+        if(moves.length>0){
+          const[mr,mc]=moves[Math.floor(Math.random()*moves.length)];
+          lastMv={f:{r:pick.r,c:pick.c},t:{r:mr,c:mc}};
+          const capI=pcs.findIndex(x=>x.r===mr&&x.c===mc&&x.s==='r');
+          if(capI!==-1){snd('cap');pcs.splice(capI,1);}else snd('mv');
+          const ap=pcs.find(x=>x.id===pick.id);if(ap){ap.r=mr;ap.c=mc;}
+          // Lật sau khi đến ô mới
+          pick.hidden=false;pick.revealed=true;snd('flip');
+          aiBusy=false;
+          if(checkGameResult('b'))return;
+          turn='r';setTurnUI();draw();return;
+        }
       }
     }
+
+    // Đi quân đã lật bằng Minimax
     const depth=mode==='flash'?2:3;
     const best=minimax(pcs,depth,-Infinity,Infinity,true);
     if(!best.p){
@@ -1461,7 +1464,7 @@ function aiTurn(){
     turn='r';setTurnUI();draw();
     if(gameOn&&Math.random()<.2)
       setTimeout(()=>addChatMsg('Bot',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),600+Math.random()*1000);
-  },isHidden?600:40);
+  },isHidden?500:40);
 }
 
 // ── ĐỐI PHƯƠNG THOÁT GAME ──
