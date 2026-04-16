@@ -1038,11 +1038,20 @@ function rawMoves(p,ps){
     mv.push([nr,nc]);
   };
   if(t==='K'){[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;if(inP(nr,nc,s))add(nr,nc);});}
-  else if(t==='A'){[[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;if(inP(nr,nc,s))add(nr,nc);});}
+  else if(t==='A'){[[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc])=>{
+    const nr=r+dr,nc=c+dc;
+    // Cờ Úp: Sĩ úp được đi cả bàn không giới hạn cung
+    if(isHidden&&p.hidden) add(nr,nc);
+    else if(inP(nr,nc,s)) add(nr,nc);
+  });}
   else if(t==='B'){[[2,2],[2,-2],[-2,2],[-2,-2]].forEach(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;if(!onB(nr,nc))return;
     if(at(r+dr/2,c+dc/2,ps))return;
-    if(s==='r'&&nr<5)return;if(s==='b'&&nr>4)return;
+    // Cờ Úp: Tượng úp được qua sông
+    if(!isHidden||!p.hidden){
+      if(s==='r'&&nr<5)return;
+      if(s==='b'&&nr>4)return;
+    }
     add(nr,nc);});}
   else if(t==='N'){[[1,2],[1,-2],[-1,2],[-1,-2],[2,1],[2,-1],[-2,1],[-2,-1]].forEach(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;if(!onB(nr,nc))return;
