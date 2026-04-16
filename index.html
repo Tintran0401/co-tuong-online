@@ -541,6 +541,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
   font-size:18px;cursor:pointer;flex-shrink:0;transition:all .15s}
 .back-btn:active{background:rgba(212,168,67,.2);transform:scale(.93)}
 .page-title{font-size:21px;font-weight:800;color:var(--gold);flex:1}
+
 </style>
 </head>
 <body>
@@ -1034,6 +1035,7 @@ let sel=null, pcs=[], lastMv=null, mvHist=[];
 let rTime=600, bTime=600;
 let timerInt=null, mmInt=null, mmSec=0;
 let elo=1200, coins=2500;
+let playerName='Người Chơi';
 let isHidden=false;
 let chatOpen=false, unread=0;
 let cv, ctx, cell, ox, oy;
@@ -2078,7 +2080,7 @@ function findMatch(m){
   },1000);
   connectSocket(()=>{
     document.getElementById('mmTitle').textContent='Đang Tìm Đối Thủ...';
-    socket.emit('find_match',{mode:m,name:'Người Chơi'});
+    socket.emit('find_match',{mode:m,name:playerName||'Người Chơi'});
   });
 }
 
@@ -2290,9 +2292,15 @@ function buildSplash(){
 }
 
 buildSplash();
+// Đọc tên từ login.html
+playerName = sessionStorage.getItem('playerName') || 'Người Chơi';
 setTimeout(()=>{
   document.getElementById('splash').classList.remove('active');
   document.getElementById('home').classList.add('active');
+  document.getElementById('ni1').classList.add('on');
+  // Áp dụng tên
+  document.getElementById('homeName').textContent=playerName;
+  document.getElementById('profName').textContent=playerName;
   refreshProfile();
 },2400);
 </script>
