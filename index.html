@@ -1262,12 +1262,100 @@ function execMove(piece,toR,toC){
     if(capI!==-1){snd('cap');pcs.splice(capI,1);}else snd('mv');
     const mp=pcs.find(p=>p.id===piece.id);if(mp){mp.r=toR;mp.c=toC;}
     sel=null;
-    if(!pcs.find(p=>p.t==='K'&&p.s==='b')){draw();setTimeout(()=>gameEnd(true),80);return;}
-    if(!pcs.find(p=>p.t==='K'&&p.s==='r')){draw();setTimeout(()=>gameEnd(false),80);return;}
-    if(inCheck('b',pcs))showCheckPopup(false); // tướng địch bị chiếu
+    // Kiểm tra kết quả ngay sau nước đi của người chơi (đỏ vừa đi)
+    if(checkGameResult('r'))return;
     turn='b';setTurnUI();draw();
     setTimeout(aiTurn,isHidden?600:680);
   }
+}
+
+// ══════════════════════════════════════════
+// GAME RESULT — gọi sau MỖI nước đi
+// Check: chiếu bí, hết nước, tướng bị bắt
+// ══════════════════════════════════════════
+function checkGameResult(justMovedSide){
+  // Phe vừa đi xong → giờ là lượt phe còn lại
+  const nextSide = justMovedSide==='r' ? 'b' : 'r';
+  const playerIsNext = (!isOnline && nextSide==='r') || (isOnline && nextSide===mySide);
+
+  // 1. Tướng bị bắt (không còn trên bàn)
+  if(!pcs.find(p=>p.t==='K'&&p.s==='b')){
+    // Đỏ thắng
+    clearInterval(timerInt);
+    draw();
+    gameOn=false;
+    showCheckmateBanner(isOnline ? mySide==='r' : true, ()=>showGameOverModal(isOnline ? mySide==='r' : true));
+    return true;
+  }
+  if(!pcs.find(p=>p.t==='K'&&p.s==='r')){
+    // Đen thắng
+    clearInterval(timerInt);
+    draw();
+    gameOn=false;
+    showCheckmateBanner(isOnline ? mySide==='b' : false, ()=>showGameOverModal(isOnline ? mySide==='b' : false));
+    return true;
+  }
+
+  // 2. Check chiếu bí — phe tiếp theo không còn nước đi hợp lệ nào
+  const nextMoves = allMoves(nextSide, pcs);
+  if(nextMoves.length===0){
+    // Chiếu bí hoặc hết nước
+    clearInterval(timerInt);
+    draw();
+    gameOn=false;
+    const nextLoses = true; // phe không còn nước đi = thua
+    const playerWon = playerIsNext ? false : true;
+    showCheckmateBanner(playerWon, ()=>showGameOverModal(playerWon));
+    return true;
+  }
+
+  // 3. Chiếu tướng (còn nước đi nhưng đang bị chiếu)
+  if(inCheck(nextSide, pcs)){
+    showCheckPopup(playerIsNext); // popup cảnh báo nhưng game tiếp tục
+  }
+
+  return false;
+}
+
+// Tách riêng phần hiện modal kết quả
+function showGameOverModal(playerWon){
+  const eloChg=calcElo(playerWon);
+  elo=Math.max(100,elo+eloChg);
+  recordStat(playerWon?'win':'lose',eloChg);
+  lastWonMode=mode;
+
+  const elapsed=Math.floor((Date.now()-gameStartTime)/1000);
+  const elapsedStr=`${Math.floor(elapsed/60)}p${String(elapsed%60).padStart(2,'0')}s`;
+
+  document.getElementById('overIcon').textContent=playerWon?'🏆':'😔';
+  const titleEl=document.getElementById('overTitle');
+  titleEl.textContent=playerWon?'Chiến Thắng!':'Thất Bại';
+  titleEl.style.color=playerWon?'var(--gold)':'#FF7070';
+  document.getElementById('overDesc').textContent=
+    playerWon?'Bạn đã chiếu hết tướng địch!':'Tướng của bạn đã bị chiếu hết!';
+  document.getElementById('overStats').innerHTML=`
+    <div class="over-stat">
+      <div class="over-stat-val" style="color:${eloChg>=0?'var(--green)':'#FF7070'}">${eloChg>=0?'+':''}${eloChg}</div>
+      <div class="over-stat-lbl">ELO</div>
+    </div>
+    <div class="over-stat">
+      <div class="over-stat-val">${elo}</div>
+      <div class="over-stat-lbl">ELO Mới</div>
+    </div>
+    <div class="over-stat">
+      <div class="over-stat-val">${elapsedStr}</div>
+      <div class="over-stat-lbl">Thời Gian</div>
+    </div>`;
+  const btn=document.getElementById('btnVanMoi');
+  if(playerWon){
+    btn.textContent='🏠 Về Nhà';
+    btn.onclick=()=>{closeModal('modOver');nav('home',document.getElementById('ni1'));};
+  } else {
+    btn.textContent='⚔️ Ván Mới';
+    btn.onclick=()=>{closeModal('modOver');doNewGame();};
+  }
+  showModal('modOver');
+  isOnline=false; myRoomId=null;
 }
 
 // ══════════════════════════════════════════
@@ -1312,19 +1400,26 @@ function aiTurn(){
   setTimeout(()=>{
     const depth=mode==='flash'?2:3;
     const best=minimax(pcs,depth,-Infinity,Infinity,true);
-    if(!best.p){aiBusy=false;gameEnd(true);return;}
+    if(!best.p){
+      // AI không còn nước đi = người chơi thắng
+      aiBusy=false;
+      clearInterval(timerInt);
+      gameOn=false;
+      showCheckmateBanner(true,()=>showGameOverModal(true));
+      return;
+    }
     const{p,m:[mr,mc]}=best;
     if(isHidden&&p.hidden&&!p.revealed){p.hidden=false;p.revealed=true;snd('flip');}
     lastMv={f:{r:p.r,c:p.c},t:{r:mr,c:mc}};
     const capI=pcs.findIndex(x=>x.r===mr&&x.c===mc&&x.s==='r');
-    if(capI!==-1){const ct=pcs[capI].t;pcs.splice(capI,1);snd('cap');
-      if(ct==='K'){aiBusy=false;draw();setTimeout(()=>gameEnd(false),80);return;}}
-    else snd('mv');
+    if(capI!==-1){snd('cap');pcs.splice(capI,1);}else snd('mv');
     const ap=pcs.find(x=>x.id===p.id);if(ap){ap.r=mr;ap.c=mc;}
-    if(!pcs.find(x=>x.t==='K'&&x.s==='r')){aiBusy=false;draw();setTimeout(()=>gameEnd(false),80);return;}
-    if(inCheck('r',pcs))showCheckPopup(true);
-    turn='r';aiBusy=false;setTurnUI();draw();
-    if(gameOn&&Math.random()<.2)setTimeout(()=>addChatMsg('Bot',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),600+Math.random()*1000);
+    aiBusy=false;
+    // Kiểm tra kết quả ngay sau nước đi của AI (đen vừa đi)
+    if(checkGameResult('b'))return;
+    turn='r';setTurnUI();draw();
+    if(gameOn&&Math.random()<.2)
+      setTimeout(()=>addChatMsg('Bot',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),600+Math.random()*1000);
   },40);
 }
 
@@ -1694,11 +1789,12 @@ function connectSocket(cb){
 
   // Nhận nước đi từ đối thủ (server broadcast)
   socket.on('moved',({pieceId,from,to,captured,board,turn:newTurn})=>{
-    pcs=board;lastMv={f:from,t:to};turn=newTurn;
+    pcs=board;lastMv={f:from,t:to};
     snd(captured!==null?'cap':'mv');
-    if(!pcs.find(p=>p.t==='K'&&p.s==='b')){draw();setTimeout(()=>gameEnd(mySide==='r'),80);return;}
-    if(!pcs.find(p=>p.t==='K'&&p.s==='r')){draw();setTimeout(()=>gameEnd(mySide==='b'),80);return;}
-    if(inCheck(mySide,pcs))showCheckPopup(true);else if(inCheck(mySide==='r'?'b':'r',pcs))showCheckPopup(false);
+    // Phe vừa đi = phe ngược với newTurn
+    const justMoved = newTurn==='r'?'b':'r';
+    turn=newTurn;
+    if(checkGameResult(justMoved))return;
     setTurnUI();draw();
   });
 
