@@ -907,11 +907,16 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 <div class="toast" id="toastEl"></div>
 
 <script>
-/* ══════════════════════════════════════════
-   CỜ TƯỚNG ONLINE  ·  v1.0 FINAL
-   Minimax AI (depth 3) · 3 rank modes
-   Cờ Úp · ELO · Chat · Profile · Shop
-══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════
+   CỜ TƯỚNG ONLINE  ·  v2.0
+   - Multiplayer thật qua Socket.IO
+   - AI Minimax depth 3 (vs máy)
+   - Cờ Úp · ELO · Chat · Profile
+   - Tắt app/mất mạng → tự thua
+══════════════════════════════════════════════════════ */
+
+// ── ĐỔI URL NÀY SAU KHI DEPLOY SERVER ──
+const SERVER_URL = 'https://co-tuong-server-production.up.railway.app';
 
 // ── CONSTANTS ──
 const COLS=9,ROWS=10;
@@ -925,23 +930,30 @@ const RANKS=[
   {min:2000,name:'Đại Sư',    icon:'👑',next:2200},
   {min:2200,name:'Huyền Thoại',icon:'🏆',next:9999}
 ];
-
-// ── STATE ──
-let mode='normal',gameOn=false,aiBusy=false;
-let turn='r'; // r=red(player), b=black(AI)
-let sel=null,pcs=[],lastMv=null,mvHist=[];
-let rTime=600,bTime=600;
-let timerInt=null,mmInt=null,mmSec=0;
-let elo=1200,coins=2500;
-let stats={w:0,l:0,d:0,streak:0,best:1200,hist:[]};
-let isHidden=false;
-let chatOpen=false,unread=0;
-let cv,ctx,cell,ox,oy;
 const aiReplies=['👍','😄','Hay lắm!','Ván tốt!','🤔','GG!','😮','🎯','Chơi tốt!','Cảm ơn!'];
 
-// ── BOARD INIT ──
+// ── STATE ──
+let mode='normal', gameOn=false, aiBusy=false;
+let turn='r';           // lượt hiện tại: 'r' hoặc 'b'
+let mySide='r';         // phe của người chơi (online)
+let isOnline=false;     // true=online, false=vs AI
+let myRoomId=null;
+let sel=null, pcs=[], lastMv=null, mvHist=[];
+let rTime=600, bTime=600;
+let timerInt=null, mmInt=null, mmSec=0;
+let elo=1200, coins=2500;
+let isHidden=false;
+let chatOpen=false, unread=0;
+let cv, ctx, cell, ox, oy;
+let socket=null;
+let disconnectTimer=null;
+let stats={w:0,l:0,d:0,streak:0,best:1200,hist:[]};
+
+// ══════════════════════════════════════════
+// BOARD
+// ══════════════════════════════════════════
 function mkBoard(){
-  const b=[
+  return [
     {t:'R',s:'b',r:0,c:0,id:0},{t:'N',s:'b',r:0,c:1,id:1},{t:'B',s:'b',r:0,c:2,id:2},
     {t:'A',s:'b',r:0,c:3,id:3},{t:'K',s:'b',r:0,c:4,id:4},{t:'A',s:'b',r:0,c:5,id:5},
     {t:'B',s:'b',r:0,c:6,id:6},{t:'N',s:'b',r:0,c:7,id:7},{t:'R',s:'b',r:0,c:8,id:8},
@@ -955,14 +967,16 @@ function mkBoard(){
     {t:'A',s:'r',r:9,c:3,id:26},{t:'K',s:'r',r:9,c:4,id:27},{t:'A',s:'r',r:9,c:5,id:28},
     {t:'B',s:'r',r:9,c:6,id:29},{t:'N',s:'r',r:9,c:7,id:30},{t:'R',s:'r',r:9,c:8,id:31}
   ];
-  return b;
 }
-function clone(ps){return ps.map(p=>({...p}))}
-function at(r,c,ps){return(ps||pcs).find(p=>p.r===r&&p.c===c)||null}
-function onB(r,c){return r>=0&&r<ROWS&&c>=0&&c<COLS}
-function inP(r,c,s){return s==='r'?(r>=7&&r<=9&&c>=3&&c<=5):(r>=0&&r<=2&&c>=3&&c<=5)}
 
-// ── MOVE RULES ──
+function clone(ps){ return ps.map(p=>({...p})); }
+function at(r,c,ps){ return (ps||pcs).find(p=>p.r===r&&p.c===c)||null; }
+function onB(r,c){ return r>=0&&r<ROWS&&c>=0&&c<COLS; }
+function inP(r,c,s){ return s==='r'?(r>=7&&r<=9&&c>=3&&c<=5):(r>=0&&r<=2&&c>=3&&c<=5); }
+
+// ══════════════════════════════════════════
+// MOVE RULES
+// ══════════════════════════════════════════
 function rawMoves(p,ps){
   const mv=[],{t,s,r,c}=p;
   const add=(nr,nc)=>{
@@ -971,12 +985,13 @@ function rawMoves(p,ps){
     if(tg&&tg.s===s)return;
     mv.push([nr,nc]);
   };
-  if(t==='K'){[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;if(inP(nr,nc,s))add(nr,nc)});}
-  else if(t==='A'){[[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;if(inP(nr,nc,s))add(nr,nc)});}
+  if(t==='K'){[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;if(inP(nr,nc,s))add(nr,nc);});}
+  else if(t==='A'){[[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;if(inP(nr,nc,s))add(nr,nc);});}
   else if(t==='B'){[[2,2],[2,-2],[-2,2],[-2,-2]].forEach(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;if(!onB(nr,nc))return;
     if(at(r+dr/2,c+dc/2,ps))return;
-    if(s==='r'&&nr<5)return;if(s==='b'&&nr>4)return;add(nr,nc);});}
+    if(s==='r'&&nr<5)return;if(s==='b'&&nr>4)return;
+    add(nr,nc);});}
   else if(t==='N'){[[1,2],[1,-2],[-1,2],[-1,-2],[2,1],[2,-1],[-2,1],[-2,-1]].forEach(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;if(!onB(nr,nc))return;
     const blk=Math.abs(dr)===2?at(r+(dr>0?1:-1),c,ps):at(r,c+(dc>0?1:-1),ps);
@@ -986,8 +1001,10 @@ function rawMoves(p,ps){
     while(onB(nr,nc)){const tg=at(nr,nc,ps);if(tg){if(tg.s!==s)mv.push([nr,nc]);break;}mv.push([nr,nc]);nr+=dr;nc+=dc;}});}
   else if(t==='C'){[[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{
     let nr=r+dr,nc=c+dc,j=false;
-    while(onB(nr,nc)){const tg=at(nr,nc,ps);if(!j){if(tg)j=true;else mv.push([nr,nc]);}
-    else{if(tg){if(tg.s!==s)mv.push([nr,nc]);break;}}nr+=dr;nc+=dc;}});}
+    while(onB(nr,nc)){const tg=at(nr,nc,ps);
+      if(!j){if(tg)j=true;else mv.push([nr,nc]);}
+      else{if(tg){if(tg.s!==s)mv.push([nr,nc]);break;}}
+      nr+=dr;nc+=dc;}});}
   else if(t==='P'){
     if(s==='r'){if(r>0)add(r-1,c);if(r<=4){add(r,c+1);add(r,c-1);}}
     else{if(r<9)add(r+1,c);if(r>=5){add(r,c+1);add(r,c-1);}}}
@@ -1005,54 +1022,36 @@ function safeMoves(p,ps){
   return rawMoves(p,ps).filter(([mr,mc])=>{
     const sim=clone(ps).filter(x=>!(x.r===mr&&x.c===mc&&x.s!==p.s));
     const mp=sim.find(x=>x.id===p.id);
-    if(!mp)return false;mp.r=mr;mp.c=mc;return!inCheck(p.s,sim);
+    if(!mp)return false;mp.r=mr;mp.c=mc;
+    return !inCheck(p.s,sim);
   });
 }
 
-// ── CANVAS ──
+// ══════════════════════════════════════════
+// CANVAS
+// ══════════════════════════════════════════
 function setupCanvas(){
   cv=document.getElementById('cv');
   const dpr=window.devicePixelRatio||1;
-
-  // Đo vùng thực sự dành cho bàn cờ
   const gameEl=document.getElementById('game');
   const gameH=gameEl.getBoundingClientRect().height||window.innerHeight;
-
-  // Trừ chiều cao tất cả các thanh UI (đo thực tế)
   const topBar=document.querySelector('.game-top');
   const pBar=document.querySelector('.pbar');
   const sBar=document.querySelector('.sbar');
   const ctrl=document.querySelector('.gctrl');
-  const usedH=(topBar?topBar.offsetHeight:52)
-             +(pBar?pBar.offsetHeight:58)
-             +(sBar?sBar.offsetHeight:26)
-             +(ctrl?ctrl.offsetHeight:56)
-             +24; // padding dư
-
-  const availW=Math.min(window.innerWidth-16, 414); // 414 = iPhone 16 Pro Max width
-  const availH=Math.max(gameH-usedH, 200);
-
-  // Tính cell nhỏ hơn 1 chút để chắc chắn không tràn
+  const usedH=(topBar?topBar.offsetHeight:52)+(pBar?pBar.offsetHeight:58)
+             +(sBar?sBar.offsetHeight:26)+(ctrl?ctrl.offsetHeight:56)+24;
+  const availW=Math.min(window.innerWidth-16,414);
+  const availH=Math.max(gameH-usedH,200);
   const cellW=Math.floor((availW-16)/(COLS-1+1.3));
   const cellH=Math.floor((availH-16)/(ROWS-1+1.3));
   cell=Math.max(Math.min(cellW,cellH),24);
-
   const boardW=Math.round(cell*(COLS-1+1.3));
   const boardH=Math.round(cell*(ROWS-1+1.3));
-
-  // CSS size
-  cv.style.width=boardW+'px';
-  cv.style.height=boardH+'px';
-  cv.style.maxWidth='100%';
-  cv.style.maxHeight='100%';
-
-  // Buffer Retina
-  cv.width=Math.round(boardW*dpr);
-  cv.height=Math.round(boardH*dpr);
-
-  ctx=cv.getContext('2d');
-  ctx.scale(dpr,dpr);
-
+  cv.style.width=boardW+'px';cv.style.height=boardH+'px';
+  cv.style.maxWidth='100%';cv.style.maxHeight='100%';
+  cv.width=Math.round(boardW*dpr);cv.height=Math.round(boardH*dpr);
+  ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
   ox=cell*0.65;oy=cell*0.65;
 }
 const cx=c=>Math.round(ox+c*cell);
@@ -1060,58 +1059,43 @@ const cy=r=>Math.round(oy+r*cell);
 
 function draw(){
   if(!ctx)return;
-  const W=cv.width,H=cv.height;
-  // board bg
+  const W=cv.width/(window.devicePixelRatio||1),H=cv.height/(window.devicePixelRatio||1);
   const bg=ctx.createLinearGradient(0,0,W,H);
   bg.addColorStop(0,'#D8A840');bg.addColorStop(.5,'#EBC878');bg.addColorStop(1,'#C29030');
   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  // grain
   ctx.strokeStyle='rgba(150,110,30,.09)';ctx.lineWidth=1;
   for(let i=0;i<H;i+=5){ctx.beginPath();ctx.moveTo(0,i+Math.sin(i*.08)*1.5);ctx.lineTo(W,i+Math.sin(i*.08+1.8)*1.5);ctx.stroke();}
-  // border
   ctx.strokeStyle='#5A3A08';ctx.lineWidth=4;
   ctx.strokeRect(ox-8,oy-8,(COLS-1)*cell+16,(ROWS-1)*cell+16);
   ctx.strokeStyle='#C8900A';ctx.lineWidth=1.5;
   ctx.strokeRect(ox-5,oy-5,(COLS-1)*cell+10,(ROWS-1)*cell+10);
-  // grid
   ctx.strokeStyle='#7A5520';ctx.lineWidth=1.2;
   for(let r=0;r<ROWS;r++){ctx.beginPath();ctx.moveTo(cx(0),cy(r));ctx.lineTo(cx(COLS-1),cy(r));ctx.stroke();}
   for(let c=0;c<COLS;c++){
     if(c===0||c===COLS-1){ctx.beginPath();ctx.moveTo(cx(c),cy(0));ctx.lineTo(cx(c),cy(ROWS-1));ctx.stroke();}
     else{ctx.beginPath();ctx.moveTo(cx(c),cy(0));ctx.lineTo(cx(c),cy(4));ctx.stroke();
-      ctx.beginPath();ctx.moveTo(cx(c),cy(5));ctx.lineTo(cx(c),cy(ROWS-1));ctx.stroke();}
-  }
-  // river
+      ctx.beginPath();ctx.moveTo(cx(c),cy(5));ctx.lineTo(cx(c),cy(ROWS-1));ctx.stroke();}}
   ctx.fillStyle='rgba(80,140,220,.1)';ctx.fillRect(cx(0),cy(4)+1,(COLS-1)*cell,cell-2);
   ctx.fillStyle='rgba(70,110,190,.38)';
   ctx.font=`bold ${Math.round(cell*.43)}px Noto Serif SC`;
   ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText('楚 河',cx(2),cy(4)+cell/2);ctx.fillText('漢 界',cx(6),cy(4)+cell/2);
-  // palace X
   ctx.strokeStyle='#7A5520';ctx.lineWidth=1.2;
   [[0,3,2,5],[7,3,9,5]].forEach(([r1,c1,r2,c2])=>{
     ctx.beginPath();ctx.moveTo(cx(c1),cy(r1));ctx.lineTo(cx(c2),cy(r2));ctx.stroke();
-    ctx.beginPath();ctx.moveTo(cx(c2),cy(r1));ctx.lineTo(cx(c1),cy(r2));ctx.stroke();
-  });
-  // star dots
+    ctx.beginPath();ctx.moveTo(cx(c2),cy(r1));ctx.lineTo(cx(c1),cy(r2));ctx.stroke();});
   [[2,1],[2,7],[7,1],[7,7],[3,0],[3,2],[3,4],[3,6],[3,8],[6,0],[6,2],[6,4],[6,6],[6,8]]
     .forEach(([r,c])=>dot(c,r));
-  // last move highlight
   if(lastMv){
     ctx.fillStyle='rgba(255,200,0,.2)';
-    [lastMv.f,lastMv.t].forEach(p=>{ctx.beginPath();ctx.arc(cx(p.c),cy(p.r),cell*.46,0,Math.PI*2);ctx.fill();});
-  }
-  // selection + hints
+    [lastMv.f,lastMv.t].forEach(p=>{ctx.beginPath();ctx.arc(cx(p.c),cy(p.r),cell*.46,0,Math.PI*2);ctx.fill();});}
   if(sel){
     ctx.fillStyle='rgba(255,228,60,.38)';
     ctx.beginPath();ctx.arc(cx(sel.c),cy(sel.r),cell*.47,0,Math.PI*2);ctx.fill();
     safeMoves(sel,pcs).forEach(([mr,mc])=>{
       const occ=at(mr,mc,pcs);
       if(occ&&occ.s!==sel.s){ctx.strokeStyle='rgba(255,60,60,.8)';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(cx(mc),cy(mr),cell*.47,0,Math.PI*2);ctx.stroke();}
-      else{ctx.fillStyle='rgba(255,228,60,.42)';ctx.beginPath();ctx.arc(cx(mc),cy(mr),cell*.15,0,Math.PI*2);ctx.fill();}
-    });
-  }
-  // pieces
+      else{ctx.fillStyle='rgba(255,228,60,.45)';ctx.beginPath();ctx.arc(cx(mc),cy(mr),cell*.15,0,Math.PI*2);ctx.fill();}});}
   pcs.forEach(p=>drawPiece(p));
 }
 
@@ -1124,47 +1108,36 @@ function dot(col,row){
 
 function drawPiece(p){
   const x=cx(p.c),y=cy(p.r),r=cell*.43,isSel=sel===p;
-  // shadow
   ctx.fillStyle='rgba(0,0,0,.26)';
   ctx.beginPath();ctx.ellipse(x+2,y+3,r,r*.64,0,0,Math.PI*2);ctx.fill();
-  // hidden piece — CẢ 2 bên đều úp trong Cờ Úp
   if(isHidden&&p.hidden&&!p.revealed){
     const g=ctx.createRadialGradient(x-r*.28,y-r*.28,0,x,y,r);
-    // Quân đỏ úp: màu đỏ tối | Quân đen úp: màu xám tối
-    if(p.s==='r'){
-      g.addColorStop(0,'#6A2020');g.addColorStop(.6,'#3A1010');g.addColorStop(1,'#1A0505');
-    } else {
-      g.addColorStop(0,'#505050');g.addColorStop(.6,'#282828');g.addColorStop(1,'#111');
-    }
+    if(p.s==='r'){g.addColorStop(0,'#6A2020');g.addColorStop(.6,'#3A1010');g.addColorStop(1,'#1A0505');}
+    else{g.addColorStop(0,'#505050');g.addColorStop(.6,'#282828');g.addColorStop(1,'#111');}
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
-    // ring
     ctx.strokeStyle=p.s==='r'?'rgba(180,60,60,.45)':'rgba(160,160,160,.35)';
     ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,r*.83,0,Math.PI*2);ctx.stroke();
-    // dấu hỏi
-    ctx.fillStyle=p.s==='r'?'rgba(255,120,120,.7)':'rgba(160,160,160,.7)';
+    ctx.fillStyle=p.s==='r'?'rgba(255,120,120,.7)':'rgba(180,180,180,.7)';
     ctx.font=`900 ${Math.round(cell*.38)}px Noto Serif SC`;
-    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('？',x,y+1);
-    return;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('？',x,y+1);return;
   }
-  // body gradient
   const g=ctx.createRadialGradient(x-r*.28,y-r*.28,0,x,y,r);
   if(p.s==='r'){g.addColorStop(0,isSel?'#FF9070':'#DD5540');g.addColorStop(.55,isSel?'#CC3020':'#9B2828');g.addColorStop(1,'#5A1212');}
   else{g.addColorStop(0,isSel?'#909080':'#606050');g.addColorStop(.55,isSel?'#505040':'#302010');g.addColorStop(1,'#1A0A00');}
   ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
-  // ring
   ctx.strokeStyle=p.s==='r'?'rgba(255,180,100,.65)':'rgba(212,168,67,.55)';
   ctx.lineWidth=1.8;ctx.beginPath();ctx.arc(x,y,r*.84,0,Math.PI*2);ctx.stroke();
-  // glow when selected
   if(isSel){ctx.strokeStyle=p.s==='r'?'rgba(255,200,100,.55)':'rgba(200,180,80,.55)';
     ctx.lineWidth=2.8;ctx.beginPath();ctx.arc(x,y,r+3,0,Math.PI*2);ctx.stroke();}
-  // label
   ctx.fillStyle=p.s==='r'?'#FFD888':'#D4A843';
   ctx.font=`900 ${Math.round(cell*.41)}px Noto Serif SC`;
   ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText(LBL[p.s][p.t],x,y+1);
 }
 
-// ── SOUND ──
+// ══════════════════════════════════════════
+// SOUND
+// ══════════════════════════════════════════
 let ac=null;
 function snd(type){
   try{
@@ -1179,76 +1152,78 @@ function snd(type){
     else if(type==='lose'){o.frequency.value=400;g.gain.value=.1;o.frequency.exponentialRampToValueAtTime(180,ac.currentTime+.4);o.start();o.stop(ac.currentTime+.5);}
   }catch(e){}
 }
-
 function tryVibrate(){if(navigator.vibrate)navigator.vibrate(50);}
 
-// ── PLAYER CLICK ──
+// ══════════════════════════════════════════
+// CLICK / TOUCH HANDLER
+// ══════════════════════════════════════════
 function handleClick(evt){
   if(!gameOn||aiBusy)return;
 
-  // Online: chỉ đi khi đúng lượt mình
-  // Offline: luôn là phe đỏ
-  const myTurn = isOnline ? (turn === mySide) : (turn === 'r');
-  if(!myTurn)return;
+  // Xác định phe của người chơi
+  const playerSide = isOnline ? mySide : 'r';
+
+  // Chỉ cho đi khi đúng lượt
+  if(turn !== playerSide) return;
 
   const rect=cv.getBoundingClientRect();
-  const px=(evt.clientX-rect.left)*(parseFloat(cv.style.width)||cv.width)/rect.width;
-  const py=(evt.clientY-rect.top)*(parseFloat(cv.style.height)||cv.height)/rect.height;
+  const scaleX=parseFloat(cv.style.width||cv.width)/rect.width;
+  const scaleY=parseFloat(cv.style.height||cv.height)/rect.height;
+  const px=(evt.clientX-rect.left)*scaleX;
+  const py=(evt.clientY-rect.top)*scaleY;
   const col=Math.round((px-ox)/cell),row=Math.round((py-oy)/cell);
   if(!onB(row,col))return;
 
-  // Phe của người chơi hiện tại
-  const mySideNow = isOnline ? mySide : 'r';
-
   if(sel){
+    // Thử đi nước
     const moves=safeMoves(sel,pcs);
     if(moves.some(([mr,mc])=>mr===row&&mc===col)){
-      doMove(sel,row,col,true);return;
+      execMove(sel,row,col);return;
     }
+    // Chọn quân khác cùng phe
     const clicked=at(row,col,pcs);
-    sel=(clicked&&clicked.s===mySideNow)?clicked:null;
+    sel=(clicked&&clicked.s===playerSide)?clicked:null;
   } else {
     const clicked=at(row,col,pcs);
-    if(clicked&&clicked.s===mySideNow)sel=clicked;
+    if(clicked&&clicked.s===playerSide)sel=clicked;
   }
   draw();
 }
 
-function doMove(piece,toR,toC,recordHist){
-  if(recordHist)mvHist.push({pcs:clone(pcs),turn});
-  if(isHidden&&piece.hidden&&!piece.revealed){
-    piece.hidden=false;piece.revealed=true;snd('flip');
+// ══════════════════════════════════════════
+// EXECUTE MOVE (dùng cho cả online lẫn offline)
+// ══════════════════════════════════════════
+function execMove(piece,toR,toC){
+  if(isOnline){
+    // Gửi lên server, server broadcast cho cả 2
+    socket.emit('move',{roomId:myRoomId,pieceId:piece.id,toR,toC});
+    // Optimistic: di chuyển quân ngay trên máy mình
+    if(isHidden&&piece.hidden&&!piece.revealed){piece.hidden=false;piece.revealed=true;snd('flip');}
+    lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
+    const mp=pcs.find(p=>p.id===piece.id);
+    if(mp){mp.r=toR;mp.c=toC;}
+    turn=turn==='r'?'b':'r';
+    sel=null;snd('mv');setTurnUI();draw();
+  } else {
+    // VS AI: thực hiện luôn
+    mvHist.push({pcs:clone(pcs),turn});
+    if(isHidden&&piece.hidden&&!piece.revealed){piece.hidden=false;piece.revealed=true;snd('flip');}
+    lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
+    const capI=pcs.findIndex(p=>p.r===toR&&p.c===toC&&p.s!==piece.s);
+    if(capI!==-1){snd('cap');pcs.splice(capI,1);}else snd('mv');
+    const mp=pcs.find(p=>p.id===piece.id);if(mp){mp.r=toR;mp.c=toC;}
+    sel=null;
+    if(!pcs.find(p=>p.t==='K'&&p.s==='b')){draw();setTimeout(()=>gameEnd(true),80);return;}
+    if(!pcs.find(p=>p.t==='K'&&p.s==='r')){draw();setTimeout(()=>gameEnd(false),80);return;}
+    if(inCheck('b',pcs)){snd('chk');setStatus('Chiếu tướng! ⚡',true);if(navigator.vibrate)navigator.vibrate([30,30,60]);}
+    turn='b';setTurnUI();draw();
+    setTimeout(aiTurn,isHidden?600:680);
   }
-  lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
-  const capI=pcs.findIndex(p=>p.r===toR&&p.c===toC&&p.s!==piece.s);
-  let capT=null;
-  if(capI!==-1){capT=pcs[capI].t;pcs.splice(capI,1);}
-  const mp=pcs.find(p=>p.id===piece.id);
-  if(mp){mp.r=toR;mp.c=toC;}
-  sel=null;
-  if(capT)snd('cap');else snd('mv');
-  if(!pcs.find(p=>p.t==='K'&&p.s==='b')){draw();setTimeout(()=>gameEnd(true),80);return;}
-  if(!pcs.find(p=>p.t==='K'&&p.s==='r')){draw();setTimeout(()=>gameEnd(false),80);return;}
-  if(inCheck('b',pcs)){snd('chk');setStatus('Chiếu tướng! ⚡',true);if(navigator.vibrate)navigator.vibrate([30,30,60]);}
-  turn='b';setTurnUI();draw();
-  setTimeout(aiTurn,isHidden?600:680);
 }
 
-// doMove dành riêng cho AI (không bị override bởi online mode)
-function doMoveAI(piece,toR,toC){
-  if(isHidden&&piece.hidden&&!piece.revealed){piece.hidden=false;piece.revealed=true;snd('flip');}
-  lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
-  const capI=pcs.findIndex(p=>p.r===toR&&p.c===toC&&p.s!==piece.s);
-  if(capI!==-1){const ct=pcs[capI].t;pcs.splice(capI,1);snd('cap');
-    if(ct==='K'){draw();setTimeout(()=>gameEnd(false),80);return;}
-  } else snd('mv');
-  const ap=pcs.find(x=>x.id===piece.id);if(ap){ap.r=toR;ap.c=toC;}
-  if(!pcs.find(x=>x.t==='K'&&x.s==='r')){draw();setTimeout(()=>gameEnd(false),80);return;}
-  if(inCheck('r',pcs)){snd('chk');setStatus('Bạn đang bị chiếu! ⚠️',true);if(navigator.vibrate)navigator.vibrate([50,30,100]);}
-  turn='r';aiBusy=false;setTurnUI();draw();
-}
-
-// ── AI (Minimax depth 3) ──
+// ══════════════════════════════════════════
+// AI
+// ══════════════════════════════════════════
 function evalBoard(ps){
   let sc=0;
   ps.forEach(p=>{
@@ -1283,36 +1258,44 @@ function minimax(ps,depth,alpha,beta,max){
 }
 
 function aiTurn(){
-  if(!gameOn||isOnline)return; // online mode: không dùng AI
+  if(!gameOn||isOnline)return;
   aiBusy=true;setStatus('Đối thủ đang suy nghĩ... 🤔',false);
   setTimeout(()=>{
     const depth=mode==='flash'?2:3;
     const best=minimax(pcs,depth,-Infinity,Infinity,true);
     if(!best.p){aiBusy=false;gameEnd(true);return;}
-    doMoveAI(best.p,best.m[0],best.m[1]);
-    if(gameOn&&Math.random()<.2){
-      setTimeout(()=>{
-        addChatMsg('Đối Thủ',aiReplies[Math.floor(Math.random()*aiReplies.length)],false);
-      },400+Math.random()*1200);
-    }
+    const{p,m:[mr,mc]}=best;
+    if(isHidden&&p.hidden&&!p.revealed){p.hidden=false;p.revealed=true;snd('flip');}
+    lastMv={f:{r:p.r,c:p.c},t:{r:mr,c:mc}};
+    const capI=pcs.findIndex(x=>x.r===mr&&x.c===mc&&x.s==='r');
+    if(capI!==-1){const ct=pcs[capI].t;pcs.splice(capI,1);snd('cap');
+      if(ct==='K'){aiBusy=false;draw();setTimeout(()=>gameEnd(false),80);return;}}
+    else snd('mv');
+    const ap=pcs.find(x=>x.id===p.id);if(ap){ap.r=mr;ap.c=mc;}
+    if(!pcs.find(x=>x.t==='K'&&x.s==='r')){aiBusy=false;draw();setTimeout(()=>gameEnd(false),80);return;}
+    if(inCheck('r',pcs)){snd('chk');setStatus('Bạn đang bị chiếu! ⚠️',true);if(navigator.vibrate)navigator.vibrate([50,30,100]);}
+    turn='r';aiBusy=false;setTurnUI();draw();
+    if(gameOn&&Math.random()<.2)setTimeout(()=>addChatMsg('Bot',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),600+Math.random()*1000);
   },40);
 }
 
-// ── GAME END ──
+// ══════════════════════════════════════════
+// GAME FLOW
+// ══════════════════════════════════════════
 function gameEnd(playerWon){
+  if(!gameOn)return;
   gameOn=false;clearInterval(timerInt);
   const eloChg=calcElo(playerWon);
   elo=Math.max(100,elo+eloChg);
   recordStat(playerWon?'win':'lose',eloChg);
-  if(playerWon)snd('win');else snd('lose');
+  snd(playerWon?'win':'lose');
   setTimeout(()=>{
     document.getElementById('overIcon').textContent=playerWon?'🏆':'😔';
     document.getElementById('overTitle').textContent=playerWon?'Chiến Thắng!':'Thất Bại';
-    document.getElementById('overDesc').textContent=playerWon
-      ?`Bạn đã chiếu hết đối thủ! ELO +${eloChg} → ${elo}`
-      :`Bạn đã bị chiếu hết. ELO ${eloChg} → ${elo}`;
+    document.getElementById('overDesc').textContent=`ELO ${eloChg>0?'+':''}${eloChg} → ${elo}`;
     showModal('modOver');
-  },300);
+  },400);
+  isOnline=false;myRoomId=null;
 }
 
 function calcElo(won){
@@ -1320,50 +1303,64 @@ function calcElo(won){
   return won?Math.round(k*.9):-Math.round(k*.7);
 }
 
-// ── UNDO ──
 function undoMove(){
+  if(isOnline){toast('Không thể hoàn tác khi chơi online!');return;}
   if(mvHist.length<2||turn!=='r'||aiBusy){toast('Không thể hoàn tác!');return;}
   mvHist.pop();const prev=mvHist.pop();
   pcs=prev.pcs;turn='r';sel=null;lastMv=null;
-  setTurnUI();draw();toast('↩️ Đã hoàn tác nước đi');
+  setTurnUI();draw();toast('↩️ Đã hoàn tác');
 }
 
-// ── DRAW / RESIGN ──
-function offerDraw(){showModal('modDraw');}
+function offerDraw(){
+  if(isOnline&&myRoomId)socket.emit('offer_draw',{roomId:myRoomId});
+  else showModal('modDraw');
+}
+
 function doAcceptDraw(){
-  closeModal('modDraw');gameOn=false;clearInterval(timerInt);
-  recordStat('draw',0);
+  closeModal('modDraw');
+  if(isOnline&&myRoomId){socket.emit('accept_draw',{roomId:myRoomId});return;}
+  gameOn=false;clearInterval(timerInt);recordStat('draw',0);
   setTimeout(()=>{
     document.getElementById('overIcon').textContent='🤝';
     document.getElementById('overTitle').textContent='Hòa Cờ!';
     document.getElementById('overDesc').textContent='Trận đấu kết thúc hòa. ELO ±0';
-    showModal('modOver');
-  },200);
+    showModal('modOver');},200);
 }
+
 function doResign(){
   closeModal('modResign');gameOn=false;clearInterval(timerInt);
+  if(isOnline&&myRoomId){socket.emit('resign',{roomId:myRoomId});return;}
   const ch=calcElo(false);elo=Math.max(100,elo+ch);recordStat('lose',ch);
   setTimeout(()=>{
     document.getElementById('overIcon').textContent='🏳️';
     document.getElementById('overTitle').textContent='Đầu Hàng';
     document.getElementById('overDesc').textContent=`Bạn đã đầu hàng. ELO ${ch} → ${elo}`;
-    showModal('modOver');
-  },150);
+    showModal('modOver');},150);
 }
-function confirmBack(){if(gameOn)showModal('modBack');else nav('home',document.getElementById('ni1'));}
-function doQuit(){closeModal('modBack');gameOn=false;clearInterval(timerInt);nav('home',document.getElementById('ni1'));}
 
-// ── TIMER ──
+function confirmBack(){if(gameOn)showModal('modBack');else nav('home',document.getElementById('ni1'));}
+function doQuit(){
+  closeModal('modBack');
+  if(isOnline&&myRoomId&&socket)socket.emit('resign',{roomId:myRoomId});
+  gameOn=false;clearInterval(timerInt);
+  isOnline=false;myRoomId=null;
+  nav('home',document.getElementById('ni1'));
+}
+
+// ══════════════════════════════════════════
+// TIMER
+// ══════════════════════════════════════════
 function startTimer(){
   const base={flash:60,normal:600,hidden:300}[mode]||600;
   rTime=base;bTime=base;updateTimer();clearInterval(timerInt);
   timerInt=setInterval(()=>{
     if(!gameOn)return;
-    if(turn==='r'){rTime=Math.max(0,rTime-1);if(rTime===0){updateTimer();clearInterval(timerInt);gameEnd(false);return;}}
-    else{bTime=Math.max(0,bTime-1);if(bTime===0){updateTimer();clearInterval(timerInt);gameEnd(true);return;}}
+    if(turn==='r'){rTime=Math.max(0,rTime-1);if(rTime===0){updateTimer();clearInterval(timerInt);gameEnd(mySide==='r'?false:true);return;}}
+    else{bTime=Math.max(0,bTime-1);if(bTime===0){updateTimer();clearInterval(timerInt);gameEnd(mySide==='b'?false:true);return;}}
     updateTimer();
   },1000);
 }
+
 function updateTimer(){
   const f=t=>`${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
   const re=document.getElementById('rtm'),be=document.getElementById('btm');
@@ -1371,384 +1368,246 @@ function updateTimer(){
   re.className='ptm'+(rTime<=15?' urg':'');be.className='ptm'+(bTime<=15?' urg':'');
 }
 
-// ── TURN UI ──
+// ══════════════════════════════════════════
+// TURN UI
+// ══════════════════════════════════════════
 function setTurnUI(){
-  if(isOnline){
-    const myTurn=(turn===mySide);
-    document.getElementById('rcrd').classList.toggle('on',turn==='r');
-    document.getElementById('bcrd').classList.toggle('on',turn==='b');
-    setStatus(myTurn?'Lượt của bạn ♟ — Chọn quân':'Đối thủ đang suy nghĩ...',false);
-  } else {
-    document.getElementById('rcrd').classList.toggle('on',turn==='r');
-    document.getElementById('bcrd').classList.toggle('on',turn==='b');
-    if(turn==='r')setStatus('Lượt của bạn (Đỏ) ♟',false);
-    else setStatus('Đối thủ đang suy nghĩ...',false);
-  }
+  document.getElementById('rcrd').classList.toggle('on',turn==='r');
+  document.getElementById('bcrd').classList.toggle('on',turn==='b');
+  const myTurn=turn===mySide||(!isOnline&&turn==='r');
+  setStatus(myTurn?'Lượt của bạn ♟ — Chọn quân':'Đối thủ đang suy nghĩ...',false);
 }
 
-// ── TẮT APP / RỜI TRANG → TỰ THUA ──
-// Khi người dùng tắt app, rời trang, hoặc mất mạng trong ván online
-document.addEventListener('visibilitychange', ()=>{
-  if(document.visibilityState==='hidden' && isOnline && gameOn && myRoomId){
-    // Gửi resign ngay trước khi trang bị ẩn
-    if(socket && socket.connected){
-      socket.emit('resign', { roomId: myRoomId });
-    }
-  }
-});
-
-window.addEventListener('beforeunload', ()=>{
-  if(isOnline && gameOn && myRoomId && socket && socket.connected){
-    socket.emit('resign', { roomId: myRoomId });
-  }
-});
-
-// Mất kết nối quá 15 giây = tự thua
-let disconnectTimer = null;
-function setupDisconnectTimer(){
-  if(!isOnline||!gameOn)return;
-  clearTimeout(disconnectTimer);
-  disconnectTimer=setTimeout(()=>{
-    if(isOnline&&gameOn){
-      toast('⚠️ Mất kết nối — tính thua');
-      gameOn=false; clearInterval(timerInt);
-      const ch=calcElo(false); elo=Math.max(100,elo+ch);
-      recordStat('lose',ch);
-      document.getElementById('overIcon').textContent='📶';
-      document.getElementById('overTitle').textContent='Mất Kết Nối';
-      document.getElementById('overDesc').textContent=`Mất kết nối quá lâu. ELO ${ch} → ${elo}`;
-      showModal('modOver');
-      isOnline=false; myRoomId=null;
-    }
-  }, 15000);
-}
 function setStatus(msg,alert){
   const el=document.getElementById('sbar');
   el.textContent=msg;el.className='sbar'+(alert?' alert':'');
 }
 
-// ── SOCKET.IO MULTIPLAYER ──
-// ⚠️ Thay YOUR_RAILWAY_URL bằng URL Railway sau khi deploy server
-const SERVER_URL = 'https://YOUR_RAILWAY_URL.railway.app';
+// ══════════════════════════════════════════
+// INIT GAME (VS AI)
+// ══════════════════════════════════════════
+function initGame(){
+  isOnline=false;
+  mySide='r';
+  isHidden=mode==='hidden';
+  pcs=mkBoard();
+  if(isHidden){
+    const nk=pcs.filter(p=>p.t!=='K');
+    const pos=nk.map(p=>({r:p.r,c:p.c}));
+    for(let i=pos.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pos[i],pos[j]]=[pos[j],pos[i]];}
+    nk.forEach((p,i)=>{p.r=pos[i].r;p.c=pos[i].c;});
+    pcs.forEach(p=>{if(p.t==='K'){p.hidden=false;p.revealed=true;}else{p.hidden=true;p.revealed=false;}});
+  }
+  sel=null;turn='r';mvHist=[];lastMv=null;aiBusy=false;gameOn=true;
+  clearInterval(timerInt);
+  document.getElementById('relo').textContent=`ELO ${elo}`;
+  document.querySelector('#rcrd .pn').textContent='Bạn';
+  document.querySelector('#bcrd .pn').textContent='Bot AI';
+  setupCanvas();draw();setTurnUI();startTimer();
+  if(isHidden)setStatus('🎭 Cờ Úp — Tất cả quân úp mù!',false);
+  resetChat();
+  cv.ontouchstart=e=>{e.preventDefault();const t=e.touches[0];handleClick({clientX:t.clientX,clientY:t.clientY});};
+  cv.onclick=handleClick;
+}
 
-let socket = null;
-let myRoomId = null;
-let mySide = null;   // 'r' hoặc 'b'
-let isOnline = false; // true = đang chơi online, false = vs AI
+// ══════════════════════════════════════════
+// SOCKET.IO — MULTIPLAYER
+// ══════════════════════════════════════════
+function connectSocket(cb){
+  if(socket&&socket.connected){cb&&cb();return;}
+  socket=io(SERVER_URL,{transports:['websocket'],reconnection:true,reconnectionAttempts:5});
 
-function connectSocket() {
-  if (socket && socket.connected) return;
-  socket = io(SERVER_URL, { transports: ['websocket'], reconnection: true });
+  socket.on('connect',()=>{
+    console.log('✅ Server:',socket.id);
+    clearTimeout(disconnectTimer);
+    cb&&cb();cb=null;
+  });
 
-  socket.on('disconnect', () => {
-    console.log('❌ Mất kết nối server');
-    if (gameOn && isOnline) {
-      toast('⚠️ Mất kết nối! Đang thử lại...');
-      setupDisconnectTimer(); // bắt đầu đếm 15 giây
+  socket.on('disconnect',()=>{
+    if(gameOn&&isOnline){
+      toast('⚠️ Mất kết nối...');
+      // Tắt app / mất mạng 15s → tự thua
+      disconnectTimer=setTimeout(()=>{
+        if(gameOn&&isOnline){
+          gameOn=false;clearInterval(timerInt);
+          const ch=calcElo(false);elo=Math.max(100,elo+ch);recordStat('lose',ch);
+          document.getElementById('overIcon').textContent='📶';
+          document.getElementById('overTitle').textContent='Mất Kết Nối';
+          document.getElementById('overDesc').textContent=`Mất kết nối. ELO ${ch} → ${elo}`;
+          showModal('modOver');isOnline=false;myRoomId=null;
+        }
+      },15000);
     }
   });
 
-  socket.on('connect', () => {
-    console.log('✅ Kết nối server thành công:', socket.id);
-    clearTimeout(disconnectTimer); // kết nối lại → huỷ timer thua
+  socket.on('connect_error',()=>{
+    toast('❌ Không kết nối được server!');
+    document.getElementById('mmOv').classList.remove('on');
+    clearInterval(mmInt);
   });
 
-  // Server tìm thấy trận
-  socket.on('match_found', ({ roomId, side, opponent, board, turn: t, mode: m, baseTime }) => {
+  // Tìm thấy trận
+  socket.on('match_found',({roomId,side,opponent,board,turn:t,mode:m,baseTime})=>{
     clearInterval(mmInt);
     document.getElementById('mmOv').classList.remove('on');
-
-    myRoomId = roomId;
-    mySide   = side;
-    isOnline = true;
-    mode     = m;
-    isHidden = m === 'hidden';
-
-    // Nhận bàn cờ từ server
-    pcs = board;
-    sel = null; turn = t; mvHist = []; lastMv = null; aiBusy = false; gameOn = true;
-
-    // Cập nhật UI
-    const lbl = { flash:'⚡ CỜ CHỚP', normal:'♟ CỜ THƯỜNG', hidden:'🎭 CỜ ÚP' }[m];
-    document.getElementById('gmode').textContent = lbl;
-
-    // Tên người chơi
-    document.querySelector('#rcrd .pn').textContent = side === 'r' ? 'Bạn' : opponent;
-    document.querySelector('#bcrd .pn').textContent = side === 'b' ? 'Bạn' : opponent;
-    document.getElementById('relo').textContent = `ELO ${elo}`;
-
-    showGameScreen();
-    clearInterval(timerInt);
-    setupCanvas(); draw(); setTurnUI();
-
-    // Bắt đầu timer
-    rTime = baseTime; bTime = baseTime; updateTimer();
-    timerInt = setInterval(() => {
-      if (!gameOn) return;
-      if (turn === 'r') { rTime = Math.max(0, rTime-1); if(rTime===0){clearInterval(timerInt);gameEnd(mySide!=='r');return;} }
-      else { bTime = Math.max(0, bTime-1); if(bTime===0){clearInterval(timerInt);gameEnd(mySide!=='b');return;} }
+    myRoomId=roomId;mySide=side;isOnline=true;mode=m;isHidden=m==='hidden';
+    pcs=board;sel=null;turn=t;mvHist=[];lastMv=null;aiBusy=false;gameOn=true;
+    const lbl={flash:'⚡ CỜ CHỚP',normal:'♟ CỜ THƯỜNG',hidden:'🎭 CỜ ÚP'}[m];
+    document.getElementById('gmode').textContent=lbl;
+    // Tên người chơi — hiển thị đúng phe
+    document.querySelector('#rcrd .pn').textContent=side==='r'?'Bạn':opponent;
+    document.querySelector('#bcrd .pn').textContent=side==='b'?'Bạn':opponent;
+    document.getElementById('relo').textContent=`ELO ${elo}`;
+    showGameScreen();clearInterval(timerInt);
+    setupCanvas();draw();setTurnUI();
+    rTime=baseTime;bTime=baseTime;updateTimer();
+    timerInt=setInterval(()=>{
+      if(!gameOn)return;
+      if(turn==='r'){rTime=Math.max(0,rTime-1);if(rTime===0){clearInterval(timerInt);gameEnd(mySide!=='r');return;}}
+      else{bTime=Math.max(0,bTime-1);if(bTime===0){clearInterval(timerInt);gameEnd(mySide!=='b');return;}}
       updateTimer();
-    }, 1000);
-
-    if (isHidden) setStatus('🎭 Cờ Úp — Tất cả quân úp mù! Chỉ thấy 2 Tướng.', false);
-
-    // Reset chat
-    document.getElementById('cmsg').innerHTML = '';
-    unread = 0; chatOpen = false;
-    document.getElementById('chatPanel').classList.remove('open');
-    document.getElementById('cunread').classList.add('hide');
-
-    // Welcome message
-    setTimeout(() => addChatMsg('🤝', `Đã kết nối với ${opponent}! Chúc ván cờ hay!`, false), 500);
+    },1000);
+    if(isHidden)setStatus('🎭 Cờ Úp — Tất cả quân úp mù!',false);
+    resetChat();
+    setTimeout(()=>addChatMsg('🤝',`Đã kết nối với ${opponent}!`,false),600);
+    cv.ontouchstart=e=>{e.preventDefault();const t=e.touches[0];handleClick({clientX:t.clientX,clientY:t.clientY});};
+    cv.onclick=handleClick;
   });
 
-  // Đang chờ đối thủ
-  socket.on('waiting', () => {
-    document.getElementById('mmTitle').textContent = 'Đang Tìm Đối Thủ...';
+  socket.on('waiting',()=>{
+    document.getElementById('mmTitle').textContent='Đang Tìm Đối Thủ...';
   });
 
-  // Nhận nước đi từ đối thủ
-  socket.on('moved', ({ pieceId, from, to, captured, board, turn: newTurn }) => {
-    // Cập nhật bàn cờ từ server (authoritative)
-    pcs = board;
-    lastMv = { f: from, t: to };
-    turn = newTurn;
-
-    snd(captured !== null ? 'cap' : 'mv');
-    if (!pcs.find(p => p.t==='K' && p.s==='b')) { draw(); setTimeout(()=>gameEnd(mySide==='r'), 80); return; }
-    if (!pcs.find(p => p.t==='K' && p.s==='r')) { draw(); setTimeout(()=>gameEnd(mySide==='b'), 80); return; }
-    if (inCheck(mySide, pcs)) { snd('chk'); setStatus('Bạn đang bị chiếu! ⚠️', true); if(navigator.vibrate)navigator.vibrate([50,30,100]); }
-    setTurnUI(); draw();
+  // Nhận nước đi từ đối thủ (server broadcast)
+  socket.on('moved',({pieceId,from,to,captured,board,turn:newTurn})=>{
+    pcs=board;lastMv={f:from,t:to};turn=newTurn;
+    snd(captured!==null?'cap':'mv');
+    if(!pcs.find(p=>p.t==='K'&&p.s==='b')){draw();setTimeout(()=>gameEnd(mySide==='r'),80);return;}
+    if(!pcs.find(p=>p.t==='K'&&p.s==='r')){draw();setTimeout(()=>gameEnd(mySide==='b'),80);return;}
+    if(inCheck(mySide,pcs)){snd('chk');setStatus('Bạn đang bị chiếu! ⚠️',true);if(navigator.vibrate)navigator.vibrate([50,30,100]);}
+    setTurnUI();draw();
   });
 
-  // Kết thúc ván
-  socket.on('game_over', ({ winner, reason }) => {
-    gameOn = false; clearInterval(timerInt);
-    const playerWon = winner === mySide;
-    const eloChg = calcElo(playerWon);
-    elo = Math.max(100, elo + eloChg);
-    recordStat(winner === null ? 'draw' : (playerWon ? 'win' : 'lose'), eloChg);
-    snd(playerWon ? 'win' : (winner === null ? 'mv' : 'lose'));
-    setTimeout(() => {
-      document.getElementById('overIcon').textContent  = winner === null ? '🤝' : (playerWon ? '🏆' : '😔');
-      document.getElementById('overTitle').textContent = winner === null ? 'Hòa Cờ!' : (playerWon ? 'Chiến Thắng!' : 'Thất Bại');
-      document.getElementById('overDesc').textContent  = `${reason} · ELO ${eloChg>0?'+':''}${eloChg} → ${elo}`;
+  socket.on('game_over',({winner,reason})=>{
+    if(!gameOn)return;
+    gameOn=false;clearInterval(timerInt);
+    const playerWon=winner===mySide;
+    const isDraw=winner===null;
+    const eloChg=isDraw?0:calcElo(playerWon);
+    elo=Math.max(100,elo+eloChg);
+    recordStat(isDraw?'draw':(playerWon?'win':'lose'),eloChg);
+    snd(isDraw?'mv':playerWon?'win':'lose');
+    setTimeout(()=>{
+      document.getElementById('overIcon').textContent=isDraw?'🤝':(playerWon?'🏆':'😔');
+      document.getElementById('overTitle').textContent=isDraw?'Hòa Cờ!':(playerWon?'Chiến Thắng!':'Thất Bại');
+      document.getElementById('overDesc').textContent=`${reason} · ELO ${eloChg>=0?'+':''}${eloChg} → ${elo}`;
       showModal('modOver');
-    }, 400);
-    isOnline = false; myRoomId = null; mySide = null;
+    },400);
+    isOnline=false;myRoomId=null;
   });
 
-  // Đối thủ đề xuất hòa
-  socket.on('draw_offered', () => {
-    showModal('modDraw');
-  });
+  socket.on('draw_offered',()=>showModal('modDraw'));
+  socket.on('draw_declined',()=>toast('Đối thủ từ chối hòa'));
 
-  // Chat từ đối thủ
-  socket.on('chat_msg', ({ name, text }) => {
-    addChatMsg(name, text, name === 'Bạn');
-  });
-
-  // Danh sách phòng để spectate
-  socket.on('rooms_list', (list) => {
-    renderLiveRooms(list);
+  socket.on('chat_msg',({name,text})=>{
+    const isMe=(name==='Bạn');
+    addChatMsg(name,text,isMe);
   });
 }
 
-// ── MATCHMAKING ──
-function findMatch(m) {
-  mode = m; mmSec = 0;
-  const desc = { flash:'Cờ Chớp · 1\'+0"', normal:'Cờ Thường · 10\'+5"', hidden:'Cờ Úp · 5\'+3"' }[m];
-  document.getElementById('mmDesc').textContent = desc;
-  document.getElementById('mmTitle').textContent = 'Đang Tìm Đối Thủ...';
-  document.getElementById('mmClock').textContent = '00:00';
+// ══════════════════════════════════════════
+// MATCHMAKING
+// ══════════════════════════════════════════
+function findMatch(m){
+  mode=m;mmSec=0;
+  const desc={flash:'Cờ Chớp · 1\'+0"',normal:'Cờ Thường · 10\'+5"',hidden:'Cờ Úp · 5\'+3"'}[m];
+  document.getElementById('mmDesc').textContent=desc;
+  document.getElementById('mmTitle').textContent='Đang Kết Nối...';
+  document.getElementById('mmClock').textContent='00:00';
   document.getElementById('mmOv').classList.add('on');
-
   clearInterval(mmInt);
-  mmInt = setInterval(() => {
+  mmInt=setInterval(()=>{
     mmSec++;
-    document.getElementById('mmClock').textContent =
+    document.getElementById('mmClock').textContent=
       `${String(Math.floor(mmSec/60)).padStart(2,'0')}:${String(mmSec%60).padStart(2,'0')}`;
-  }, 1000);
-
-  // Kết nối server và tìm trận thật
-  connectSocket();
-  // Chờ kết nối xong rồi mới gửi
-  if (socket.connected) {
-    socket.emit('find_match', { mode: m, name: 'Người Chơi' });
-  } else {
-    socket.once('connect', () => {
-      socket.emit('find_match', { mode: m, name: 'Người Chơi' });
-    });
-  }
+  },1000);
+  connectSocket(()=>{
+    document.getElementById('mmTitle').textContent='Đang Tìm Đối Thủ...';
+    socket.emit('find_match',{mode:m,name:'Người Chơi'});
+  });
 }
 
-function cancelMM() {
+function cancelMM(){
   clearInterval(mmInt);
   document.getElementById('mmOv').classList.remove('on');
-  if (socket && socket.connected) socket.emit('cancel_find');
+  if(socket&&socket.connected)socket.emit('cancel_find');
 }
 
-function startVsAI() {
-  isOnline = false;
-  mode = 'normal';
-  document.getElementById('gmode').textContent = '🤖 VS MÁY';
-  showGameScreen(); initGame();
+function startVsAI(){
+  isOnline=false;mode='normal';
+  document.getElementById('gmode').textContent='🤖 VS MÁY';
+  showGameScreen();initGame();
 }
 
-function showGameScreen() {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+function showGameScreen(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('game').classList.add('active');
-  document.querySelectorAll('.nav-i').forEach(n => n.classList.remove('on'));
+  document.querySelectorAll('.nav-i').forEach(n=>n.classList.remove('on'));
 }
 
-// Override doMove — gửi lên server nếu đang online
-const _doMoveOriginal = doMove;
-function doMove(piece, toR, toC, recordHist) {
-  if (isOnline) {
-    if (!myRoomId || !socket) return;
-    // Gửi lên server — server validate và broadcast cho cả 2
-    socket.emit('move', { roomId: myRoomId, pieceId: piece.id, toR, toC });
-    // Optimistic UI: hiện quân di chuyển ngay, không chờ server
-    if(isHidden&&piece.hidden&&!piece.revealed){piece.hidden=false;piece.revealed=true;snd('flip');}
-    lastMv={f:{r:piece.r,c:piece.c},t:{r:toR,c:toC}};
-    const mp=pcs.find(p=>p.id===piece.id);
-    if(mp){mp.r=toR;mp.c=toC;}
-    sel=null; snd('mv'); draw();
-  } else {
-    _doMoveOriginal(piece, toR, toC, recordHist);
+// ══════════════════════════════════════════
+// TẮT APP → TỰ THUA
+// ══════════════════════════════════════════
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden'&&isOnline&&gameOn&&myRoomId&&socket?.connected){
+    socket.emit('resign',{roomId:myRoomId});
+  }
+});
+window.addEventListener('beforeunload',()=>{
+  if(isOnline&&gameOn&&myRoomId&&socket?.connected){
+    socket.emit('resign',{roomId:myRoomId});
+  }
+});
+
+// ══════════════════════════════════════════
+// CHAT
+// ══════════════════════════════════════════
+function resetChat(){
+  document.getElementById('cmsg').innerHTML='';
+  unread=0;chatOpen=false;
+  document.getElementById('chatPanel').classList.remove('open');
+  document.getElementById('cunread').classList.add('hide');
+  const ub=document.getElementById('cunreadBadge');if(ub)ub.style.display='none';
+}
+
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chatPanel').classList.toggle('open',chatOpen);
+  if(chatOpen){
+    unread=0;
+    document.getElementById('cunread').classList.add('hide');
+    const ub=document.getElementById('cunreadBadge');if(ub)ub.style.display='none';
+    setTimeout(()=>{const c=document.getElementById('cmsg');c.scrollTop=c.scrollHeight;},80);
   }
 }
 
-// Override offerDraw — gửi lên server nếu online
-function offerDraw() {
-  if (isOnline && myRoomId) socket.emit('offer_draw', { roomId: myRoomId });
-  else showModal('modDraw');
-}
-
-// Override doAcceptDraw
-function doAcceptDraw() {
-  closeModal('modDraw');
-  if (isOnline && myRoomId) socket.emit('accept_draw', { roomId: myRoomId });
-  else { gameOn=false; clearInterval(timerInt); recordStat('draw',0);
-    setTimeout(()=>{ document.getElementById('overIcon').textContent='🤝';
-      document.getElementById('overTitle').textContent='Hòa Cờ!';
-      document.getElementById('overDesc').textContent='Trận đấu kết thúc hòa. ELO ±0';
-      showModal('modOver'); },200); }
-}
-
-// Override doResign
-function doResign() {
-  closeModal('modResign'); gameOn=false; clearInterval(timerInt);
-  if (isOnline && myRoomId) { socket.emit('resign', { roomId: myRoomId }); return; }
-  const ch=calcElo(false); elo=Math.max(100,elo+ch); recordStat('lose',ch);
-  setTimeout(()=>{ document.getElementById('overIcon').textContent='🏳️';
-    document.getElementById('overTitle').textContent='Đầu Hàng';
-    document.getElementById('overDesc').textContent=`Bạn đã đầu hàng. ELO ${ch} → ${elo}`;
-    showModal('modOver'); },150);
-}
-
-// Override sendChat — gửi qua socket nếu online
-function sendChat() {
-  const inp=document.getElementById('cinp'); const txt=inp.value.trim(); if(!txt)return;
-  if (isOnline && myRoomId) {
-    socket.emit('chat', { roomId: myRoomId, text: txt });
-    addChatMsg('Bạn', txt, true);
+function sendChat(){
+  const inp=document.getElementById('cinp');const txt=inp.value.trim();if(!txt)return;
+  if(isOnline&&myRoomId){
+    socket.emit('chat',{roomId:myRoomId,text:txt});
+    addChatMsg('Bạn',txt,true);
   } else {
-    addChatMsg('Bạn', txt, true);
-    if(gameOn) setTimeout(()=>addChatMsg('Đối Thủ',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),700+Math.random()*1200);
+    addChatMsg('Bạn',txt,true);
+    if(gameOn)setTimeout(()=>addChatMsg('Bot',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),700+Math.random()*1000);
   }
   inp.value='';
 }
 
-function qChat(msg) {
-  if (isOnline && myRoomId) {
-    socket.emit('chat', { roomId: myRoomId, text: msg });
-    addChatMsg('Bạn', msg, true);
-  } else {
-    addChatMsg('Bạn', msg, true);
-    if(gameOn) setTimeout(()=>addChatMsg('Đối Thủ',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),500+Math.random()*1000);
-  }
-}
-
-// Render danh sách phòng live
-function renderLiveRooms(list) {
-  // Cập nhật màn spectate với dữ liệu thật từ server
-  console.log('Phòng đang chơi:', list);
-}
-
-function watchGame() {
-  if (socket && socket.connected) socket.emit('get_rooms');
-  toast('📡 Đang kết nối phòng...');
-}
-
-function initGame(){
-  isHidden=mode==='hidden';
-  pcs=mkBoard();
-
-  if(isHidden){
-    // ── CỜ ÚP: Đúng nguyên lý ──
-    // 1. Lấy tất cả quân KHÔNG PHẢI TƯỚNG
-    const nonKings=pcs.filter(p=>p.t!=='K');
-
-    // 2. Lấy danh sách vị trí của tất cả quân không phải tướng
-    const positions=nonKings.map(p=>({r:p.r,c:p.c}));
-
-    // 3. Fisher-Yates shuffle — xáo trộn ngẫu nhiên hoàn toàn vị trí
-    for(let i=positions.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [positions[i],positions[j]]=[positions[j],positions[i]];
-    }
-
-    // 4. Gán vị trí mới vào quân (vị trí ngẫu nhiên, không quan tâm phe)
-    nonKings.forEach((p,i)=>{p.r=positions[i].r;p.c=positions[i].c;});
-
-    // 5. ÚP MÙ TẤT CẢ — kể cả quân đỏ của người chơi
-    //    Chỉ 2 Tướng (K) là luôn hiện và đứng yên vị trí gốc
-    pcs.forEach(p=>{
-      if(p.t==='K'){
-        p.hidden=false;
-        p.revealed=true;
-      } else {
-        p.hidden=true;
-        p.revealed=false;
-      }
-    });
-  }
-
-  sel=null;turn='r';mvHist=[];lastMv=null;aiBusy=false;gameOn=true;
-  clearInterval(timerInt);
-  setupCanvas();draw();setTurnUI();startTimer();
-  document.getElementById('relo').textContent=`ELO ${elo}`;
-  if(isHidden)setStatus('🎭 Cờ Úp — Tất cả quân úp mù! Chỉ thấy 2 Tướng.',false);
-
-  // Reset chat
-  document.getElementById('cmsg').innerHTML='';unread=0;chatOpen=false;
-  document.getElementById('chatPanel').classList.remove('open');
-  document.getElementById('cunread').classList.add('hide');
-  // Touch
-  cv.ontouchstart=e=>{e.preventDefault();const t=e.touches[0];handleClick({clientX:t.clientX,clientY:t.clientY});};
-  cv.onclick=handleClick;
-  // AI welcome chat
-  setTimeout(()=>{addChatMsg('Đối Thủ',aiReplies[Math.floor(Math.random()*aiReplies.length)],false);},2500+Math.random()*1500);
-}
-
-// ── CHAT ──
-function toggleChat(){
-  chatOpen=!chatOpen;
-  document.getElementById('chatPanel').classList.toggle('open',chatOpen);
-  if(chatOpen){unread=0;document.getElementById('cunread').classList.add('hide');
-    document.getElementById('cunreadBadge').style.display='none';
-    setTimeout(()=>{const c=document.getElementById('cmsg');c.scrollTop=c.scrollHeight;},100);}
-}
-function sendChat(){
-  const inp=document.getElementById('cinp');const txt=inp.value.trim();
-  if(!txt)return;addChatMsg('Bạn',txt,true);inp.value='';
-  if(gameOn)setTimeout(()=>{addChatMsg('Đối Thủ',aiReplies[Math.floor(Math.random()*aiReplies.length)],false);},700+Math.random()*1200);
-}
 function qChat(msg){
-  addChatMsg('Bạn',msg,true);
-  if(gameOn)setTimeout(()=>{addChatMsg('Đối Thủ',aiReplies[Math.floor(Math.random()*aiReplies.length)],false);},500+Math.random()*1000);
+  if(isOnline&&myRoomId){socket.emit('chat',{roomId:myRoomId,text:msg});addChatMsg('Bạn',msg,true);}
+  else{addChatMsg('Bạn',msg,true);if(gameOn)setTimeout(()=>addChatMsg('Bot',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),500+Math.random()*800);}
 }
+
 function addChatMsg(sender,text,isMe){
   const c=document.getElementById('cmsg');
   const d=document.createElement('div');d.className='cmsg'+(isMe?' me':'');
@@ -1757,19 +1616,20 @@ function addChatMsg(sender,text,isMe){
   if(!isMe&&!chatOpen){
     unread++;
     const u=document.getElementById('cunread');u.textContent=unread;u.classList.remove('hide');
-    const ub=document.getElementById('cunreadBadge');ub.textContent=unread;ub.style.display='flex';
+    const ub=document.getElementById('cunreadBadge');if(ub){ub.textContent=unread;ub.style.display='flex';}
   }
 }
 
-// ── SHOP ──
+// ══════════════════════════════════════════
+// SHOP
+// ══════════════════════════════════════════
 function buySkin(btn,name,price){
   if(coins<price){toast('Không đủ xu! 🪙');return;}
   coins-=price;document.getElementById('coinAmt').textContent=coins.toLocaleString('vi');
   const card=btn.closest('.scard');card.classList.add('owned');
-  card.querySelector('.sbadge').textContent='★ Sở Hữu';
-  card.querySelector('.sbadge').className='sbadge owned';
-  btn.textContent='Trang Bị';btn.className='sact equip';
-  btn.onclick=()=>equipSkin(btn,name);toast(`✨ Đã mua skin ${name}!`);
+  card.querySelector('.sbadge').textContent='★ Sở Hữu';card.querySelector('.sbadge').className='sbadge owned';
+  btn.textContent='Trang Bị';btn.className='sact equip';btn.onclick=()=>equipSkin(btn,name);
+  toast(`✨ Đã mua ${name}!`);
 }
 function equipSkin(btn,name){
   document.querySelectorAll('.scard').forEach(c=>{
@@ -1787,13 +1647,13 @@ function filterSkins(btn,type){
   document.querySelectorAll('.scard').forEach(c=>c.style.display=(type==='all'||c.dataset.type===type)?'':'none');
 }
 
-// ── LB ──
+// ══════════════════════════════════════════
+// LEADERBOARD & PROFILE
+// ══════════════════════════════════════════
 function lbTab(btn){
   document.querySelectorAll('.lbtab').forEach(t=>t.classList.remove('on'));btn.classList.add('on');
-  toast(`📊 ${btn.textContent}`);
 }
 
-// ── PROFILE ──
 function recordStat(result,eloChg){
   if(result==='win'){stats.w++;stats.streak++;}
   else if(result==='lose'){stats.l++;stats.streak=0;}
@@ -1801,10 +1661,11 @@ function recordStat(result,eloChg){
   stats.best=Math.max(stats.best,elo);
   const ml={flash:'⚡',normal:'♟',hidden:'🎭'}[mode]||'♟';
   const eStr=eloChg>0?`+${eloChg}`:eloChg<0?`${eloChg}`:'±0';
-  stats.hist.unshift({result,opp:'Bot AI',mode:ml,elo:eStr});
+  stats.hist.unshift({result,opp:isOnline?'Người Chơi':'Bot AI',mode:ml,elo:eStr});
   if(stats.hist.length>20)stats.hist.pop();
   refreshProfile();
 }
+
 function refreshProfile(){
   document.getElementById('profElo').textContent=elo;
   document.getElementById('sw').textContent=stats.w;
@@ -1822,24 +1683,21 @@ function refreshProfile(){
   document.getElementById('epNext').textContent=nxt?`${nxt.name} (${nxt.min})`:'MAX';
   const pct=nxt?Math.min(100,((elo-rk.min)/(nxt.min-rk.min))*100):100;
   document.getElementById('epFill').style.width=pct+'%';
-  // home header
   document.getElementById('homeRankChip').textContent=`${rk.icon} ${rk.name}`;
   document.getElementById('homeElo').textContent=`ELO ${elo}`;
-  // lb row
   document.getElementById('myLbElo').textContent=elo;
   document.getElementById('myLbSub').textContent=`${tot} ván · ${tot>0?Math.round(stats.w/tot*100)+'%':'—'}`;
-  // history
   const hl=document.getElementById('histList');
-  if(!stats.hist.length){hl.innerHTML='<div class="empty-hist">Chưa có lịch sử thi đấu.<br>Hãy chơi ván đầu tiên! 🎮</div>';return;}
-  hl.innerHTML=stats.hist.map(h=>`
-    <div class="hrow ${h.result}">
-      <div class="hbadge">${h.result==='win'?'THẮNG':h.result==='lose'?'THUA':'HÒA'}</div>
-      <div class="hopp"><div class="honme">${h.opp}</div><div class="hmode">${h.mode}</div></div>
-      <div class="helo">${h.elo}</div>
-    </div>`).join('');
+  if(!stats.hist.length){hl.innerHTML='<div class="empty-hist">Chưa có lịch sử.<br>Chơi ván đầu tiên! 🎮</div>';return;}
+  hl.innerHTML=stats.hist.map(h=>`<div class="hrow ${h.result}">
+    <div class="hbadge">${h.result==='win'?'THẮNG':h.result==='lose'?'THUA':'HÒA'}</div>
+    <div class="hopp"><div class="honme">${h.opp}</div><div class="hmode">${h.mode}</div></div>
+    <div class="helo">${h.elo}</div></div>`).join('');
 }
 
-// ── NAV ──
+// ══════════════════════════════════════════
+// NAVIGATION & MODALS
+// ══════════════════════════════════════════
 function nav(screenId,navEl){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
@@ -1849,16 +1707,11 @@ function nav(screenId,navEl){
   if(screenId==='profile')refreshProfile();
 }
 
-// ── MODALS ──
 function showModal(id){document.getElementById(id).classList.add('on');}
 function closeModal(id){document.getElementById(id).classList.remove('on');}
 function openSettings(){showModal('modSettings');}
-
-// ── SETTINGS ──
-// Watch game
 function watchGame(){toast('📡 Đang kết nối phòng...');}
 
-// ── TOAST ──
 let toastTimer=null;
 function toast(msg){
   const el=document.getElementById('toastEl');
@@ -1866,18 +1719,18 @@ function toast(msg){
   clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('on'),2600);
 }
 
-// ── RESIZE ──
+// ══════════════════════════════════════════
+// RESIZE & SPLASH
+// ══════════════════════════════════════════
 window.addEventListener('resize',()=>{
   if(document.getElementById('game').classList.contains('active')&&ctx){setupCanvas();draw();}
 });
 
-// ── SPLASH ──
 function buildSplash(){
   const bg=document.getElementById('splashBg');
   const chars=['車','馬','砲','將','帥','象','士','卒','兵'];
   for(let i=0;i<18;i++){
-    const d=document.createElement('div');
-    d.className='splash-particle';
+    const d=document.createElement('div');d.className='splash-particle';
     d.style.cssText=`left:${Math.random()*100}%;width:${20+Math.random()*16}px;height:${20+Math.random()*16}px;
       font-size:${14+Math.random()*10}px;display:flex;align-items:center;justify-content:center;
       color:rgba(212,168,67,${.2+Math.random()*.3});
@@ -1887,7 +1740,6 @@ function buildSplash(){
   }
 }
 
-// ── INIT ──
 buildSplash();
 setTimeout(()=>{
   document.getElementById('splash').classList.remove('active');
