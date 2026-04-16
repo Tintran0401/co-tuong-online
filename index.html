@@ -1415,7 +1415,13 @@ function initGame(){
 // ══════════════════════════════════════════
 function connectSocket(cb){
   if(socket&&socket.connected){cb&&cb();return;}
-  socket=io(SERVER_URL,{transports:['websocket'],reconnection:true,reconnectionAttempts:5});
+  socket=io(SERVER_URL,{
+    transports:['polling','websocket'], // polling trước, Railway cần vậy
+    reconnection:true,
+    reconnectionAttempts:10,
+    reconnectionDelay:1000,
+    timeout:20000
+  });
 
   socket.on('connect',()=>{
     console.log('✅ Server:',socket.id);
