@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Cờ Tướng Online</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Be+Vietnam+Pro:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <style>
 :root {
   --gold:#D4A843; --gold-l:#F0C870; --gold-d:#A07830;
@@ -1376,34 +1377,252 @@ function setStatus(msg,alert){
   el.textContent=msg;el.className='sbar'+(alert?' alert':'');
 }
 
-// ── MATCHMAKING ──
-function findMatch(m){
-  mode=m;mmSec=0;
-  const desc={flash:'Cờ Chớp · 1\'+0"',normal:'Cờ Thường · 10\'+5"',hidden:'Cờ Úp · 5\'+3"'}[m];
-  document.getElementById('mmDesc').textContent=desc;
-  document.getElementById('mmClock').textContent='00:00';
-  document.getElementById('mmOv').classList.add('on');
-  clearInterval(mmInt);
-  mmInt=setInterval(()=>{
-    mmSec++;
-    document.getElementById('mmClock').textContent=
-      `${String(Math.floor(mmSec/60)).padStart(2,'0')}:${String(mmSec%60).padStart(2,'0')}`;
-    if(mmSec>=2+Math.floor(Math.random()*3)){
-      clearInterval(mmInt);
-      document.getElementById('mmOv').classList.remove('on');
-      const lbl={flash:'⚡ CỜ CHỚP',normal:'♟ CỜ THƯỜNG',hidden:'🎭 CỜ ÚP'}[m];
-      document.getElementById('gmode').textContent=lbl;
-      showGameScreen();initGame();
-    }
-  },1000);
-}
-function cancelMM(){clearInterval(mmInt);document.getElementById('mmOv').classList.remove('on');}
-function startVsAI(){mode='normal';document.getElementById('gmode').textContent='🤖 VS MÁY';showGameScreen();initGame();}
+// ── SOCKET.IO MULTIPLAYER ──
+// ⚠️ Thay YOUR_RAILWAY_URL bằng URL Railway sau khi deploy server
+const SERVER_URL = 'https://co-tuong-server-production.up.railway.app';
 
-function showGameScreen(){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+let socket = null;
+let myRoomId = null;
+let mySide = null;   // 'r' hoặc 'b'
+let isOnline = false; // true = đang chơi online, false = vs AI
+
+function connectSocket() {
+  if (socket && socket.connected) return;
+  socket = io(SERVER_URL, { transports: ['websocket'], reconnection: true });
+
+  socket.on('connect', () => {
+    console.log('✅ Kết nối server thành công:', socket.id);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('❌ Mất kết nối server');
+    if (gameOn && isOnline) {
+      toast('⚠️ Mất kết nối! Đang thử lại...');
+    }
+  });
+
+  // Server tìm thấy trận
+  socket.on('match_found', ({ roomId, side, opponent, board, turn: t, mode: m, baseTime }) => {
+    clearInterval(mmInt);
+    document.getElementById('mmOv').classList.remove('on');
+
+    myRoomId = roomId;
+    mySide   = side;
+    isOnline = true;
+    mode     = m;
+    isHidden = m === 'hidden';
+
+    // Nhận bàn cờ từ server
+    pcs = board;
+    sel = null; turn = t; mvHist = []; lastMv = null; aiBusy = false; gameOn = true;
+
+    // Cập nhật UI
+    const lbl = { flash:'⚡ CỜ CHỚP', normal:'♟ CỜ THƯỜNG', hidden:'🎭 CỜ ÚP' }[m];
+    document.getElementById('gmode').textContent = lbl;
+
+    // Tên người chơi
+    document.querySelector('#rcrd .pn').textContent = side === 'r' ? 'Bạn' : opponent;
+    document.querySelector('#bcrd .pn').textContent = side === 'b' ? 'Bạn' : opponent;
+    document.getElementById('relo').textContent = `ELO ${elo}`;
+
+    showGameScreen();
+    clearInterval(timerInt);
+    setupCanvas(); draw(); setTurnUI();
+
+    // Bắt đầu timer
+    rTime = baseTime; bTime = baseTime; updateTimer();
+    timerInt = setInterval(() => {
+      if (!gameOn) return;
+      if (turn === 'r') { rTime = Math.max(0, rTime-1); if(rTime===0){clearInterval(timerInt);gameEnd(mySide!=='r');return;} }
+      else { bTime = Math.max(0, bTime-1); if(bTime===0){clearInterval(timerInt);gameEnd(mySide!=='b');return;} }
+      updateTimer();
+    }, 1000);
+
+    if (isHidden) setStatus('🎭 Cờ Úp — Tất cả quân úp mù! Chỉ thấy 2 Tướng.', false);
+
+    // Reset chat
+    document.getElementById('cmsg').innerHTML = '';
+    unread = 0; chatOpen = false;
+    document.getElementById('chatPanel').classList.remove('open');
+    document.getElementById('cunread').classList.add('hide');
+
+    // Welcome message
+    setTimeout(() => addChatMsg('🤝', `Đã kết nối với ${opponent}! Chúc ván cờ hay!`, false), 500);
+  });
+
+  // Đang chờ đối thủ
+  socket.on('waiting', () => {
+    document.getElementById('mmTitle').textContent = 'Đang Tìm Đối Thủ...';
+  });
+
+  // Nhận nước đi từ đối thủ
+  socket.on('moved', ({ pieceId, from, to, captured, board, turn: newTurn }) => {
+    // Cập nhật bàn cờ từ server (authoritative)
+    pcs = board;
+    lastMv = { f: from, t: to };
+    turn = newTurn;
+
+    snd(captured !== null ? 'cap' : 'mv');
+    if (!pcs.find(p => p.t==='K' && p.s==='b')) { draw(); setTimeout(()=>gameEnd(mySide==='r'), 80); return; }
+    if (!pcs.find(p => p.t==='K' && p.s==='r')) { draw(); setTimeout(()=>gameEnd(mySide==='b'), 80); return; }
+    if (inCheck(mySide, pcs)) { snd('chk'); setStatus('Bạn đang bị chiếu! ⚠️', true); if(navigator.vibrate)navigator.vibrate([50,30,100]); }
+    setTurnUI(); draw();
+  });
+
+  // Kết thúc ván
+  socket.on('game_over', ({ winner, reason }) => {
+    gameOn = false; clearInterval(timerInt);
+    const playerWon = winner === mySide;
+    const eloChg = calcElo(playerWon);
+    elo = Math.max(100, elo + eloChg);
+    recordStat(winner === null ? 'draw' : (playerWon ? 'win' : 'lose'), eloChg);
+    snd(playerWon ? 'win' : (winner === null ? 'mv' : 'lose'));
+    setTimeout(() => {
+      document.getElementById('overIcon').textContent  = winner === null ? '🤝' : (playerWon ? '🏆' : '😔');
+      document.getElementById('overTitle').textContent = winner === null ? 'Hòa Cờ!' : (playerWon ? 'Chiến Thắng!' : 'Thất Bại');
+      document.getElementById('overDesc').textContent  = `${reason} · ELO ${eloChg>0?'+':''}${eloChg} → ${elo}`;
+      showModal('modOver');
+    }, 400);
+    isOnline = false; myRoomId = null; mySide = null;
+  });
+
+  // Đối thủ đề xuất hòa
+  socket.on('draw_offered', () => {
+    showModal('modDraw');
+  });
+
+  // Chat từ đối thủ
+  socket.on('chat_msg', ({ name, text }) => {
+    addChatMsg(name, text, name === 'Bạn');
+  });
+
+  // Danh sách phòng để spectate
+  socket.on('rooms_list', (list) => {
+    renderLiveRooms(list);
+  });
+}
+
+// ── MATCHMAKING ──
+function findMatch(m) {
+  mode = m; mmSec = 0;
+  const desc = { flash:'Cờ Chớp · 1\'+0"', normal:'Cờ Thường · 10\'+5"', hidden:'Cờ Úp · 5\'+3"' }[m];
+  document.getElementById('mmDesc').textContent = desc;
+  document.getElementById('mmTitle').textContent = 'Đang Tìm Đối Thủ...';
+  document.getElementById('mmClock').textContent = '00:00';
+  document.getElementById('mmOv').classList.add('on');
+
+  clearInterval(mmInt);
+  mmInt = setInterval(() => {
+    mmSec++;
+    document.getElementById('mmClock').textContent =
+      `${String(Math.floor(mmSec/60)).padStart(2,'0')}:${String(mmSec%60).padStart(2,'0')}`;
+  }, 1000);
+
+  // Kết nối server và tìm trận thật
+  connectSocket();
+  // Chờ kết nối xong rồi mới gửi
+  if (socket.connected) {
+    socket.emit('find_match', { mode: m, name: 'Người Chơi' });
+  } else {
+    socket.once('connect', () => {
+      socket.emit('find_match', { mode: m, name: 'Người Chơi' });
+    });
+  }
+}
+
+function cancelMM() {
+  clearInterval(mmInt);
+  document.getElementById('mmOv').classList.remove('on');
+  if (socket && socket.connected) socket.emit('cancel_find');
+}
+
+function startVsAI() {
+  isOnline = false;
+  mode = 'normal';
+  document.getElementById('gmode').textContent = '🤖 VS MÁY';
+  showGameScreen(); initGame();
+}
+
+function showGameScreen() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('game').classList.add('active');
-  document.querySelectorAll('.nav-i').forEach(n=>n.classList.remove('on'));
+  document.querySelectorAll('.nav-i').forEach(n => n.classList.remove('on'));
+}
+
+// Override doMove — gửi lên server nếu đang online
+const _doMoveOriginal = doMove;
+function doMove(piece, toR, toC, recordHist) {
+  if (isOnline) {
+    // Chỉ cho đi nếu đúng lượt
+    if (piece.s !== mySide) return;
+    // Gửi lên server — server sẽ broadcast lại cho cả 2
+    socket.emit('move', { roomId: myRoomId, pieceId: piece.id, toR, toC });
+    sel = null; draw();
+  } else {
+    _doMoveOriginal(piece, toR, toC, recordHist);
+  }
+}
+
+// Override offerDraw — gửi lên server nếu online
+function offerDraw() {
+  if (isOnline && myRoomId) socket.emit('offer_draw', { roomId: myRoomId });
+  else showModal('modDraw');
+}
+
+// Override doAcceptDraw
+function doAcceptDraw() {
+  closeModal('modDraw');
+  if (isOnline && myRoomId) socket.emit('accept_draw', { roomId: myRoomId });
+  else { gameOn=false; clearInterval(timerInt); recordStat('draw',0);
+    setTimeout(()=>{ document.getElementById('overIcon').textContent='🤝';
+      document.getElementById('overTitle').textContent='Hòa Cờ!';
+      document.getElementById('overDesc').textContent='Trận đấu kết thúc hòa. ELO ±0';
+      showModal('modOver'); },200); }
+}
+
+// Override doResign
+function doResign() {
+  closeModal('modResign'); gameOn=false; clearInterval(timerInt);
+  if (isOnline && myRoomId) { socket.emit('resign', { roomId: myRoomId }); return; }
+  const ch=calcElo(false); elo=Math.max(100,elo+ch); recordStat('lose',ch);
+  setTimeout(()=>{ document.getElementById('overIcon').textContent='🏳️';
+    document.getElementById('overTitle').textContent='Đầu Hàng';
+    document.getElementById('overDesc').textContent=`Bạn đã đầu hàng. ELO ${ch} → ${elo}`;
+    showModal('modOver'); },150);
+}
+
+// Override sendChat — gửi qua socket nếu online
+function sendChat() {
+  const inp=document.getElementById('cinp'); const txt=inp.value.trim(); if(!txt)return;
+  if (isOnline && myRoomId) {
+    socket.emit('chat', { roomId: myRoomId, text: txt });
+    addChatMsg('Bạn', txt, true);
+  } else {
+    addChatMsg('Bạn', txt, true);
+    if(gameOn) setTimeout(()=>addChatMsg('Đối Thủ',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),700+Math.random()*1200);
+  }
+  inp.value='';
+}
+
+function qChat(msg) {
+  if (isOnline && myRoomId) {
+    socket.emit('chat', { roomId: myRoomId, text: msg });
+    addChatMsg('Bạn', msg, true);
+  } else {
+    addChatMsg('Bạn', msg, true);
+    if(gameOn) setTimeout(()=>addChatMsg('Đối Thủ',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),500+Math.random()*1000);
+  }
+}
+
+// Render danh sách phòng live
+function renderLiveRooms(list) {
+  // Cập nhật màn spectate với dữ liệu thật từ server
+  console.log('Phòng đang chơi:', list);
+}
+
+function watchGame() {
+  if (socket && socket.connected) socket.emit('get_rooms');
+  toast('📡 Đang kết nối phòng...');
 }
 
 function initGame(){
