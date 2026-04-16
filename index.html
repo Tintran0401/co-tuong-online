@@ -2292,8 +2292,10 @@ function buildSplash(){
 }
 
 buildSplash();
-// Đọc tên từ login.html
-playerName = sessionStorage.getItem('playerName') || 'Người Chơi';
+// Đọc tên từ login.html — thử cả 2 storage
+playerName = sessionStorage.getItem('playerName') 
+          || localStorage.getItem('playerName') 
+          || 'Người Chơi';
 setTimeout(()=>{
   document.getElementById('splash').classList.remove('active');
   document.getElementById('home').classList.add('active');
