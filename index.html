@@ -483,6 +483,35 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 
 /* ── TOAST ── */
 .toast{position:fixed;bottom:calc(var(--safe-bot)+80px);left:50%;
+
+/* ── CHECK POPUP ── */
+.check-popup{
+  position:fixed;top:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;z-index:150;
+  pointer-events:none;
+}
+.check-popup-inner{
+  margin:calc(var(--safe-top) + 60px) 20px 0;
+  background:rgba(20,0,0,.95);
+  border:2px solid #FF4444;
+  border-radius:16px;padding:14px 20px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 0 30px rgba(255,68,68,.4);
+  transform:translateY(-120px);opacity:0;
+  transition:all .35s cubic-bezier(.34,1.56,.64,1);
+}
+.check-popup.show .check-popup-inner{
+  transform:translateY(0);opacity:1;
+}
+.check-icon{font-size:28px;flex-shrink:0;animation:shakePop .4s ease}
+@keyframes shakePop{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
+.check-title{font-size:16px;font-weight:800;color:#FF6060}
+.check-sub{font-size:11px;color:rgba(255,150,150,.7);margin-top:2px}
+
+/* ── OVER STATS ── */
+.over-stat{text-align:center}
+.over-stat-val{font-size:20px;font-weight:800;color:var(--gold);font-family:'Noto Serif SC',serif}
+.over-stat-lbl{font-size:10px;color:var(--dim);margin-top:2px}
   transform:translateX(-50%) translateY(14px);
   background:rgba(28,12,0,.97);border:1px solid rgba(212,168,67,.28);
   border-radius:12px;padding:10px 20px;font-size:13px;font-weight:600;
@@ -884,10 +913,20 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
     <div class="micon" id="overIcon">🏆</div>
     <div class="mtitle" id="overTitle">Chiến Thắng!</div>
     <div class="mdesc" id="overDesc">Bạn đã chiếu hết đối thủ. ELO +18</div>
+    <div id="overStats" style="display:flex;justify-content:center;gap:20px;margin-bottom:18px"></div>
     <div class="mbtns">
-      <button class="mbtn ghost" onclick="closeModal('modOver');nav('home',document.getElementById('ni1'))">Về Nhà</button>
-      <button class="mbtn gold" onclick="closeModal('modOver');findMatch(currentMode)">Ván Mới</button>
+      <button class="mbtn ghost" onclick="closeModal('modOver');nav('home',document.getElementById('ni1'))">🏠 Về Nhà</button>
+      <button class="mbtn gold" id="btnVanMoi" onclick="closeModal('modOver');doNewGame()">⚔️ Ván Mới</button>
     </div>
+  </div>
+</div>
+
+<!-- POPUP CHIẾU TƯỚNG -->
+<div class="check-popup" id="checkPopup">
+  <div class="check-popup-inner">
+    <div class="check-icon">⚠️</div>
+    <div class="check-title" id="checkTitle">Chiếu Tướng!</div>
+    <div class="check-sub" id="checkSub">Tướng của bạn đang bị chiếu</div>
   </div>
 </div>
 
@@ -1215,7 +1254,7 @@ function execMove(piece,toR,toC){
     sel=null;
     if(!pcs.find(p=>p.t==='K'&&p.s==='b')){draw();setTimeout(()=>gameEnd(true),80);return;}
     if(!pcs.find(p=>p.t==='K'&&p.s==='r')){draw();setTimeout(()=>gameEnd(false),80);return;}
-    if(inCheck('b',pcs)){snd('chk');setStatus('Chiếu tướng! ⚡',true);if(navigator.vibrate)navigator.vibrate([30,30,60]);}
+    if(inCheck('b',pcs))showCheckPopup(false); // tướng địch bị chiếu
     turn='b';setTurnUI();draw();
     setTimeout(aiTurn,isHidden?600:680);
   }
@@ -1273,7 +1312,7 @@ function aiTurn(){
     else snd('mv');
     const ap=pcs.find(x=>x.id===p.id);if(ap){ap.r=mr;ap.c=mc;}
     if(!pcs.find(x=>x.t==='K'&&x.s==='r')){aiBusy=false;draw();setTimeout(()=>gameEnd(false),80);return;}
-    if(inCheck('r',pcs)){snd('chk');setStatus('Bạn đang bị chiếu! ⚠️',true);if(navigator.vibrate)navigator.vibrate([50,30,100]);}
+    if(inCheck('r',pcs))showCheckPopup(true);
     turn='r';aiBusy=false;setTurnUI();draw();
     if(gameOn&&Math.random()<.2)setTimeout(()=>addChatMsg('Bot',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),600+Math.random()*1000);
   },40);
@@ -1282,20 +1321,98 @@ function aiTurn(){
 // ══════════════════════════════════════════
 // GAME FLOW
 // ══════════════════════════════════════════
+// ── CHIẾU TƯỚNG POPUP ──
+let checkPopupTimer=null;
+function showCheckPopup(isMyKingChecked){
+  const popup=document.getElementById('checkPopup');
+  const title=document.getElementById('checkTitle');
+  const sub=document.getElementById('checkSub');
+  if(isMyKingChecked){
+    title.textContent='⚠️ Tướng Bạn Bị Chiếu!';
+    title.style.color='#FF6060';
+    sub.textContent='Hãy đỡ chiếu ngay!';
+    if(navigator.vibrate)navigator.vibrate([80,40,80,40,120]);
+  } else {
+    title.textContent='♟ Chiếu Tướng Địch!';
+    title.style.color='#FFD060';
+    sub.textContent='Tướng đối thủ đang bị chiếu!';
+    if(navigator.vibrate)navigator.vibrate([60]);
+  }
+  snd('chk');
+  popup.classList.add('show');
+  clearTimeout(checkPopupTimer);
+  checkPopupTimer=setTimeout(()=>popup.classList.remove('show'),2500);
+}
+
+let gameStartTime=0;
+let lastWonMode=null;
+
 function gameEnd(playerWon){
   if(!gameOn)return;
-  gameOn=false;clearInterval(timerInt);
+  gameOn=false;
+  clearInterval(timerInt); // ⏸ Đồng hồ dừng lại
+
+  // Ẩn popup chiếu nếu đang hiện
+  clearTimeout(checkPopupTimer);
+  document.getElementById('checkPopup').classList.remove('show');
+
   const eloChg=calcElo(playerWon);
   elo=Math.max(100,elo+eloChg);
   recordStat(playerWon?'win':'lose',eloChg);
+  lastWonMode=mode;
   snd(playerWon?'win':'lose');
+
+  // Tính thời gian ván đấu
+  const elapsed=Math.floor((Date.now()-gameStartTime)/1000);
+  const elapsedStr=`${Math.floor(elapsed/60)}p${elapsed%60}s`;
+  const totalMoves=mvHist.length;
+
   setTimeout(()=>{
-    document.getElementById('overIcon').textContent=playerWon?'🏆':'😔';
-    document.getElementById('overTitle').textContent=playerWon?'Chiến Thắng!':'Thất Bại';
-    document.getElementById('overDesc').textContent=`ELO ${eloChg>0?'+':''}${eloChg} → ${elo}`;
+    if(playerWon){
+      document.getElementById('overIcon').textContent='🏆';
+      document.getElementById('overTitle').textContent='Chiến Thắng!';
+      document.getElementById('overTitle').style.color='var(--gold)';
+      document.getElementById('overDesc').textContent='Bạn đã chiếu hết đối thủ!';
+    } else {
+      document.getElementById('overIcon').textContent='😔';
+      document.getElementById('overTitle').textContent='Thất Bại';
+      document.getElementById('overTitle').style.color='#FF7070';
+      document.getElementById('overDesc').textContent='Tướng của bạn đã bị chiếu hết.';
+    }
+    // Stats nhỏ: ELO thay đổi + thời gian + số nước
+    document.getElementById('overStats').innerHTML=`
+      <div class="over-stat">
+        <div class="over-stat-val" style="color:${eloChg>=0?'var(--green)':'#FF7070'}">${eloChg>=0?'+':''}${eloChg}</div>
+        <div class="over-stat-lbl">ELO</div>
+      </div>
+      <div class="over-stat">
+        <div class="over-stat-val">${elo}</div>
+        <div class="over-stat-lbl">ELO Mới</div>
+      </div>
+      <div class="over-stat">
+        <div class="over-stat-val">${elapsedStr}</div>
+        <div class="over-stat-lbl">Thời Gian</div>
+      </div>`;
+    // Nút Ván Mới: bên thua mới được chơi lại, bên thắng về nhà
+    const btnVanMoi=document.getElementById('btnVanMoi');
+    if(playerWon){
+      btnVanMoi.textContent='🏠 Về Nhà';
+      btnVanMoi.onclick=()=>{closeModal('modOver');nav('home',document.getElementById('ni1'));};
+    } else {
+      btnVanMoi.textContent='⚔️ Ván Mới';
+      btnVanMoi.onclick=()=>{closeModal('modOver');doNewGame();};
+    }
     showModal('modOver');
-  },400);
+  },500);
   isOnline=false;myRoomId=null;
+}
+
+function doNewGame(){
+  if(isOnline||lastWonMode){
+    findMatch(lastWonMode||mode);
+  } else {
+    startVsAI();
+  }
 }
 
 function calcElo(won){
@@ -1398,7 +1515,7 @@ function initGame(){
     nk.forEach((p,i)=>{p.r=pos[i].r;p.c=pos[i].c;});
     pcs.forEach(p=>{if(p.t==='K'){p.hidden=false;p.revealed=true;}else{p.hidden=true;p.revealed=false;}});
   }
-  sel=null;turn='r';mvHist=[];lastMv=null;aiBusy=false;gameOn=true;
+  sel=null;turn='r';mvHist=[];lastMv=null;aiBusy=false;gameOn=true;gameStartTime=Date.now();
   clearInterval(timerInt);
   document.getElementById('relo').textContent=`ELO ${elo}`;
   document.querySelector('#rcrd .pn').textContent='Bạn';
@@ -1457,7 +1574,7 @@ function connectSocket(cb){
     clearInterval(mmInt);
     document.getElementById('mmOv').classList.remove('on');
     myRoomId=roomId;mySide=side;isOnline=true;mode=m;isHidden=m==='hidden';
-    pcs=board;sel=null;turn=t;mvHist=[];lastMv=null;aiBusy=false;gameOn=true;
+    pcs=board;sel=null;turn=t;mvHist=[];lastMv=null;aiBusy=false;gameOn=true;gameStartTime=Date.now();
     const lbl={flash:'⚡ CỜ CHỚP',normal:'♟ CỜ THƯỜNG',hidden:'🎭 CỜ ÚP'}[m];
     document.getElementById('gmode').textContent=lbl;
     // Tên người chơi — hiển thị đúng phe
@@ -1490,25 +1607,53 @@ function connectSocket(cb){
     snd(captured!==null?'cap':'mv');
     if(!pcs.find(p=>p.t==='K'&&p.s==='b')){draw();setTimeout(()=>gameEnd(mySide==='r'),80);return;}
     if(!pcs.find(p=>p.t==='K'&&p.s==='r')){draw();setTimeout(()=>gameEnd(mySide==='b'),80);return;}
-    if(inCheck(mySide,pcs)){snd('chk');setStatus('Bạn đang bị chiếu! ⚠️',true);if(navigator.vibrate)navigator.vibrate([50,30,100]);}
+    if(inCheck(mySide,pcs))showCheckPopup(true);else if(inCheck(mySide==='r'?'b':'r',pcs))showCheckPopup(false);
     setTurnUI();draw();
   });
 
   socket.on('game_over',({winner,reason})=>{
     if(!gameOn)return;
     gameOn=false;clearInterval(timerInt);
+    clearTimeout(checkPopupTimer);
+    document.getElementById('checkPopup').classList.remove('show');
     const playerWon=winner===mySide;
     const isDraw=winner===null;
     const eloChg=isDraw?0:calcElo(playerWon);
     elo=Math.max(100,elo+eloChg);
     recordStat(isDraw?'draw':(playerWon?'win':'lose'),eloChg);
+    lastWonMode=mode;
     snd(isDraw?'mv':playerWon?'win':'lose');
+    const elapsed=Math.floor((Date.now()-gameStartTime)/1000);
+    const elapsedStr=`${Math.floor(elapsed/60)}p${elapsed%60}s`;
     setTimeout(()=>{
       document.getElementById('overIcon').textContent=isDraw?'🤝':(playerWon?'🏆':'😔');
-      document.getElementById('overTitle').textContent=isDraw?'Hòa Cờ!':(playerWon?'Chiến Thắng!':'Thất Bại');
-      document.getElementById('overDesc').textContent=`${reason} · ELO ${eloChg>=0?'+':''}${eloChg} → ${elo}`;
+      const titleEl=document.getElementById('overTitle');
+      titleEl.textContent=isDraw?'Hòa Cờ!':(playerWon?'Chiến Thắng!':'Thất Bại');
+      titleEl.style.color=isDraw?'var(--gold)':(playerWon?'var(--gold)':'#FF7070');
+      document.getElementById('overDesc').textContent=isDraw?'Trận đấu kết thúc hòa.':`${reason}`;
+      document.getElementById('overStats').innerHTML=`
+        <div class="over-stat">
+          <div class="over-stat-val" style="color:${eloChg>=0?'var(--green)':'#FF7070'}">${eloChg>=0?'+':''}${eloChg}</div>
+          <div class="over-stat-lbl">ELO</div>
+        </div>
+        <div class="over-stat">
+          <div class="over-stat-val">${elo}</div>
+          <div class="over-stat-lbl">ELO Mới</div>
+        </div>
+        <div class="over-stat">
+          <div class="over-stat-val">${elapsedStr}</div>
+          <div class="over-stat-lbl">Thời Gian</div>
+        </div>`;
+      const btnVanMoi=document.getElementById('btnVanMoi');
+      if(playerWon||isDraw){
+        btnVanMoi.textContent='🏠 Về Nhà';
+        btnVanMoi.onclick=()=>{closeModal('modOver');nav('home',document.getElementById('ni1'));};
+      } else {
+        btnVanMoi.textContent='⚔️ Ván Mới';
+        btnVanMoi.onclick=()=>{closeModal('modOver');doNewGame();};
+      }
       showModal('modOver');
-    },400);
+    },500);
     isOnline=false;myRoomId=null;
   });
 
