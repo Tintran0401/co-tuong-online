@@ -1040,19 +1040,22 @@ function rawMoves(p,ps){
   if(t==='K'){[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;if(inP(nr,nc,s))add(nr,nc);});}
   else if(t==='A'){[[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;
-    // Cờ Úp: Sĩ úp được đi cả bàn không giới hạn cung
-    if(isHidden&&p.hidden) add(nr,nc);
+    // Cờ Úp: đi chéo toàn bàn (cả khi úp lẫn sau khi lật)
+    // Cờ Thường: chỉ trong cung
+    if(isHidden) add(nr,nc);
     else if(inP(nr,nc,s)) add(nr,nc);
   });}
   else if(t==='B'){[[2,2],[2,-2],[-2,2],[-2,-2]].forEach(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;if(!onB(nr,nc))return;
     if(at(r+dr/2,c+dc/2,ps))return;
-    // Cờ Úp: Tượng úp được qua sông
-    if(!isHidden||!p.hidden){
+    // Cờ Úp: đi toàn bàn (cả khi úp lẫn sau khi lật)
+    // Cờ Thường: không qua sông
+    if(!isHidden){
       if(s==='r'&&nr<5)return;
       if(s==='b'&&nr>4)return;
     }
-    add(nr,nc);});}
+    add(nr,nc);
+  });}
   else if(t==='N'){[[1,2],[1,-2],[-1,2],[-1,-2],[2,1],[2,-1],[-2,1],[-2,-1]].forEach(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;if(!onB(nr,nc))return;
     const blk=Math.abs(dr)===2?at(r+(dr>0?1:-1),c,ps):at(r,c+(dc>0?1:-1),ps);
