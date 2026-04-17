@@ -1867,33 +1867,65 @@ function doAcceptDraw(){
 }
 
 function doResign(){
-  closeModal('modResign');gameOn=false;clearInterval(timerInt);
-  if(isOnline&&myRoomId){socket.emit('resign',{roomId:myRoomId});return;}
-  const ch=calcElo(false);elo=Math.max(100,elo+ch);recordStat('lose',ch);
-  setTimeout(()=>{
-    document.getElementById('overIcon').textContent='🏳️';
-    document.getElementById('overTitle').textContent='Đầu Hàng';
-    document.getElementById('overDesc').textContent=`Bạn đã đầu hàng. ELO ${ch} → ${elo}`;
-    showModal('modOver');},150);
+  closeModal('modResign');
+  if(isOnline&&myRoomId&&socket&&socket.connected){
+    // Online: gửi resign → server xử lý → game_over về cả 2
+    gameOn=false;clearInterval(timerInt);
+    socket.emit('resign',{roomId:myRoomId});
+    // Hiện banner thua ngay cho bên đầu hàng
+    const ch=calcElo(false);elo=Math.max(100,elo+ch);
+    recordStat('lose',ch);lastWonMode=mode;
+    const elapsed=Math.floor((Date.now()-gameStartTime)/1000);
+    const elapsedStr=`${Math.floor(elapsed/60)}p${String(elapsed%60).padStart(2,'0')}s`;
+    snd('lose');
+    showCheckmateBanner(false,()=>{
+      document.getElementById('overIcon').textContent='🏳️';
+      document.getElementById('overTitle').textContent='Đầu Hàng';
+      document.getElementById('overTitle').style.color='#FF7070';
+      document.getElementById('overDesc').textContent='Bạn đã đầu hàng ván này.';
+      document.getElementById('overStats').innerHTML=`
+        <div class="over-stat"><div class="over-stat-val" style="color:#FF7070">${ch}</div><div class="over-stat-lbl">ELO</div></div>
+        <div class="over-stat"><div class="over-stat-val">${elo}</div><div class="over-stat-lbl">ELO Mới</div></div>
+        <div class="over-stat"><div class="over-stat-val">${elapsedStr}</div><div class="over-stat-lbl">Thời Gian</div></div>`;
+      const btn=document.getElementById('btnVanMoi');
+      btn.textContent='🏠 Về Nhà';
+      btn.onclick=()=>{closeModal('modOver');isOnline=false;myRoomId=null;nav('home',document.getElementById('ni1'));};
+      showModal('modOver');
+      isOnline=false;myRoomId=null;
+    });
+  } else {
+    // VS AI
+    gameOn=false;clearInterval(timerInt);
+    const ch=calcElo(false);elo=Math.max(100,elo+ch);recordStat('lose',ch);
+    snd('lose');
+    setTimeout(()=>{
+      document.getElementById('overIcon').textContent='🏳️';
+      document.getElementById('overTitle').textContent='Đầu Hàng';
+      document.getElementById('overTitle').style.color='#FF7070';
+      document.getElementById('overDesc').textContent=`Bạn đã đầu hàng. ELO ${ch} → ${elo}`;
+      document.getElementById('overStats').innerHTML='';
+      const btn=document.getElementById('btnVanMoi');
+      btn.textContent='⚔️ Ván Mới';
+      btn.onclick=()=>{closeModal('modOver');doNewGame();};
+      showModal('modOver');
+    },200);
+  }
 }
 
 function confirmBack(){if(gameOn)showModal('modBack');else nav('home',document.getElementById('ni1'));}
 function doQuit(){
   closeModal('modBack');
   if(isOnline&&myRoomId&&socket&&socket.connected){
-    // Gửi resign lên server → server sẽ gửi game_over về → tự xử lý ở đó
+    gameOn=false;clearInterval(timerInt);
     socket.emit('resign',{roomId:myRoomId});
-    // Không về home ngay — chờ game_over từ server
-    // Nếu 3s không nhận được thì về home
-    setTimeout(()=>{
-      if(gameOn){
-        gameOn=false;clearInterval(timerInt);
-        isOnline=false;myRoomId=null;
-        nav('home',document.getElementById('ni1'));
-      }
-    },3000);
+    const ch=calcElo(false);elo=Math.max(100,elo+ch);
+    recordStat('lose',ch);lastWonMode=mode;
+    snd('lose');
+    isOnline=false;myRoomId=null;
+    // Về home ngay sau khi gửi resign
+    nav('home',document.getElementById('ni1'));
+    toast(`🏳️ Đã thoát ván · ELO ${ch} → ${elo}`);
   } else {
-    // VS AI: về home ngay
     gameOn=false;clearInterval(timerInt);
     isOnline=false;myRoomId=null;
     nav('home',document.getElementById('ni1'));
@@ -2460,10 +2492,74 @@ function renderLiveRooms(rooms){
 }
 
 function watchRoom(roomId){
-  toast('🚧 Tính năng xem ván sắp ra mắt!');
+  // Kết nối socket nếu chưa có
+  const doSpectate=(sk)=>{
+    sk.emit('spectate',{roomId});
+    sk.once('spectate_error',(msg)=>toast('❌ '+msg));
+    sk.once('spectate_start',(data)=>{
+      startSpectate(sk,data);
+    });
+  };
+  if(socket&&socket.connected){
+    doSpectate(socket);
+  } else {
+    connectSocket(()=>doSpectate(socket));
+  }
 }
 
-function watchGame(){ toast('🚧 Tính năng xem ván sắp ra mắt!'); }
+let spectateRoomId=null;
+let spectateSocket=null;
+
+function startSpectate(sk,data){
+  spectateRoomId=data.roomId;
+  spectateSocket=sk;
+  isOnline=false; isHidden=data.mode==='hidden';
+  mySide='r'; // xem từ góc nhìn đỏ
+  pcs=data.board; turn=data.turn;
+  sel=null; lastMv=null; gameOn=false; aiBusy=false;
+
+  const p1=data.players.find(p=>p.side==='r')?.name||'Đỏ';
+  const p2=data.players.find(p=>p.side==='b')?.name||'Đen';
+  const modeLbl={flash:'⚡ CỜ CHỚP',normal:'♟ CỜ THƯỜNG',hidden:'🎭 CỜ ÚP'}[data.mode]||'♟';
+
+  document.getElementById('gmode').textContent=`👁 ${modeLbl}`;
+  document.querySelector('#rcrd .pn').textContent=p1;
+  document.querySelector('#bcrd .pn').textContent=p2;
+  document.getElementById('relo').textContent='';
+  document.getElementById('btnUndo').style.display='none';
+
+  showGameScreen();
+  setupCanvas();draw();
+  setStatus(`Đang xem · ${p1} VS ${p2}`,false);
+
+  // Nhận nước đi mới từ server
+  sk.on('moved',({board,turn:newTurn,from,to})=>{
+    if(spectateRoomId!==data.roomId)return;
+    pcs=board; turn=newTurn;
+    lastMv={f:from,t:to};
+    snd('mv'); draw();
+  });
+
+  sk.on('game_over',({winner,reason})=>{
+    if(spectateRoomId!==data.roomId)return;
+    const p=winner==='r'?p1:winner==='b'?p2:'Không ai';
+    toast(winner?`🏆 ${p} thắng!`:'🤝 Hòa cờ!');
+    setTimeout(()=>{
+      spectateRoomId=null;
+      nav('spectate',document.getElementById('ni2'));
+    },2000);
+  });
+
+  // Nút ← về lại Live
+  document.querySelector('.game-top .tb-btn').onclick=()=>{
+    if(spectateRoomId&&socket)socket.emit('stop_spectate',{roomId:spectateRoomId});
+    spectateRoomId=null;
+    // Khôi phục nút ←
+    document.querySelector('.game-top .tb-btn').onclick=()=>confirmBack();
+    nav('spectate',document.getElementById('ni2'));
+  };
+  toast('👁 Đang xem ván đấu...');
+}
 
 let toastTimer=null;
 function toast(msg){
