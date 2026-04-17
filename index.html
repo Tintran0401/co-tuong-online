@@ -763,9 +763,10 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
   </div>
 
   <div class="gctrl">
-    <button class="gbtn" id="btnUndo" onclick="undoMove()"><div class="gi">↩️</div>Hoàn Tác</button>
-    <button class="gbtn" onclick="toggleEmojiBar()"><div class="gi">😊</div>Cảm Xúc</button>
-    <button class="gbtn red" onclick="confirmBack()"><div class="gi">🚪</div>Thoát</button>
+    <button class="gbtn" id="btnUndo"   onclick="undoMove()"><div class="gi">↩️</div>Hoàn Tác</button>
+    <button class="gbtn" id="btnEmoji"  onclick="toggleEmojiBar()"><div class="gi">😊</div>Cảm Xúc</button>
+    <button class="gbtn red" id="btnResign" onclick="showModal('modResign')"><div class="gi">🏳️</div>Đầu Hàng</button>
+    <button class="gbtn" id="btnQuit"   onclick="confirmBack()"><div class="gi">🚪</div>Thoát</button>
   </div>
 
   <!-- Emoji reaction bar -->
@@ -1989,17 +1990,43 @@ function updateTimer(){
 // ══════════════════════════════════════════
 // TURN UI
 // ══════════════════════════════════════════
+function updateGameControls(gameMode){
+  // gameMode: 'ai' | 'rank' | 'spectate'
+  const undo   = document.getElementById('btnUndo');
+  const emoji  = document.getElementById('btnEmoji');
+  const resign = document.getElementById('btnResign');
+  const quit   = document.getElementById('btnQuit');
+  if(!undo)return;
+
+  if(gameMode==='ai'){
+    undo.style.display='';     // ✅ Hoàn Tác
+    emoji.style.display='none';
+    resign.style.display='';   // ✅ Đầu Hàng
+    quit.style.display='none';
+  } else if(gameMode==='rank'){
+    undo.style.display='none';
+    emoji.style.display='';    // ✅ Cảm Xúc
+    resign.style.display='';   // ✅ Đầu Hàng
+    quit.style.display='none';
+  } else if(gameMode==='spectate'){
+    undo.style.display='none';
+    emoji.style.display='';    // ✅ Cảm Xúc
+    resign.style.display='none';
+    quit.style.display='';     // ✅ Thoát
+  }
+}
+
 function setTurnUI(){
   document.getElementById('rcrd').classList.toggle('on',turn==='r');
   document.getElementById('bcrd').classList.toggle('on',turn==='b');
   const myTurn=turn===mySide||(!isOnline&&turn==='r');
   setStatus(myTurn?'Lượt của bạn ♟ — Chọn quân':'Đối thủ đang suy nghĩ...',false);
-  // Hoàn tác chỉ hiện khi vs AI
-  const btnUndo=document.getElementById('btnUndo');
-  if(btnUndo) btnUndo.style.display=isOnline?'none':'';
-  // Chat float chỉ hiện khi đang chơi
+  // Đúng bộ nút theo chế độ
+  if(spectateRoomId) updateGameControls('spectate');
+  else if(isOnline)  updateGameControls('rank');
+  else               updateGameControls('ai');
   const chatFloat=document.getElementById('chatFloat');
-  if(chatFloat) chatFloat.style.display=gameOn?'':'none';
+  if(chatFloat) chatFloat.style.display=gameOn&&!spectateRoomId?'':'none';
 }
 
 function setStatus(msg,alert){
@@ -2055,6 +2082,7 @@ function initGame(){
   document.querySelector('#rcrd .pn').textContent='Bạn';
   document.querySelector('#bcrd .pn').textContent='Bot AI';
   setupCanvas();draw();setTurnUI();startTimer();
+  updateGameControls('ai');
   if(isHidden)setStatus('🎭 Cờ Úp — Tất cả quân úp mù!',false);
   resetChat();
   cv.ontouchstart=e=>{e.preventDefault();const t=e.touches[0];handleClick({clientX:t.clientX,clientY:t.clientY});};
@@ -2117,6 +2145,7 @@ function connectSocket(cb){
     document.getElementById('relo').textContent=`ELO ${elo}`;
     showGameScreen();clearInterval(timerInt);
     setupCanvas();draw();setTurnUI();
+    updateGameControls('rank');
     rTime=baseTime;bTime=baseTime;updateTimer();
     timerInt=setInterval(()=>{
       if(!gameOn)return;
@@ -2657,6 +2686,7 @@ function startSpectate(sk,data){
   showGameScreen();
   setupCanvas();draw();
   setStatus(`👁 ${p1} VS ${p2} · Đang xem trực tiếp`,false);
+  updateGameControls('spectate');
 
   // Nhận nước đi mới — cập nhật đồng hồ từ server
   const onMoved=({board,turn:newTurn,from,to,rTime:rt,bTime:bt})=>{
