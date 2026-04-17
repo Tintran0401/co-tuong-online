@@ -2136,12 +2136,14 @@ function connectSocket(cb){
   });
 
   // Nhận nước đi từ đối thủ (server broadcast)
-  socket.on('moved',({pieceId,from,to,captured,board,turn:newTurn})=>{
+  socket.on('moved',({pieceId,from,to,captured,board,turn:newTurn,rTime:rt,bTime:bt})=>{
     pcs=board;lastMv={f:from,t:to};
     snd(captured!==null?'cap':'mv');
-    // Phe vừa đi = phe ngược với newTurn
-    const justMoved = newTurn==='r'?'b':'r';
+    const justMoved=newTurn==='r'?'b':'r';
     turn=newTurn;
+    // Đồng bộ thời gian chính xác từ server
+    if(rt!==undefined){rTime=rt;}
+    if(bt!==undefined){bTime=bt;}
     if(checkGameResult(justMoved))return;
     setTurnUI();draw();
   });
@@ -2480,7 +2482,21 @@ function nav(screenId,navEl){
   if(navEl)navEl.classList.add('on');
   if(screenId==='game'&&cv)draw();
   if(screenId==='profile')refreshProfile();
-  if(screenId==='spectate')loadLiveRooms();
+  if(screenId==='spectate'){
+    loadLiveRooms();
+    // Auto-refresh mỗi 2 giây
+    clearInterval(liveRefreshInt);
+    liveRefreshInt=setInterval(()=>{
+      // Chỉ refresh khi đang ở màn spectate và không đang xem ván
+      if(document.getElementById('spectate').classList.contains('active')&&!spectateRoomId){
+        silentRefreshRooms();
+      } else if(!document.getElementById('spectate').classList.contains('active')){
+        clearInterval(liveRefreshInt);
+      }
+    },2000);
+  } else {
+    clearInterval(liveRefreshInt);
+  }
 }
 
 function showModal(id){document.getElementById(id).classList.add('on');}
@@ -2490,20 +2506,27 @@ function loadLiveRooms(){
   const list=document.getElementById('liveRoomList');
   list.innerHTML=`<div class="live-loading"><div class="live-spinner"></div>
     <div style="font-size:13px;color:var(--dim);margin-top:12px">Đang tải phòng...</div></div>`;
+  fetchRooms(list,true);
+}
 
-  // Dùng HTTP fetch — đơn giản và đáng tin hơn socket cho việc lấy list
+function silentRefreshRooms(){
+  const list=document.getElementById('liveRoomList');
+  if(!list)return;
+  fetchRooms(list,false); // không hiện spinner
+}
+
+function fetchRooms(list,showSpinner){
   fetch(`${SERVER_URL}/rooms`,{method:'GET'})
     .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
     .then(rooms=>renderLiveRooms(rooms))
     .catch(()=>{
-      // Fallback: thử qua socket nếu có
       if(socket&&socket.connected){
         socket.once('rooms_list',rooms=>renderLiveRooms(rooms));
         socket.emit('get_rooms');
-        setTimeout(()=>{
+        if(showSpinner)setTimeout(()=>{
           if(list.querySelector('.live-spinner'))renderLiveRooms(null);
         },5000);
-      } else {
+      } else if(showSpinner){
         renderLiveRooms(null);
       }
     });
@@ -2580,6 +2603,9 @@ function watchRoom(roomId){
 }
 
 let spectateTimerInt=null;
+let spectateRoomId=null;
+let spectateSocket=null;
+let liveRefreshInt=null;
 
 function startSpectate(sk,data){
   spectateRoomId=data.roomId;
@@ -2599,51 +2625,75 @@ function startSpectate(sk,data){
   document.getElementById('relo').textContent='';
   document.getElementById('btnUndo').style.display='none';
 
-  // Timer: đếm thời gian từ lúc bắt đầu xem
-  const spectateStart=Date.now();
+  // Đồng hồ đồng bộ với server
+  let rTime=data.rTime||data.baseTime||600;
+  let bTime=data.bTime||data.baseTime||600;
+  // Bù thời gian trễ mạng
+  if(data.lastMoveTime){
+    const elapsed=Math.floor((Date.now()-data.lastMoveTime)/1000);
+    if(data.turn==='r') rTime=Math.max(0,rTime-elapsed);
+    else bTime=Math.max(0,bTime-elapsed);
+  }
+  const fmtT=t=>`${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
+  document.getElementById('rtm').textContent=fmtT(rTime);
+  document.getElementById('btm').textContent=fmtT(bTime);
+  document.getElementById('rtm').className='ptm'+(rTime<=15?' urg':'');
+  document.getElementById('btm').className='ptm'+(bTime<=15?' urg':'');
+
   clearInterval(spectateTimerInt);
   spectateTimerInt=setInterval(()=>{
-    const elapsed=Math.floor((Date.now()-spectateStart)/1000);
-    const mins=Math.floor(elapsed/60), secs=elapsed%60;
-    const timeStr=`${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-    // Hiện ở cả 2 đồng hồ
-    document.getElementById('rtm').textContent=timeStr;
-    document.getElementById('btm').textContent=timeStr;
+    if(data.turn==='r') rTime=Math.max(0,rTime-1);
+    else bTime=Math.max(0,bTime-1);
+    document.getElementById('rtm').textContent=fmtT(rTime);
+    document.getElementById('btm').textContent=fmtT(bTime);
+    document.getElementById('rtm').className='ptm'+(rTime<=15?' urg':'');
+    document.getElementById('btm').className='ptm'+(bTime<=15?' urg':'');
   },1000);
 
-  // Ẩn emoji bar và chat float khi xem
-  document.getElementById('emojiBar').classList.remove('show');
   const chatFloat=document.getElementById('chatFloat');
   if(chatFloat)chatFloat.style.display='none';
+  document.getElementById('emojiBar').classList.remove('show');
 
   showGameScreen();
   setupCanvas();draw();
-  setStatus(`👁 Đang xem · ${p1} VS ${p2}`,false);
+  setStatus(`👁 ${p1} VS ${p2} · Đang xem trực tiếp`,false);
 
-  // Nhận nước đi mới
-  sk.on('moved',({board,turn:newTurn,from,to})=>{
+  // Nhận nước đi mới — cập nhật đồng hồ từ server
+  const onMoved=({board,turn:newTurn,from,to,rTime:rt,bTime:bt})=>{
     if(spectateRoomId!==data.roomId)return;
-    pcs=board; turn=newTurn;
+    pcs=board; turn=newTurn; data.turn=newTurn;
     lastMv={f:from,t:to};
+    // Đồng bộ thời gian chính xác từ server
+    if(rt!==undefined) rTime=rt;
+    if(bt!==undefined) bTime=bt;
     snd('mv'); draw();
     setStatus(`👁 Lượt: ${newTurn==='r'?p1:p2}`,false);
-  });
+  };
 
-  sk.on('game_over',({winner})=>{
+  const onGameOver=({winner})=>{
     if(spectateRoomId!==data.roomId)return;
     clearInterval(spectateTimerInt);
+    sk.off('moved',onMoved);
+    sk.off('game_over',onGameOver);
     const winName=winner==='r'?p1:winner==='b'?p2:null;
     toast(winName?`🏆 ${winName} chiến thắng!`:'🤝 Hòa cờ!');
     setTimeout(()=>{
       spectateRoomId=null;
       document.querySelector('.game-top .tb-btn').onclick=()=>confirmBack();
+      const chatFloat=document.getElementById('chatFloat');
+      if(chatFloat)chatFloat.style.display='';
       nav('spectate',document.getElementById('ni2'));
     },2500);
-  });
+  };
+
+  sk.on('moved',onMoved);
+  sk.on('game_over',onGameOver);
 
   // Nút ← về lại Live
   document.querySelector('.game-top .tb-btn').onclick=()=>{
     clearInterval(spectateTimerInt);
+    sk.off('moved',onMoved);
+    sk.off('game_over',onGameOver);
     if(spectateRoomId&&socket)socket.emit('stop_spectate',{roomId:spectateRoomId});
     spectateRoomId=null;
     document.querySelector('.game-top .tb-btn').onclick=()=>confirmBack();
