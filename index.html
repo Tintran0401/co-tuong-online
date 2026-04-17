@@ -552,7 +552,27 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
   pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ── AI MODE BTN ── */
+/* ── EMOJI BAR ── */
+.emoji-bar{display:none;justify-content:center;flex-wrap:wrap;gap:6px;
+  padding:6px 12px 4px;background:rgba(0,0,0,.3);
+  border-top:1px solid rgba(212,168,67,.1)}
+.emoji-bar.show{display:flex}
+.ebtn2{width:38px;height:38px;border-radius:10px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .14s;font-family:'Be Vietnam Pro',sans-serif;
+  font-size:13px;font-weight:700;color:var(--text)}
+.ebtn2:active{transform:scale(.82);background:rgba(212,168,67,.2)}
+
+/* ── EMOJI POPUP (hiện trên bàn cờ) ── */
+.emoji-pop{position:absolute;font-size:36px;pointer-events:none;z-index:50;
+  animation:emojiFloat 1.8s ease forwards}
+@keyframes emojiFloat{
+  0%{transform:translateY(0) scale(.5);opacity:0}
+  20%{transform:translateY(-10px) scale(1.3);opacity:1}
+  70%{transform:translateY(-60px) scale(1);opacity:1}
+  100%{transform:translateY(-100px) scale(.8);opacity:0}
+}
 .ai-mode-btn{display:flex;align-items:center;gap:12px;
   background:var(--surf);border:1px solid rgba(212,168,67,.13);
   border-radius:13px;padding:12px 14px;cursor:pointer;
@@ -744,8 +764,22 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 
   <div class="gctrl">
     <button class="gbtn" id="btnUndo" onclick="undoMove()"><div class="gi">↩️</div>Hoàn Tác</button>
-    <button class="gbtn" onclick="offerDraw()"><div class="gi">🤝</div>Cầu Hòa</button>
-    <button class="gbtn red" onclick="showModal('modResign')"><div class="gi">🏳️</div>Đầu Hàng</button>
+    <button class="gbtn" onclick="toggleEmojiBar()"><div class="gi">😊</div>Cảm Xúc</button>
+    <button class="gbtn red" onclick="confirmBack()"><div class="gi">🚪</div>Thoát</button>
+  </div>
+
+  <!-- Emoji reaction bar -->
+  <div class="emoji-bar" id="emojiBar">
+    <button class="ebtn2" onclick="sendEmoji('👍')">👍</button>
+    <button class="ebtn2" onclick="sendEmoji('😄')">😄</button>
+    <button class="ebtn2" onclick="sendEmoji('🤔')">🤔</button>
+    <button class="ebtn2" onclick="sendEmoji('😮')">😮</button>
+    <button class="ebtn2" onclick="sendEmoji('😂')">😂</button>
+    <button class="ebtn2" onclick="sendEmoji('🔥')">🔥</button>
+    <button class="ebtn2" onclick="sendEmoji('👏')">👏</button>
+    <button class="ebtn2" onclick="sendEmoji('🎯')">🎯</button>
+    <button class="ebtn2" onclick="sendEmoji('GG!')">GG</button>
+    <button class="ebtn2" onclick="sendEmoji('Hay lắm!')">Hay!</button>
   </div>
 
   <!-- Chat nổi góc trên phải -->
@@ -1597,7 +1631,6 @@ function aiTurn(){
 
 // ── ĐỐI PHƯƠNG THOÁT GAME ──
 function showOpponentQuit(){
-  if(!gameOn)return;
   gameOn=false;
   clearInterval(timerInt);
   clearTimeout(checkPopupTimer);
@@ -2177,7 +2210,8 @@ function connectSocket(cb){
   socket.on('draw_declined',()=>toast('Đối thủ từ chối hòa'));
 
   socket.on('chat_msg',({name,text})=>{
-    const isMe=(name==='Bạn');
+    const isMe=(name===playerName||name==='Bạn');
+    if(!isMe) showOpponentEmoji(text); // hiện emoji bay lên
     addChatMsg(name,text,isMe);
   });
 }
@@ -2272,10 +2306,48 @@ function sendChat(){
   inp.value='';
 }
 
-function qChat(msg){
-  if(isOnline&&myRoomId){socket.emit('chat',{roomId:myRoomId,text:msg});addChatMsg('Bạn',msg,true);}
-  else{addChatMsg('Bạn',msg,true);if(gameOn)setTimeout(()=>addChatMsg('Bot',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),500+Math.random()*800);}
+function toggleEmojiBar(){
+  const bar=document.getElementById('emojiBar');
+  bar.classList.toggle('show');
 }
+
+function sendEmoji(emoji){
+  // Hiện emoji bay lên trên bàn cờ
+  showEmojiPop(emoji);
+  // Gửi qua chat
+  if(isOnline&&myRoomId){
+    socket.emit('chat',{roomId:myRoomId,text:emoji});
+  }
+  addChatMsg('Bạn',emoji,true);
+  // Ẩn bar sau khi bấm
+  document.getElementById('emojiBar').classList.remove('show');
+}
+
+function showEmojiPop(emoji){
+  const game=document.getElementById('game');
+  const pop=document.createElement('div');
+  pop.className='emoji-pop';
+  pop.textContent=emoji;
+  pop.style.left=(20+Math.random()*60)+'%';
+  pop.style.bottom='140px';
+  game.appendChild(pop);
+  setTimeout(()=>pop.remove(),1900);
+}
+
+// Hiện emoji từ đối thủ
+function showOpponentEmoji(emoji){
+  const game=document.getElementById('game');
+  const pop=document.createElement('div');
+  pop.className='emoji-pop';
+  pop.textContent=emoji;
+  pop.style.left=(20+Math.random()*60)+'%';
+  pop.style.bottom='140px';
+  pop.style.filter='hue-rotate(180deg)';
+  game.appendChild(pop);
+  setTimeout(()=>pop.remove(),1900);
+}
+
+function qChat(msg){ sendEmoji(msg); }
 
 function addChatMsg(sender,text,isMe){
   const c=document.getElementById('cmsg');
@@ -2507,14 +2579,13 @@ function watchRoom(roomId){
   }
 }
 
-let spectateRoomId=null;
-let spectateSocket=null;
+let spectateTimerInt=null;
 
 function startSpectate(sk,data){
   spectateRoomId=data.roomId;
   spectateSocket=sk;
   isOnline=false; isHidden=data.mode==='hidden';
-  mySide='r'; // xem từ góc nhìn đỏ
+  mySide='r';
   pcs=data.board; turn=data.turn;
   sel=null; lastMv=null; gameOn=false; aiBusy=false;
 
@@ -2522,43 +2593,64 @@ function startSpectate(sk,data){
   const p2=data.players.find(p=>p.side==='b')?.name||'Đen';
   const modeLbl={flash:'⚡ CỜ CHỚP',normal:'♟ CỜ THƯỜNG',hidden:'🎭 CỜ ÚP'}[data.mode]||'♟';
 
-  document.getElementById('gmode').textContent=`👁 ${modeLbl}`;
+  document.getElementById('gmode').textContent=`👁 LIVE · ${modeLbl}`;
   document.querySelector('#rcrd .pn').textContent=p1;
   document.querySelector('#bcrd .pn').textContent=p2;
   document.getElementById('relo').textContent='';
   document.getElementById('btnUndo').style.display='none';
 
+  // Timer: đếm thời gian từ lúc bắt đầu xem
+  const spectateStart=Date.now();
+  clearInterval(spectateTimerInt);
+  spectateTimerInt=setInterval(()=>{
+    const elapsed=Math.floor((Date.now()-spectateStart)/1000);
+    const mins=Math.floor(elapsed/60), secs=elapsed%60;
+    const timeStr=`${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    // Hiện ở cả 2 đồng hồ
+    document.getElementById('rtm').textContent=timeStr;
+    document.getElementById('btm').textContent=timeStr;
+  },1000);
+
+  // Ẩn emoji bar và chat float khi xem
+  document.getElementById('emojiBar').classList.remove('show');
+  const chatFloat=document.getElementById('chatFloat');
+  if(chatFloat)chatFloat.style.display='none';
+
   showGameScreen();
   setupCanvas();draw();
-  setStatus(`Đang xem · ${p1} VS ${p2}`,false);
+  setStatus(`👁 Đang xem · ${p1} VS ${p2}`,false);
 
-  // Nhận nước đi mới từ server
+  // Nhận nước đi mới
   sk.on('moved',({board,turn:newTurn,from,to})=>{
     if(spectateRoomId!==data.roomId)return;
     pcs=board; turn=newTurn;
     lastMv={f:from,t:to};
     snd('mv'); draw();
+    setStatus(`👁 Lượt: ${newTurn==='r'?p1:p2}`,false);
   });
 
-  sk.on('game_over',({winner,reason})=>{
+  sk.on('game_over',({winner})=>{
     if(spectateRoomId!==data.roomId)return;
-    const p=winner==='r'?p1:winner==='b'?p2:'Không ai';
-    toast(winner?`🏆 ${p} thắng!`:'🤝 Hòa cờ!');
+    clearInterval(spectateTimerInt);
+    const winName=winner==='r'?p1:winner==='b'?p2:null;
+    toast(winName?`🏆 ${winName} chiến thắng!`:'🤝 Hòa cờ!');
     setTimeout(()=>{
       spectateRoomId=null;
+      document.querySelector('.game-top .tb-btn').onclick=()=>confirmBack();
       nav('spectate',document.getElementById('ni2'));
-    },2000);
+    },2500);
   });
 
   // Nút ← về lại Live
   document.querySelector('.game-top .tb-btn').onclick=()=>{
+    clearInterval(spectateTimerInt);
     if(spectateRoomId&&socket)socket.emit('stop_spectate',{roomId:spectateRoomId});
     spectateRoomId=null;
-    // Khôi phục nút ←
     document.querySelector('.game-top .tb-btn').onclick=()=>confirmBack();
+    const chatFloat=document.getElementById('chatFloat');
+    if(chatFloat)chatFloat.style.display='';
     nav('spectate',document.getElementById('ni2'));
   };
-  toast('👁 Đang xem ván đấu...');
 }
 
 let toastTimer=null;
