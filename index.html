@@ -594,6 +594,20 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 .login-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);
   animation:blink .9s ease-in-out infinite;flex-shrink:0}
 
+.live-loading{display:flex;flex-direction:column;align-items:center;
+  padding:48px 20px;color:var(--dim)}
+.live-spinner{width:36px;height:36px;border-radius:50%;
+  border:3px solid rgba(212,168,67,.15);border-top-color:var(--gold);
+  animation:spin 1s linear infinite}
+.live-empty{text-align:center;padding:48px 20px;color:var(--dim);line-height:1.8}
+.live-empty .le-icon{font-size:44px;margin-bottom:10px}
+.live-empty .le-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px}
+.live-empty .le-sub{font-size:12px}
+.live-refresh{margin-top:16px;padding:10px 24px;border-radius:20px;
+  background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.25);
+  color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;
+  font-family:'Be Vietnam Pro',sans-serif}
+
 /* ── UTIL ── */
 .back-btn{width:38px;height:38px;border-radius:11px;
   background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.18);
@@ -1866,10 +1880,24 @@ function doResign(){
 function confirmBack(){if(gameOn)showModal('modBack');else nav('home',document.getElementById('ni1'));}
 function doQuit(){
   closeModal('modBack');
-  if(isOnline&&myRoomId&&socket)socket.emit('resign',{roomId:myRoomId});
-  gameOn=false;clearInterval(timerInt);
-  isOnline=false;myRoomId=null;
-  nav('home',document.getElementById('ni1'));
+  if(isOnline&&myRoomId&&socket&&socket.connected){
+    // Gửi resign lên server → server sẽ gửi game_over về → tự xử lý ở đó
+    socket.emit('resign',{roomId:myRoomId});
+    // Không về home ngay — chờ game_over từ server
+    // Nếu 3s không nhận được thì về home
+    setTimeout(()=>{
+      if(gameOn){
+        gameOn=false;clearInterval(timerInt);
+        isOnline=false;myRoomId=null;
+        nav('home',document.getElementById('ni1'));
+      }
+    },3000);
+  } else {
+    // VS AI: về home ngay
+    gameOn=false;clearInterval(timerInt);
+    isOnline=false;myRoomId=null;
+    nav('home',document.getElementById('ni1'));
+  }
 }
 
 // ══════════════════════════════════════════
@@ -2055,23 +2083,23 @@ function connectSocket(cb){
 
   socket.on('game_over',({winner,reason})=>{
     if(!gameOn)return;
-
-    // Đối phương thoát → hiện popup đặc biệt ngay
-    if(winner===mySide&&(reason==='Đối thủ mất kết nối'||reason==='Đầu hàng'||reason==='opponent_quit')){
-      showOpponentQuit();return;
-    }
-
     gameOn=false;
-    clearInterval(timerInt); // dừng đồng hồ ngay
+    clearInterval(timerInt);
     clearTimeout(checkPopupTimer);
     document.getElementById('checkPopup').classList.remove('show');
 
     const playerWon=winner===mySide;
     const isDraw=winner===null;
+    const oppQuit=playerWon&&reason==='opponent_quit';
+    const iQuit=!playerWon&&!isDraw&&reason==='opponent_quit';
+
     const eloChg=isDraw?0:calcElo(playerWon);
     elo=Math.max(100,elo+eloChg);
     recordStat(isDraw?'draw':(playerWon?'win':'lose'),eloChg);
     lastWonMode=mode;
+
+    // Đối phương thoát → banner thắng đặc biệt
+    if(oppQuit){showOpponentQuit();return;}
 
     const elapsed=Math.floor((Date.now()-gameStartTime)/1000);
     const elapsedStr=`${Math.floor(elapsed/60)}p${String(elapsed%60).padStart(2,'0')}s`;
@@ -2082,7 +2110,10 @@ function connectSocket(cb){
       titleEl.textContent=isDraw?'Hòa Cờ!':(playerWon?'Chiến Thắng!':'Thất Bại');
       titleEl.style.color=isDraw?'var(--gold)':(playerWon?'var(--gold)':'#FF7070');
       document.getElementById('overDesc').textContent=
-        isDraw?'Trận đấu kết thúc hòa.':(playerWon?'Bạn đã chiếu hết tướng địch!':'Tướng của bạn đã bị chiếu hết!');
+        isDraw?'Trận đấu kết thúc hòa.'
+        :playerWon?'Bạn đã chiếu hết tướng địch!'
+        :iQuit?'Bạn đã rời ván đấu.'
+        :'Tướng của bạn đã bị chiếu hết!';
       document.getElementById('overStats').innerHTML=`
         <div class="over-stat">
           <div class="over-stat-val" style="color:${eloChg>=0?'var(--green)':'#FF7070'}">${eloChg>=0?'+':''}${eloChg}</div>
@@ -2097,19 +2128,15 @@ function connectSocket(cb){
           <div class="over-stat-lbl">Thời Gian</div>
         </div>`;
       const btn=document.getElementById('btnVanMoi');
-      // Cả 2 bên đều có nút Ván Mới
       btn.textContent='⚔️ Ván Mới';
       btn.onclick=()=>{closeModal('modOver');doNewGame();};
-      // Nút Về Nhà giữ nguyên
       showModal('modOver');
     };
 
-    // Tất cả kết thúc đều hiện banner ngay
     if(!isDraw){
-      showCheckmateBanner(playerWon, showResult);
+      showCheckmateBanner(playerWon,showResult);
     } else {
-      snd('mv');
-      showResult();
+      snd('mv');showResult();
     }
     isOnline=false;myRoomId=null;
   });
@@ -2349,12 +2376,94 @@ function nav(screenId,navEl){
   if(navEl)navEl.classList.add('on');
   if(screenId==='game'&&cv)draw();
   if(screenId==='profile')refreshProfile();
+  if(screenId==='spectate')loadLiveRooms();
 }
 
 function showModal(id){document.getElementById(id).classList.add('on');}
 function closeModal(id){document.getElementById(id).classList.remove('on');}
 function openSettings(){showModal('modSettings');}
-function watchGame(){toast('📡 Đang kết nối phòng...');}
+function loadLiveRooms(){
+  const list=document.getElementById('liveRoomList');
+  list.innerHTML=`<div class="live-loading"><div class="live-spinner"></div>
+    <div style="font-size:13px;color:var(--dim);margin-top:12px">Đang tải phòng...</div></div>`;
+
+  // Dùng HTTP fetch — đơn giản và đáng tin hơn socket cho việc lấy list
+  fetch(`${SERVER_URL}/rooms`,{method:'GET'})
+    .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
+    .then(rooms=>renderLiveRooms(rooms))
+    .catch(()=>{
+      // Fallback: thử qua socket nếu có
+      if(socket&&socket.connected){
+        socket.once('rooms_list',rooms=>renderLiveRooms(rooms));
+        socket.emit('get_rooms');
+        setTimeout(()=>{
+          if(list.querySelector('.live-spinner'))renderLiveRooms(null);
+        },5000);
+      } else {
+        renderLiveRooms(null);
+      }
+    });
+}
+
+function renderLiveRooms(rooms){
+  const list=document.getElementById('liveRoomList');
+  const modeLbl={flash:'⚡ Cờ Chớp',normal:'♟ Cờ Thường',hidden:'🎭 Cờ Úp'};
+
+  if(rooms===null){
+    list.innerHTML=`<div class="live-empty">
+      <div class="le-icon">📡</div>
+      <div class="le-title">Không thể kết nối server</div>
+      <div class="le-sub">Kiểm tra lại kết nối mạng</div>
+      <button class="live-refresh" onclick="loadLiveRooms()">↻ Thử Lại</button>
+    </div>`;
+    return;
+  }
+
+  if(!rooms.length){
+    list.innerHTML=`<div class="live-empty">
+      <div class="le-icon">🎭</div>
+      <div class="le-title">Chưa có ván đấu nào</div>
+      <div class="le-sub">Tham gia một ván để bắt đầu!<br>Các trận đang diễn ra sẽ hiện ở đây.</div>
+      <button class="live-refresh" onclick="loadLiveRooms()">↻ Làm Mới</button>
+    </div>`;
+    return;
+  }
+
+  const html=rooms.map(r=>{
+    const p1=r.players[0]||'???';
+    const p2=r.players[1]||'???';
+    const mvTxt=r.moves>0?`Nước ${r.moves}`:'Khai cuộc';
+    const specTxt=r.spectators>0?`👁 ${r.spectators} xem`:'';
+    const mLabel=modeLbl[r.mode]||r.mode;
+    return `<div class="lgcard" onclick="watchRoom('${r.id}')">
+      <div class="lghead">
+        <div class="lgmode">${mLabel}</div>
+        <div class="lgview">${specTxt}</div>
+      </div>
+      <div class="lgplayers">
+        <div class="lgp"><div class="lgav r">帥</div>
+          <div><div class="lgpn">${p1}</div></div></div>
+        <div class="lgvs">VS</div>
+        <div class="lgp right"><div class="lgav b">將</div>
+          <div><div class="lgpn">${p2}</div></div></div>
+      </div>
+      <div class="lgfoot">
+        <div class="lgmove">${mvTxt}</div>
+        <button class="wbtn">Xem →</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  list.innerHTML=html+`<div style="text-align:center;padding:12px">
+    <button class="live-refresh" onclick="loadLiveRooms()">↻ Làm Mới</button>
+  </div>`;
+}
+
+function watchRoom(roomId){
+  toast('🚧 Tính năng xem ván sắp ra mắt!');
+}
+
+function watchGame(){ toast('🚧 Tính năng xem ván sắp ra mắt!'); }
 
 let toastTimer=null;
 function toast(msg){
