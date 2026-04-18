@@ -579,7 +579,24 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
   transition:all .18s;text-align:left}
 .ai-mode-btn:active{transform:scale(.97);opacity:.88}
 
-/* ── LOGIN ── */
+/* ── LIGHT MODE ── */
+body.light{
+  --gold:#B8860B;--gold-l:#DAA520;--gold-d:#8B6914;
+  --red:#C0392B;--red-d:#8B2020;
+  --bg:#F5EDD8;--surf:#FFF8EC;--surf2:#FAEBD7;
+  --text:#2A1A00;--dim:#7A6040;
+  --green:#2E7D32;--blue:#1565C0;--purple:#6A1B9A;
+}
+body.light .screen{background:#F5EDD8}
+body.light #home{background:radial-gradient(ellipse at top,#FFF3CC 0%,#F5EDD8 55%)}
+body.light .nav-bar{background:rgba(245,237,216,.96);border-top-color:rgba(180,140,60,.2)}
+body.light .topbar{background:rgba(245,237,216,.9);border-bottom-color:rgba(180,140,60,.15)}
+body.light .rcard,body.light .qbtn,body.light .pcrd,body.light .stc,
+body.light .hrow,body.light .lbrow,body.light .lgcard{background:#FFF8EC;border-color:rgba(180,140,60,.2)}
+body.light .sbar{background:rgba(180,140,60,.08)}
+body.light .modal{background:#FFF8EC}
+body.light .chat-panel{background:#FFF3CC}
+body.light .cinp{background:rgba(0,0,0,.05);border-color:rgba(180,140,60,.3);color:var(--text)}
 #login{background:radial-gradient(ellipse at 50% 30%,#2A1200 0%,#0D0600 65%);
   align-items:center;justify-content:center}
 .login-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
@@ -669,6 +686,10 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 
 <!-- ══ HOME ══ -->
 <div id="home" class="screen">
+  <!-- Nút cài đặt góc trên phải -->
+  <div style="position:absolute;top:calc(var(--safe-top)+10px);right:14px;z-index:10;display:flex;gap:8px">
+    <button class="tb-btn" id="themeBtn" onclick="toggleTheme()" title="Đổi giao diện">🌙</button>
+  </div>
   <div class="scroll">
     <div class="home-hero">
       <div class="home-logo">象棋</div>
@@ -1878,10 +1899,8 @@ function doAcceptDraw(){
 function doResign(){
   closeModal('modResign');
   if(isOnline&&myRoomId&&socket&&socket.connected){
-    // Online: gửi resign → server xử lý → game_over về cả 2
     gameOn=false;clearInterval(timerInt);
     socket.emit('resign',{roomId:myRoomId});
-    // Hiện banner thua ngay cho bên đầu hàng
     const ch=calcElo(false);elo=Math.max(100,elo+ch);
     recordStat('lose',ch);lastWonMode=mode;
     const elapsed=Math.floor((Date.now()-gameStartTime)/1000);
@@ -1897,13 +1916,12 @@ function doResign(){
         <div class="over-stat"><div class="over-stat-val">${elo}</div><div class="over-stat-lbl">ELO Mới</div></div>
         <div class="over-stat"><div class="over-stat-val">${elapsedStr}</div><div class="over-stat-lbl">Thời Gian</div></div>`;
       const btn=document.getElementById('btnVanMoi');
-      btn.textContent='🏠 Về Nhà';
-      btn.onclick=()=>{closeModal('modOver');isOnline=false;myRoomId=null;nav('home',document.getElementById('ni1'));};
+      btn.textContent='⚔️ Ván Mới';
+      btn.onclick=()=>{closeModal('modOver');isOnline=false;myRoomId=null;doNewGame();};
       showModal('modOver');
       isOnline=false;myRoomId=null;
     });
   } else {
-    // VS AI
     gameOn=false;clearInterval(timerInt);
     const ch=calcElo(false);elo=Math.max(100,elo+ch);recordStat('lose',ch);
     snd('lose');
@@ -1911,7 +1929,7 @@ function doResign(){
       document.getElementById('overIcon').textContent='🏳️';
       document.getElementById('overTitle').textContent='Đầu Hàng';
       document.getElementById('overTitle').style.color='#FF7070';
-      document.getElementById('overDesc').textContent=`Bạn đã đầu hàng. ELO ${ch} → ${elo}`;
+      document.getElementById('overDesc').textContent='Bạn đã đầu hàng.';
       document.getElementById('overStats').innerHTML='';
       const btn=document.getElementById('btnVanMoi');
       btn.textContent='⚔️ Ván Mới';
@@ -2411,6 +2429,143 @@ function renderLeaderboard(m){
   const rows=document.getElementById('lbRows');
   if(!myStats||!rows)return;
 
+  const mName={flash:'Cờ Chớp',normal:'Cờ Thường',hidden:'Cờ Úp'};
+  const mIcon={flash:'⚡',normal:'♟',hidden:'🎭'};
+
+  // Fetch top players từ server
+  fetch(`${SERVER_URL}/leaderboard`)
+    .then(r=>r.json())
+    .catch(()=>({flash:[],normal:[],hidden:[]}))
+    .then(serverLb=>{
+      if(m==='all'){
+        const tot=stats.w+stats.l+stats.d;
+        const rankTot=Object.values(rankStats).reduce((a,s)=>a+s.w+s.l+s.d,0);
+        const rankW=Object.values(rankStats).reduce((a,s)=>a+s.w,0);
+        myStats.innerHTML=`
+          <div style="background:var(--surf);border:1px solid rgba(212,168,67,.2);border-radius:16px;padding:16px;margin-bottom:12px">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#8B2020,#C0392B);
+                display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;
+                font-size:22px;font-weight:900;color:#FFD700;border:2px solid var(--gold)">帥</div>
+              <div>
+                <div style="font-size:16px;font-weight:800">${playerName||'Người Chơi'}</div>
+                <div style="font-size:12px;color:var(--gold);margin-top:2px">${rk.icon} ${rk.name} · ELO ${elo}</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+              <div style="background:rgba(76,175,80,.1);border-radius:10px;padding:10px">
+                <div style="font-size:20px;font-weight:800;color:var(--green)">${stats.w}</div>
+                <div style="font-size:10px;color:var(--dim);margin-top:2px">Tổng Thắng</div>
+              </div>
+              <div style="background:rgba(255,80,80,.08);border-radius:10px;padding:10px">
+                <div style="font-size:20px;font-weight:800;color:#FF6060">${stats.l}</div>
+                <div style="font-size:10px;color:var(--dim);margin-top:2px">Tổng Thua</div>
+              </div>
+              <div style="background:rgba(212,168,67,.08);border-radius:10px;padding:10px">
+                <div style="font-size:20px;font-weight:800;color:var(--gold)">${stats.d}</div>
+                <div style="font-size:10px;color:var(--dim);margin-top:2px">Tổng Hòa</div>
+              </div>
+            </div>
+            <div style="margin-top:10px;font-size:11px;color:var(--dim);text-align:center">
+              Rank: ${rankTot} ván · ${rankTot>0?Math.round(rankW/rankTot*100)+'%':'—'} thắng
+              &nbsp;·&nbsp; AI: ${tot-rankTot} ván
+            </div>
+          </div>`;
+        // Top 1 mỗi chế độ từ server
+        const topHtml=['normal','flash','hidden'].map(md=>{
+          const top=serverLb[md]&&serverLb[md][0];
+          return `<div style="background:var(--surf);border:1px solid rgba(212,168,67,.13);
+            border-radius:12px;padding:12px 14px;margin-bottom:8px;
+            display:flex;align-items:center;gap:10px">
+            <div style="font-size:22px">${mIcon[md]}</div>
+            <div style="flex:1">
+              <div style="font-size:11px;color:var(--dim);font-weight:700">${mName[md]}</div>
+              <div style="font-size:14px;font-weight:800;margin-top:2px">${top?top.name:'—'}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:16px;font-weight:800;color:var(--gold)">${top?top.elo:'—'}</div>
+              <div style="font-size:10px;color:var(--dim)">${top?`${top.w}W ${top.l}L`:''}</div>
+            </div>
+            <div style="font-size:20px">👑</div>
+          </div>`;
+        }).join('');
+        rows.innerHTML=`<div style="padding:0 0 8px">
+          <div style="font-size:10px;letter-spacing:2px;color:var(--dim);font-weight:700;margin-bottom:8px">🏆 TOP 1 MỖI CHẾ ĐỘ</div>
+          ${topHtml}
+          <div style="text-align:center;padding:8px;font-size:11px;color:var(--dim)">
+            Bảng xếp hạng cập nhật theo thời gian thực</div>
+        </div>`;
+      } else {
+        const s=rankStats[m]||{w:0,l:0,d:0};
+        const tot=s.w+s.l+s.d;
+        const hist=stats.hist.filter(h=>h.isRank&&h.modeName===mName[m]);
+        myStats.innerHTML=`
+          <div style="background:var(--surf);border:1px solid rgba(212,168,67,.2);border-radius:16px;padding:16px;margin-bottom:12px">
+            <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:12px">${mIcon[m]} ${mName[m]} · ELO ${elo}</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+              <div style="background:rgba(76,175,80,.1);border-radius:10px;padding:10px">
+                <div style="font-size:22px;font-weight:800;color:var(--green)">${s.w}</div>
+                <div style="font-size:10px;color:var(--dim);margin-top:2px">Thắng</div>
+              </div>
+              <div style="background:rgba(255,80,80,.08);border-radius:10px;padding:10px">
+                <div style="font-size:22px;font-weight:800;color:#FF6060">${s.l}</div>
+                <div style="font-size:10px;color:var(--dim);margin-top:2px">Thua</div>
+              </div>
+              <div style="background:rgba(212,168,67,.08);border-radius:10px;padding:10px">
+                <div style="font-size:22px;font-weight:800;color:var(--gold)">${s.d}</div>
+                <div style="font-size:10px;color:var(--dim);margin-top:2px">Hòa</div>
+              </div>
+            </div>
+            <div style="margin-top:10px;font-size:11px;color:var(--dim);text-align:center">
+              ${tot} ván rank · ${tot>0?Math.round(s.w/tot*100)+'%':'—'} thắng
+            </div>
+          </div>`;
+        // Top players chế độ này từ server
+        const topList=serverLb[m]||[];
+        const isMe=playerName||'Người Chơi';
+        let topHtml='';
+        if(topList.length){
+          topHtml=topList.slice(0,5).map((p,i)=>`
+            <div class="lbrow ${p.name===isMe?'me':''}">
+              <div class="lbnum ${i<3?'t':''}">${i+1}</div>
+              <div class="lbav">帥</div>
+              <div class="lbinfo">
+                <div class="lbname">${p.name}</div>
+                <div class="lbsub">${p.w+p.l+p.d} ván · ${p.w+p.l+p.d>0?Math.round(p.w/(p.w+p.l+p.d)*100)+'%':'—'}</div>
+              </div>
+              <div><div class="lbelo">${p.elo}</div></div>
+            </div>`).join('');
+        } else {
+          topHtml=`<div class="sep">Chưa có dữ liệu server</div>`;
+        }
+        // Lịch sử cá nhân
+        const histHtml=hist.slice(0,10).map(h=>{
+          const c=h.elo.startsWith('+')?'var(--green)':h.elo.startsWith('-')?'#FF6060':'var(--gold)';
+          return `<div class="lbrow ${h.result==='win'?'me':''}">
+            <div class="lbnum" style="color:${c}">${h.result==='win'?'W':h.result==='lose'?'L':'D'}</div>
+            <div class="lbav" style="font-size:11px;background:var(--surf)">${h.modeIcon}</div>
+            <div class="lbinfo"><div class="lbname">${h.opp}</div><div class="lbsub">${h.date} ${h.time}</div></div>
+            <div><div class="lbelo" style="color:${c}">${h.elo}</div></div>
+          </div>`;
+        }).join('');
+        rows.innerHTML=`
+          <div style="font-size:10px;letter-spacing:2px;color:var(--dim);font-weight:700;margin-bottom:8px;padding:0 2px">🏆 BXH SERVER</div>
+          ${topHtml}
+          ${hist.length?`<div style="font-size:10px;letter-spacing:2px;color:var(--dim);font-weight:700;margin:12px 0 8px;padding:0 2px">📋 LỊCH SỬ CỦA BẠN</div>${histHtml}`:''}`;
+      }
+    });
+}
+
+function refreshLeaderboard(){
+  renderLeaderboard(currentLbMode);
+}
+
+function renderLeaderboard(m){
+  const rk=[...RANKS].reverse().find(r=>elo>=r.min)||RANKS[0];
+  const myStats=document.getElementById('lbMyStats');
+  const rows=document.getElementById('lbRows');
+  if(!myStats||!rows)return;
+
   if(m==='all'){
     // Tổng hợp tất cả rank
     const tot=stats.w+stats.l+stats.d;
@@ -2834,6 +2989,12 @@ function toast(msg){
 window.addEventListener('resize',()=>{
   if(document.getElementById('game').classList.contains('active')&&ctx){setupCanvas();draw();}
 });
+
+function toggleTheme(){
+  const isLight=document.body.classList.toggle('light');
+  document.getElementById('themeBtn').textContent=isLight?'☀️':'🌙';
+  toast(isLight?'☀️ Giao diện sáng':'🌙 Giao diện tối');
+}
 
 function buildSplash(){
   const bg=document.getElementById('splashBg');
