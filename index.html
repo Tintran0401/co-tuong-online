@@ -718,16 +718,6 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
     <div class="nav-i on" id="ni1" onclick="nav('home',this)">
       <div class="ni">🏠</div><div class="nl">Trang Chủ</div>
     </div>
-    <div class="nav-i" id="ni2" onclick="nav('spectate',this)">
-      <div class="ni">📺</div><div class="nl">Live</div>
-      <div class="nav-dot"></div>
-    </div>
-    <div class="nav-i nav-i-locked" onclick="toast('🔒 Shop sắp ra mắt!')">
-      <div class="ni">🛒</div><div class="nl">Shop</div>
-    </div>
-    <div class="nav-i" id="ni4b" onclick="nav('lb',this)">
-      <div class="ni">🏆</div><div class="nl">Xếp Hạng</div>
-    </div>
     <div class="nav-i" id="ni4" onclick="nav('profile',this)">
       <div class="ni">👤</div><div class="nl">Hồ Sơ</div>
     </div>
@@ -893,43 +883,15 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
   </div>
   <div class="scroll">
     <div class="lbtabs">
-      <button class="lbtab on" onclick="lbTab(this)">♟ Cờ Thường</button>
-      <button class="lbtab" onclick="lbTab(this)">⚡ Cờ Chớp</button>
-      <button class="lbtab" onclick="lbTab(this)">🎭 Cờ Úp</button>
+      <button class="lbtab on" id="lbtabAll"   onclick="lbTab(this,'all')">🏆 Tổng</button>
+      <button class="lbtab"    id="lbtabNormal" onclick="lbTab(this,'normal')">♟ Thường</button>
+      <button class="lbtab"    id="lbtabFlash"  onclick="lbTab(this,'flash')">⚡ Chớp</button>
+      <button class="lbtab"    id="lbtabHidden" onclick="lbTab(this,'hidden')">🎭 Úp</button>
     </div>
-    <div class="podium">
-      <div class="pod p2">
-        <div class="pod-av">帥<span class="pod-crown" style="right:-2px;top:-16px">🥈</span></div>
-        <div class="pod-name">Phoenix99</div><div class="pod-elo">2089</div>
-        <div class="pod-block">2</div>
-      </div>
-      <div class="pod p1">
-        <div class="pod-av">將<span class="pod-crown">👑</span></div>
-        <div class="pod-name">DragonMaster</div><div class="pod-elo">2215</div>
-        <div class="pod-block">1</div>
-      </div>
-      <div class="pod p3">
-        <div class="pod-av">帥<span class="pod-crown" style="right:-2px;top:-16px">🥉</span></div>
-        <div class="pod-name">GrandMaster</div><div class="pod-elo">1940</div>
-        <div class="pod-block">3</div>
-      </div>
-    </div>
-    <div class="lb-rows">
-      <div class="lbrow"><div class="lbnum t">4</div><div class="lbav">帥</div><div class="lbinfo"><div class="lbname">TrungQuoc88</div><div class="lbsub">318 ván · 68%</div></div><div><div class="lbelo">1875</div><div class="lbtrend up">▲+12</div></div></div>
-      <div class="lbrow"><div class="lbnum t">5</div><div class="lbav">將</div><div class="lbinfo"><div class="lbname">SaoKhuya</div><div class="lbsub">241 ván · 65%</div></div><div><div class="lbelo">1820</div><div class="lbtrend up">▲+8</div></div></div>
-      <div class="lbrow"><div class="lbnum">6</div><div class="lbav">帥</div><div class="lbinfo"><div class="lbname">BạchHổ</div><div class="lbsub">195 ván · 61%</div></div><div><div class="lbelo">1755</div><div class="lbtrend dn">▼−5</div></div></div>
-      <div class="lbrow"><div class="lbnum">7</div><div class="lbav">將</div><div class="lbinfo"><div class="lbname">HoàngLong</div><div class="lbsub">289 ván · 59%</div></div><div><div class="lbelo">1710</div><div class="lbtrend up">▲+3</div></div></div>
-      <div class="lbrow"><div class="lbnum">8</div><div class="lbav">帥</div><div class="lbinfo"><div class="lbname">NamQuốc</div><div class="lbsub">155 ván · 57%</div></div><div><div class="lbelo">1680</div><div class="lbtrend dn">▼−9</div></div></div>
-      <div class="lbrow"><div class="lbnum">9</div><div class="lbav">將</div><div class="lbinfo"><div class="lbname">TiênLong99</div><div class="lbsub">210 ván · 55%</div></div><div><div class="lbelo">1640</div><div class="lbtrend up">▲+16</div></div></div>
-      <div class="lbrow"><div class="lbnum">10</div><div class="lbav">帥</div><div class="lbinfo"><div class="lbname">MinhKhoa2k</div><div class="lbsub">178 ván · 54%</div></div><div><div class="lbelo">1615</div><div class="lbtrend dn">▼−2</div></div></div>
-      <div class="sep">· · ·</div>
-      <div class="lbrow me" id="myLbRow">
-        <div class="lbnum" style="color:var(--gold)">#</div>
-        <div class="lbav" style="background:linear-gradient(135deg,#8B2020,#C0392B);border-color:#C0392B;color:#FFD700">帥</div>
-        <div class="lbinfo"><div class="lbname">Bạn</div><div class="lbsub" id="myLbSub">0 ván · —</div></div>
-        <div><div class="lbelo" id="myLbElo">1200</div><div class="lbtrend" style="color:var(--dim)">—</div></div>
-      </div>
-    </div>
+    <!-- Thống kê bản thân theo chế độ -->
+    <div id="lbMyStats" style="padding:0 16px 12px"></div>
+    <!-- Danh sách (chỉ có mình vì local) -->
+    <div class="lb-rows" id="lbRows"></div>
   </div>
 </div>
 
@@ -1146,6 +1108,8 @@ let cv, ctx, cell, ox, oy;
 let socket=null;
 let disconnectTimer=null;
 let stats={w:0,l:0,d:0,streak:0,best:1200,hist:[]};
+// Thống kê riêng cho rank (chỉ online)
+let rankStats={flash:{w:0,l:0,d:0},normal:{w:0,l:0,d:0},hidden:{w:0,l:0,d:0}};
 
 // ══════════════════════════════════════════
 // BOARD
@@ -1811,16 +1775,13 @@ function showCheckmateBanner(playerWon, cb){
 
 function gameEnd(playerWon){
   if(!gameOn)return;
-  console.log('🎯 gameEnd called, playerWon=', playerWon); // DEBUG
   gameOn=false;
-  clearInterval(timerInt); // ⏸ Đồng hồ dừng ngay
-
-  // Ẩn popup chiếu
+  clearInterval(timerInt);
   clearTimeout(checkPopupTimer);
   document.getElementById('checkPopup').classList.remove('show');
 
-  const eloChg=calcElo(playerWon);
-  elo=Math.max(100,elo+eloChg);
+  const eloChg=calcElo(playerWon); // 0 nếu vs AI
+  if(eloChg!==0) elo=Math.max(100,elo+eloChg);
   recordStat(playerWon?'win':'lose',eloChg);
   lastWonMode=mode;
   snd(playerWon?'win':'lose');
@@ -1828,35 +1789,48 @@ function gameEnd(playerWon){
   const elapsed=Math.floor((Date.now()-gameStartTime)/1000);
   const elapsedStr=`${Math.floor(elapsed/60)}p${String(elapsed%60).padStart(2,'0')}s`;
 
-  // Hiện banner chiếu hết trước, sau đó modal
-  showCheckmateBanner(playerWon, ()=>{
+  showCheckmateBanner(playerWon,()=>{
     document.getElementById('overIcon').textContent=playerWon?'🏆':'😔';
     const titleEl=document.getElementById('overTitle');
     titleEl.textContent=playerWon?'Chiến Thắng!':'Thất Bại';
     titleEl.style.color=playerWon?'var(--gold)':'#FF7070';
     document.getElementById('overDesc').textContent=
       playerWon?'Bạn đã chiếu hết tướng địch!':'Tướng của bạn đã bị chiếu hết!';
-    document.getElementById('overStats').innerHTML=`
-      <div class="over-stat">
-        <div class="over-stat-val" style="color:${eloChg>=0?'var(--green)':'#FF7070'}">${eloChg>=0?'+':''}${eloChg}</div>
-        <div class="over-stat-lbl">ELO</div>
-      </div>
-      <div class="over-stat">
-        <div class="over-stat-val">${elo}</div>
-        <div class="over-stat-lbl">ELO Mới</div>
-      </div>
-      <div class="over-stat">
-        <div class="over-stat-val">${elapsedStr}</div>
-        <div class="over-stat-lbl">Thời Gian</div>
-      </div>`;
-    const btnVanMoi=document.getElementById('btnVanMoi');
-    if(playerWon){
-      btnVanMoi.textContent='🏠 Về Nhà';
-      btnVanMoi.onclick=()=>{closeModal('modOver');nav('home',document.getElementById('ni1'));};
+
+    // VS AI: hiện "Luyện Tập" thay vì ELO
+    if(!isOnline){
+      document.getElementById('overStats').innerHTML=`
+        <div class="over-stat">
+          <div class="over-stat-val">🤖</div>
+          <div class="over-stat-lbl">Luyện Tập</div>
+        </div>
+        <div class="over-stat">
+          <div class="over-stat-val">${elo}</div>
+          <div class="over-stat-lbl">ELO Hiện Tại</div>
+        </div>
+        <div class="over-stat">
+          <div class="over-stat-val">${elapsedStr}</div>
+          <div class="over-stat-lbl">Thời Gian</div>
+        </div>`;
     } else {
-      btnVanMoi.textContent='⚔️ Ván Mới';
-      btnVanMoi.onclick=()=>{closeModal('modOver');doNewGame();};
+      document.getElementById('overStats').innerHTML=`
+        <div class="over-stat">
+          <div class="over-stat-val" style="color:${eloChg>=0?'var(--green)':'#FF7070'}">${eloChg>=0?'+':''}${eloChg}</div>
+          <div class="over-stat-lbl">ELO</div>
+        </div>
+        <div class="over-stat">
+          <div class="over-stat-val">${elo}</div>
+          <div class="over-stat-lbl">ELO Mới</div>
+        </div>
+        <div class="over-stat">
+          <div class="over-stat-val">${elapsedStr}</div>
+          <div class="over-stat-lbl">Thời Gian</div>
+        </div>`;
     }
+
+    const btn=document.getElementById('btnVanMoi');
+    btn.textContent='⚔️ Ván Mới';
+    btn.onclick=()=>{closeModal('modOver');doNewGame();};
     showModal('modOver');
   });
 
@@ -1872,6 +1846,7 @@ function doNewGame(){
 }
 
 function calcElo(won){
+  if(!isOnline) return 0; // VS AI không tính ELO
   const k={flash:20,normal:15,hidden:25}[mode]||15;
   return won?Math.round(k*.9):-Math.round(k*.7);
 }
@@ -2422,18 +2397,126 @@ function filterSkins(btn,type){
 // ══════════════════════════════════════════
 // LEADERBOARD & PROFILE
 // ══════════════════════════════════════════
-function lbTab(btn){
-  document.querySelectorAll('.lbtab').forEach(t=>t.classList.remove('on'));btn.classList.add('on');
+let currentLbMode='all';
+function lbTab(btn,m){
+  document.querySelectorAll('.lbtab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  currentLbMode=m;
+  renderLeaderboard(m);
+}
+
+function renderLeaderboard(m){
+  const rk=[...RANKS].reverse().find(r=>elo>=r.min)||RANKS[0];
+  const myStats=document.getElementById('lbMyStats');
+  const rows=document.getElementById('lbRows');
+  if(!myStats||!rows)return;
+
+  if(m==='all'){
+    // Tổng hợp tất cả rank
+    const tot=stats.w+stats.l+stats.d;
+    const rankTot=Object.values(rankStats).reduce((a,s)=>a+s.w+s.l+s.d,0);
+    const rankW=Object.values(rankStats).reduce((a,s)=>a+s.w,0);
+    myStats.innerHTML=`
+      <div style="background:var(--surf);border:1px solid rgba(212,168,67,.2);border-radius:16px;padding:16px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#8B2020,#C0392B);
+            display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;
+            font-size:22px;font-weight:900;color:#FFD700;border:2px solid var(--gold)">帥</div>
+          <div>
+            <div style="font-size:16px;font-weight:800">${playerName||'Người Chơi'}</div>
+            <div style="font-size:12px;color:var(--gold);margin-top:2px">${rk.icon} ${rk.name} · ELO ${elo}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+          <div style="background:rgba(76,175,80,.1);border-radius:10px;padding:10px">
+            <div style="font-size:20px;font-weight:800;color:var(--green)">${stats.w}</div>
+            <div style="font-size:10px;color:var(--dim);margin-top:2px">Tổng Thắng</div>
+          </div>
+          <div style="background:rgba(255,80,80,.08);border-radius:10px;padding:10px">
+            <div style="font-size:20px;font-weight:800;color:#FF6060">${stats.l}</div>
+            <div style="font-size:10px;color:var(--dim);margin-top:2px">Tổng Thua</div>
+          </div>
+          <div style="background:rgba(212,168,67,.08);border-radius:10px;padding:10px">
+            <div style="font-size:20px;font-weight:800;color:var(--gold)">${stats.d}</div>
+            <div style="font-size:10px;color:var(--dim);margin-top:2px">Tổng Hòa</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--dim);text-align:center">
+          Rank: ${rankTot} ván · Tỉ lệ thắng ${rankTot>0?Math.round(rankW/rankTot*100)+'%':'—'}
+          &nbsp;·&nbsp; AI: ${tot-rankTot} ván (không tính ELO)
+        </div>
+      </div>`;
+    rows.innerHTML=`<div class="sep" style="padding:16px;text-align:center;color:var(--dim);font-size:12px;line-height:1.8">
+      📊 Bảng xếp hạng server sẽ hiển thị<br>khi có nhiều người chơi hơn.</div>`;
+  } else {
+    const s=rankStats[m]||{w:0,l:0,d:0};
+    const tot=s.w+s.l+s.d;
+    const mName={flash:'Cờ Chớp',normal:'Cờ Thường',hidden:'Cờ Úp'}[m];
+    const mIcon={flash:'⚡',normal:'♟',hidden:'🎭'}[m];
+    const hist=stats.hist.filter(h=>h.isRank&&h.modeName===mName);
+    myStats.innerHTML=`
+      <div style="background:var(--surf);border:1px solid rgba(212,168,67,.2);border-radius:16px;padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:12px">${mIcon} ${mName} · ELO ${elo}</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+          <div style="background:rgba(76,175,80,.1);border-radius:10px;padding:10px">
+            <div style="font-size:22px;font-weight:800;color:var(--green)">${s.w}</div>
+            <div style="font-size:10px;color:var(--dim);margin-top:2px">Thắng</div>
+          </div>
+          <div style="background:rgba(255,80,80,.08);border-radius:10px;padding:10px">
+            <div style="font-size:22px;font-weight:800;color:#FF6060">${s.l}</div>
+            <div style="font-size:10px;color:var(--dim);margin-top:2px">Thua</div>
+          </div>
+          <div style="background:rgba(212,168,67,.08);border-radius:10px;padding:10px">
+            <div style="font-size:22px;font-weight:800;color:var(--gold)">${s.d}</div>
+            <div style="font-size:10px;color:var(--dim);margin-top:2px">Hòa</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--dim);text-align:center">
+          ${tot} ván rank · Tỉ lệ thắng ${tot>0?Math.round(s.w/tot*100)+'%':'—'}
+        </div>
+      </div>`;
+    // Lịch sử rank theo chế độ
+    if(!hist.length){
+      rows.innerHTML=`<div class="sep" style="padding:20px;text-align:center;color:var(--dim);font-size:12px">
+        Chưa có ván ${mName} nào.<br>Tham gia xếp hạng ngay! ${mIcon}</div>`;
+    } else {
+      rows.innerHTML=hist.slice(0,20).map((h,i)=>{
+        const eloColor=h.elo.startsWith('+')?'var(--green)':h.elo.startsWith('-')?'#FF6060':'var(--gold)';
+        return `<div class="lbrow ${h.result==='win'?'me':''}">
+          <div class="lbnum" style="color:${h.result==='win'?'var(--green)':h.result==='lose'?'#FF6060':'var(--gold)'}">
+            ${h.result==='win'?'W':h.result==='lose'?'L':'D'}
+          </div>
+          <div class="lbav" style="font-size:11px;background:var(--surf)">${h.modeIcon}</div>
+          <div class="lbinfo">
+            <div class="lbname">${h.opp}</div>
+            <div class="lbsub">${h.date} ${h.time}</div>
+          </div>
+          <div><div class="lbelo" style="color:${eloColor}">${h.elo}</div></div>
+        </div>`;
+      }).join('');
+    }
+  }
+}
+
+function refreshLeaderboard(){
+  renderLeaderboard(currentLbMode);
 }
 
 function recordStat(result,eloChg){
   if(result==='win'){stats.w++;stats.streak++;}
   else if(result==='lose'){stats.l++;stats.streak=0;}
   else{stats.d++;stats.streak=0;}
-  stats.best=Math.max(stats.best,elo);
+  if(eloChg!==0) stats.best=Math.max(stats.best,elo);
+
+  // Thống kê theo chế độ rank (chỉ online)
+  if(isOnline&&rankStats[mode]){
+    if(result==='win') rankStats[mode].w++;
+    else if(result==='lose') rankStats[mode].l++;
+    else rankStats[mode].d++;
+  }
 
   const modeInfo={
-    flash: {icon:'⚡',name:'Cờ Chớp'},
+    flash:{icon:'⚡',name:'Cờ Chớp'},
     normal:{icon:'♟',name:'Cờ Thường'},
     hidden:{icon:'🎭',name:'Cờ Úp'}
   }[mode]||{icon:'♟',name:'Cờ Thường'};
@@ -2442,15 +2525,17 @@ function recordStat(result,eloChg){
   const now=new Date();
   const timeStr=`${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
   const dateStr=`${now.getDate()}/${now.getMonth()+1}`;
+  const isRank=isOnline;
 
   stats.hist.unshift({
     result,
-    opp: isOnline ? (playerName||'Người Chơi') : 'Bot AI',
+    opp: isOnline?(playerName||'Người Chơi'):'Bot AI',
     modeIcon: modeInfo.icon,
     modeName: modeInfo.name,
-    elo: eStr,
+    elo: isRank?eStr:'—',
     time: timeStr,
-    date: dateStr
+    date: dateStr,
+    isRank
   });
   if(stats.hist.length>50)stats.hist.pop();
   refreshProfile();
@@ -2475,8 +2560,10 @@ function refreshProfile(){
   document.getElementById('epFill').style.width=pct+'%';
   document.getElementById('homeRankChip').textContent=`${rk.icon} ${rk.name}`;
   document.getElementById('homeElo').textContent=`ELO ${elo}`;
-  document.getElementById('myLbElo').textContent=elo;
-  document.getElementById('myLbSub').textContent=`${tot} ván · ${tot>0?Math.round(stats.w/tot*100)+'%':'—'}`;
+  // Cập nhật leaderboard nếu đang mở
+  if(document.getElementById('lb').classList.contains('active')){
+    renderLeaderboard(currentLbMode);
+  }
 
   const hl=document.getElementById('histList');
   if(!stats.hist.length){
@@ -2511,6 +2598,7 @@ function nav(screenId,navEl){
   if(navEl)navEl.classList.add('on');
   if(screenId==='game'&&cv)draw();
   if(screenId==='profile')refreshProfile();
+  if(screenId==='lb')renderLeaderboard(currentLbMode);
   if(screenId==='spectate'){
     loadLiveRooms();
     // Auto-refresh mỗi 2 giây
