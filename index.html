@@ -1819,85 +1819,120 @@ function drawPiece(p){
 }
 
 // ══════════════════════════════════════════
-// SOUND
+// SOUND — dùng Audio element, hoạt động trên mọi thiết bị
 // ══════════════════════════════════════════
 let ac=null;
+let _soundUnlocked=false;
+
+// Tạo âm thanh bằng Web Audio API với fallback
 function initAudio(){
-  if(!ac) ac=new(window.AudioContext||window.webkitAudioContext)();
-  if(ac.state==='suspended') ac.resume();
+  if(!ac){
+    try{ ac=new(window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; }
+  }
+  if(ac.state==='suspended'){ ac.resume().catch(()=>{}); }
   return ac;
 }
 
+// Phát âm thanh — đơn giản, đáng tin cậy
 function snd(type){
-  // Kiểm tra toggle âm thanh
   const tog=document.getElementById('togSound');
   if(tog&&!tog.classList.contains('on')) return;
   try{
     const a=initAudio();
+    if(!a) return;
+    if(a.state==='suspended'){ a.resume().then(()=>_playSnd(a,type)).catch(()=>{}); return; }
+    _playSnd(a,type);
+  }catch(e){}
+}
+
+function _playSnd(a,type){
+  try{
     const o=a.createOscillator(), g=a.createGain();
     o.connect(g); g.connect(a.destination);
     const t=a.currentTime;
-    if(type==='mv'){
-      // Tiếng đặt quân — gõ gỗ ngắn gọn
-      o.type='triangle';
-      o.frequency.setValueAtTime(700,t);
-      o.frequency.exponentialRampToValueAtTime(500,t+.06);
-      g.gain.setValueAtTime(.18,t);
-      g.gain.exponentialRampToValueAtTime(.001,t+.09);
-      o.start(t); o.stop(t+.1);
-    } else if(type==='cap'){
-      // Tiếng ăn quân — mạnh hơn
-      o.type='sawtooth';
-      o.frequency.setValueAtTime(380,t);
-      o.frequency.exponentialRampToValueAtTime(150,t+.18);
-      g.gain.setValueAtTime(.22,t);
-      g.gain.exponentialRampToValueAtTime(.001,t+.2);
-      o.start(t); o.stop(t+.22);
-    } else if(type==='chk'){
-      // Tiếng chiếu — cảnh báo
-      o.type='square';
-      o.frequency.setValueAtTime(880,t);
-      o.frequency.setValueAtTime(660,t+.08);
-      o.frequency.setValueAtTime(880,t+.16);
-      g.gain.setValueAtTime(.15,t);
-      g.gain.exponentialRampToValueAtTime(.001,t+.28);
-      o.start(t); o.stop(t+.3);
-    } else if(type==='flip'){
-      // Tiếng lật quân cờ úp
-      o.type='sine';
-      o.frequency.setValueAtTime(440,t);
-      o.frequency.linearRampToValueAtTime(880,t+.12);
-      g.gain.setValueAtTime(.12,t);
-      g.gain.exponentialRampToValueAtTime(.001,t+.15);
-      o.start(t); o.stop(t+.16);
-    } else if(type==='win'){
-      // Tiếng thắng — vui
-      const freqs=[523,659,784,1047];
-      freqs.forEach((f,i)=>{
-        const oi=a.createOscillator(), gi=a.createGain();
-        oi.connect(gi); gi.connect(a.destination);
-        oi.type='sine'; oi.frequency.value=f;
-        gi.gain.setValueAtTime(.14,t+i*.1);
-        gi.gain.exponentialRampToValueAtTime(.001,t+i*.1+.15);
-        oi.start(t+i*.1); oi.stop(t+i*.1+.2);
-      });
-      return;
-    } else if(type==='lose'){
-      // Tiếng thua — buồn
-      o.type='sine';
-      o.frequency.setValueAtTime(440,t);
-      o.frequency.exponentialRampToValueAtTime(200,t+.5);
-      g.gain.setValueAtTime(.14,t);
-      g.gain.exponentialRampToValueAtTime(.001,t+.55);
-      o.start(t); o.stop(t+.6);
+    switch(type){
+      case 'mv':
+        o.type='sine';
+        o.frequency.setValueAtTime(800,t);
+        o.frequency.exponentialRampToValueAtTime(600,t+.05);
+        g.gain.setValueAtTime(.3,t);
+        g.gain.exponentialRampToValueAtTime(.001,t+.08);
+        o.start(t); o.stop(t+.09);
+        break;
+      case 'cap':
+        o.type='sawtooth';
+        o.frequency.setValueAtTime(400,t);
+        o.frequency.exponentialRampToValueAtTime(120,t+.15);
+        g.gain.setValueAtTime(.35,t);
+        g.gain.exponentialRampToValueAtTime(.001,t+.18);
+        o.start(t); o.stop(t+.2);
+        break;
+      case 'chk':
+        o.type='square';
+        o.frequency.setValueAtTime(900,t);
+        g.gain.setValueAtTime(.2,t);
+        g.gain.setValueAtTime(.2,t+.07);
+        g.gain.exponentialRampToValueAtTime(.001,t+.1);
+        o.start(t); o.stop(t+.11);
+        // Nốt thứ 2
+        const o2=a.createOscillator(), g2=a.createGain();
+        o2.connect(g2); g2.connect(a.destination);
+        o2.type='square'; o2.frequency.value=700;
+        g2.gain.setValueAtTime(.0,t+.12);
+        g2.gain.setValueAtTime(.2,t+.13);
+        g2.gain.exponentialRampToValueAtTime(.001,t+.22);
+        o2.start(t+.12); o2.stop(t+.23);
+        break;
+      case 'flip':
+        o.type='sine';
+        o.frequency.setValueAtTime(500,t);
+        o.frequency.linearRampToValueAtTime(900,t+.1);
+        g.gain.setValueAtTime(.2,t);
+        g.gain.exponentialRampToValueAtTime(.001,t+.13);
+        o.start(t); o.stop(t+.14);
+        break;
+      case 'win':
+        [523,659,784,1047].forEach((f,i)=>{
+          const oi=a.createOscillator(), gi=a.createGain();
+          oi.connect(gi); gi.connect(a.destination);
+          oi.type='sine'; oi.frequency.value=f;
+          gi.gain.setValueAtTime(.25,t+i*.12);
+          gi.gain.exponentialRampToValueAtTime(.001,t+i*.12+.18);
+          oi.start(t+i*.12); oi.stop(t+i*.12+.2);
+        });
+        return;
+      case 'lose':
+        o.type='sine';
+        o.frequency.setValueAtTime(400,t);
+        o.frequency.exponentialRampToValueAtTime(180,t+.45);
+        g.gain.setValueAtTime(.25,t);
+        g.gain.exponentialRampToValueAtTime(.001,t+.5);
+        o.start(t); o.stop(t+.55);
+        break;
     }
-  } catch(e){ console.warn('snd error:',e); }
+  }catch(e){}
 }
-function tryVibrate(){if(navigator.vibrate)navigator.vibrate(50);}
 
-// Unlock AudioContext on first user interaction
-document.addEventListener('touchstart', ()=>{ try{ initAudio(); }catch(e){} }, {once:true, passive:true});
-document.addEventListener('mousedown', ()=>{ try{ initAudio(); }catch(e){} }, {once:true});
+function tryVibrate(){if(navigator.vibrate)navigator.vibrate(40);}
+
+// Unlock AudioContext sớm nhất có thể khi user chạm
+function _unlockAudio(){
+  if(_soundUnlocked) return;
+  _soundUnlocked=true;
+  try{
+    const a=initAudio();
+    if(a){
+      // Phát tiếng im lặng để unlock
+      const o=a.createOscillator(), g=a.createGain();
+      g.gain.value=0.0001;
+      o.connect(g); g.connect(a.destination);
+      o.start(); o.stop(a.currentTime+0.01);
+    }
+  }catch(e){}
+}
+['touchstart','touchend','mousedown','keydown','click'].forEach(evt=>{
+  document.addEventListener(evt, _unlockAudio, {once:false, passive:true});
+});
 
 // ══════════════════════════════════════════
 // CLICK / TOUCH HANDLER
