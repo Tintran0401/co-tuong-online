@@ -1724,8 +1724,23 @@ function draw(){
 
   // ── Highlight nước đi cuối ──
   if(lastMv){
-    ctx.fillStyle=light?'rgba(180,120,0,.18)':'rgba(255,200,0,.2)';
-    [lastMv.f,lastMv.t].forEach(p=>{ctx.beginPath();ctx.arc(cx(p.c),cy(p.r),cell*.46,0,Math.PI*2);ctx.fill();});}
+    // Ô XUẤT PHÁT — nền vàng nhạt + viền đứt
+    const fc=lastMv.f.c, fr=lastMv.f.r;
+    ctx.fillStyle=light?'rgba(210,160,0,.28)':'rgba(255,200,0,.22)';
+    ctx.fillRect(cx(fc)-cell/2+1, cy(fr)-cell/2+1, cell-2, cell-2);
+    ctx.strokeStyle=light?'rgba(180,130,0,.6)':'rgba(255,210,0,.55)';
+    ctx.lineWidth=2; ctx.setLineDash([cell*.15,cell*.08]);
+    ctx.strokeRect(cx(fc)-cell/2+2, cy(fr)-cell/2+2, cell-4, cell-4);
+    ctx.setLineDash([]);
+
+    // Ô ĐÍCH — nền xanh lá/vàng đậm hơn + viền liền đậm
+    const tc=lastMv.t.c, tr=lastMv.t.r;
+    ctx.fillStyle=light?'rgba(60,160,60,.22)':'rgba(120,220,80,.2)';
+    ctx.fillRect(cx(tc)-cell/2+1, cy(tr)-cell/2+1, cell-2, cell-2);
+    ctx.strokeStyle=light?'rgba(40,140,40,.7)':'rgba(100,220,60,.75)';
+    ctx.lineWidth=2.5; ctx.setLineDash([]);
+    ctx.strokeRect(cx(tc)-cell/2+2, cy(tr)-cell/2+2, cell-4, cell-4);
+  }
 
   // ── Quân được chọn & gợi ý ──
   if(sel){
