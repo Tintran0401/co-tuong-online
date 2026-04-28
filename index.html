@@ -587,45 +587,233 @@ body.light{
   --text:#1A0E00;--dim:#7A5C30;
   --green:#2E7D32;--blue:#1565C0;--purple:#6A1B9A;
 }
-/* Nền màn hình */
+/* ── Light: Nền màn hình ── */
+body.light{background:#EDE0C4;color:#1A0E00}
 body.light .screen{background:#EDE0C4}
 body.light #home{background:radial-gradient(ellipse at top,#FFF8CC 0%,#EDE0C4 60%)}
-body.light #profile{background:radial-gradient(ellipse at top,#FFF3CC 0%,#EDE0C4 60%)}
-body.light #lb{background:radial-gradient(ellipse at top,#FFF3CC 0%,#EDE0C4 60%)}
+body.light #profile,body.light #lb,body.light #events,body.light #learn,body.light #settings{
+  background:radial-gradient(ellipse at top,#FFF3CC 0%,#EDE0C4 60%)}
 body.light #spectate{background:#EDE0C4}
 body.light #game{background:#D4B896}
-/* Nav & top bars */
-body.light .nav-bar{background:rgba(237,224,196,.97);border-top-color:rgba(160,120,50,.25)}
-body.light .topbar,body.light .game-top{background:rgba(237,224,196,.95);border-bottom-color:rgba(160,120,50,.2)}
+body.light #login{background:radial-gradient(ellipse at 50% 30%,#4A2200,#1A0800)}
+
+/* ── Light: Nav & bars ── */
+body.light .nav-bar{background:rgba(237,224,196,.97);border-top:1px solid rgba(160,120,50,.25)}
+body.light .topbar,body.light .game-top,body.light .lesson-topbar{
+  background:rgba(237,224,196,.95);border-bottom:1px solid rgba(160,120,50,.2)}
 body.light .nav-i{color:#8B6400}
 body.light .nav-i.on{color:#5A3A00}
-/* Cards & surfaces */
+
+/* ── Light: Surfaces ── */
 body.light .rcard,body.light .qbtn,body.light .pcrd,body.light .stc,
 body.light .hrow,body.light .lbrow,body.light .lgcard,
-body.light .player-card-home,body.light .ai-mode-btn{background:#FFF8E7;border-color:rgba(160,120,50,.2)}
+body.light .player-card-home,body.light .ai-mode-btn,
+body.light .set-row-full,body.light .event-card,body.light .learn-card{
+  background:#FFF8E7;border-color:rgba(160,120,50,.2)}
 body.light .sbar{background:rgba(160,120,50,.08);color:#6A4C00}
-body.light .section-lbl{color:#8B6400}
-/* Modals */
-body.light .overlay{background:rgba(0,0,0,.6)}
-body.light .modal{background:#FFF8E7;border-color:rgba(160,120,50,.3)}
-/* Chat */
-body.light .chat-panel{background:#FFF3D0;border-left-color:rgba(160,120,50,.2)}
-body.light .cinp{background:rgba(0,0,0,.05);border-color:rgba(160,120,50,.3);color:var(--text)}
-body.light .cbubble{background:rgba(0,0,0,.06);color:var(--text)}
+body.light .section-lbl,body.light .set-group-lbl,body.light .learn-section-lbl{color:#8B6400}
+
+/* ── Light: Modals & overlays ── */
+body.light .overlay{background:rgba(0,0,0,.55)}
+body.light .modal{background:#FFF8E7;border-color:rgba(160,120,50,.3);color:#1A0E00}
+body.light .mtitle{color:#1A0E00}
+body.light .mdesc{color:#7A5C30}
+
+/* ── Light: Chat ── */
+body.light .chat-panel{background:#FFF3D0;border-left:1px solid rgba(160,120,50,.2)}
+body.light .cinp{background:rgba(0,0,0,.05);border-color:rgba(160,120,50,.3);color:#1A0E00}
+body.light .cbubble{background:rgba(0,0,0,.06);color:#1A0E00}
 body.light .cmsg.me .cbubble{background:rgba(139,100,0,.15)}
-/* Buttons */
-body.light .tb-btn,body.light .back-btn{background:rgba(139,100,0,.1);border-color:rgba(139,100,0,.2)}
-body.light .gbtn{background:#FFF8E7;border-color:rgba(160,120,50,.2);color:var(--text)}
-body.light .mbtn.ghost{background:rgba(0,0,0,.07);color:var(--text)}
-/* Text */
-body.light .pname,body.light .rname,body.light .lbname,body.light .honme{color:#1A0E00}
-body.light .rdesc,body.light .lbsub,body.light .hmode-tag span{color:#7A5C30}
+
+/* ── Light: Buttons ── */
+body.light .tb-btn,body.light .back-btn{
+  background:rgba(139,100,0,.1);border-color:rgba(139,100,0,.2);color:#5A3A00}
+body.light .gbtn{background:#FFF8E7;border-color:rgba(160,120,50,.2);color:#1A0E00}
+body.light .mbtn.ghost{background:rgba(0,0,0,.07);color:#1A0E00;border-color:rgba(0,0,0,.15)}
+body.light .ev-btn{color:#1A0E00}
+
+/* ── Light: Text ── */
+body.light .pname,body.light .rname,body.light .lbname,body.light .honme,
+body.light .lc-title,body.light .lv-title,body.light .set-lbl,body.light .ev-title{color:#1A0E00}
+body.light .rdesc,body.light .lbsub,.body.light .hmode-tag span,
+body.light .set-sub,body.light .lc-sub,body.light .lv-sub,body.light .ev-desc{color:#7A5C30}
 body.light .splash-logo,body.light .home-logo,body.light .login-logo{color:#5A3A00}
+body.light .gmode,body.light .tb-title{color:#5A3A00}
 
-/* ── BÀNG CỜ LIGHT MODE ── */
-/* Board sẽ được vẽ lại qua JS khi detect light mode */
+/* ── Light: MM overlay ── */
+body.light .mm-overlay{background:rgba(237,224,196,.97);color:#1A0E00}
+body.light .mm-title,body.light .mm-desc{color:#5A3A00}
 
-/* ── EVENTS ── */
+/* ── Light: Learn map ── */
+body.light #learn{background:#4A8F3A}
+
+/* ── Light: Toggle switches ── */
+body.light .tog{background:rgba(0,0,0,.15)}
+body.light .tog.on{background:var(--green)}
+body.light .tog::after{background:#fff}
+
+/* ══ LEARN MAP — Cartoon Style ══ */
+#learn{overflow:hidden;background:#3A8C3A}
+.learn-map-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:90px}
+.learn-map-bg{
+  position:relative;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ccircle cx='10' cy='10' r='2' fill='rgba(255,255,255,.04)'/%3E%3Ccircle cx='40' cy='35' r='3' fill='rgba(255,255,255,.03)'/%3E%3C/svg%3E"),
+    linear-gradient(180deg,#2E7D32 0%,#388E3C 30%,#43A047 60%,#388E3C 100%);
+  min-height:100px;
+}
+/* Header gradient */
+.lm-header{
+  padding:calc(var(--safe-top)+14px) 18px 14px;
+  background:linear-gradient(180deg,rgba(27,67,27,.9) 0%,transparent 100%);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;position:relative;z-index:3;
+}
+.lm-title{font-size:20px;font-weight:900;color:#fff;
+  text-shadow:0 2px 0 rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.3)}
+.lm-progress-pill{
+  background:rgba(0,0,0,.35);border-radius:20px;
+  padding:6px 14px;font-size:13px;color:#FFD700;font-weight:800;
+  border:1.5px solid rgba(255,215,0,.3);
+}
+
+/* ── Nodes ── */
+.lm-node{
+  position:absolute;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.lm-wood{
+  width:76px;height:76px;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;transition:transform .15s,box-shadow .15s;
+}
+.lm-node:active .lm-wood{transform:scale(.88)}
+
+/* Done */
+.lm-node.done .lm-wood{
+  background:radial-gradient(circle at 38% 32%,#FFE566,#F5A000);
+  box-shadow:0 7px 0 #9A6000,0 9px 20px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.5);
+  border:3px solid #C87000;
+}
+/* Unlocked */
+.lm-node.unlocked .lm-wood{
+  background:radial-gradient(circle at 38% 32%,#FFF0B0,#D4AA50);
+  box-shadow:0 7px 0 #8A6010,0 9px 20px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.4);
+  border:3px solid #A07828;
+}
+/* Locked */
+.lm-node.locked .lm-wood{
+  background:radial-gradient(circle at 38% 32%,#9E8860,#6B5030);
+  box-shadow:0 5px 0 #3A2810,0 7px 14px rgba(0,0,0,.35);
+  border:3px solid #4A3018;
+  filter:saturate(.5);
+}
+/* Pulse cho node hiện tại */
+.lm-node.current .lm-wood{
+  animation:lmPulse 1.8s ease-in-out infinite;
+}
+@keyframes lmPulse{
+  0%,100%{box-shadow:0 7px 0 #8A6010,0 9px 20px rgba(0,0,0,.35),0 0 0 0 rgba(255,200,0,.5)}
+  50%{box-shadow:0 7px 0 #8A6010,0 9px 20px rgba(0,0,0,.35),0 0 0 10px rgba(255,200,0,0)}
+}
+.lm-num{
+  font-size:26px;font-weight:900;line-height:1;
+  font-family:'Noto Serif SC',serif;
+}
+.lm-node.done .lm-num,.lm-node.unlocked .lm-num,.lm-node.current .lm-num{
+  color:#3A1A00;text-shadow:0 1px 0 rgba(255,255,255,.4)}
+.lm-node.locked .lm-num{color:rgba(255,255,255,.3)}
+.lm-stars{font-size:11px;height:14px;line-height:14px}
+.lm-label{
+  margin-top:7px;font-size:11px;font-weight:800;
+  color:#fff;text-align:center;width:90px;
+  text-shadow:0 1px 4px rgba(0,0,0,.8),0 2px 8px rgba(0,0,0,.5);
+  line-height:1.3;
+}
+.lm-lock-ico{font-size:20px;position:absolute;top:50%;left:50%;transform:translate(-50%,-52%)}
+
+/* ── Connectors ── */
+.lm-path{position:absolute;border-radius:6px;transform-origin:left center}
+.lm-path.done-path{background:rgba(255,210,0,.55)}
+.lm-path.next-path{background:rgba(255,255,255,.22);background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.35) 0,rgba(255,255,255,.35) 8px,transparent 8px,transparent 18px)}
+.lm-path.lock-path{background:rgba(255,255,255,.1)}
+
+/* ── Chapter banners ── */
+.lm-chap{
+  position:absolute;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:8px;
+  background:rgba(0,0,0,.45);
+  backdrop-filter:blur(6px);
+  border:1.5px solid rgba(255,255,255,.15);
+  border-radius:30px;padding:7px 18px;
+  font-size:12px;font-weight:800;color:#fff;
+  white-space:nowrap;
+}
+
+/* ── Coming soon ── */
+.lm-coming{
+  position:absolute;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.4);border:2px dashed rgba(255,255,255,.2);
+  border-radius:24px;padding:20px 28px;text-align:center;
+  color:rgba(255,255,255,.6);
+}
+
+/* ── Bottom progress bar ── */
+.lm-bottom{
+  flex-shrink:0;
+  padding:12px 20px calc(70px + var(--safe-bot));
+  background:linear-gradient(transparent,rgba(0,0,0,.5));
+}
+.lm-prog-track{height:8px;background:rgba(255,255,255,.15);border-radius:6px;overflow:hidden}
+.lm-prog-fill{height:100%;background:linear-gradient(90deg,#FFD700,#FFA000);
+  border-radius:6px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+
+/* ══ LESSON SCREEN ══ */
+#lessonScreen{background:var(--bg)}
+.lesson-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:calc(var(--safe-top)+8px) 16px 8px;
+  background:linear-gradient(180deg,rgba(0,0,0,.7) 0%,rgba(0,0,0,.3) 100%);
+  flex-shrink:0;gap:10px;
+}
+.lesson-progress-bar{
+  flex:1;height:10px;background:rgba(255,255,255,.15);
+  border-radius:6px;overflow:hidden;
+}
+.lesson-progress-fill{
+  height:100%;background:linear-gradient(90deg,#4CAF50,#8BC34A);
+  border-radius:6px;transition:width .4s ease;
+}
+.lesson-hint-box{
+  margin:12px 14px 0;
+  background:rgba(255,255,255,.07);
+  border:1.5px solid rgba(212,168,67,.2);
+  border-radius:16px;padding:14px 16px;
+  font-size:14px;line-height:1.7;color:var(--text);
+  flex-shrink:0;min-height:60px;
+}
+/* Label quân cờ nổi */
+.piece-label-popup{
+  position:absolute;
+  background:#fff;color:#1A0A00;
+  font-size:11px;font-weight:800;
+  padding:4px 8px;border-radius:8px;
+  box-shadow:0 3px 10px rgba(0,0,0,.4);
+  pointer-events:none;z-index:10;
+  transform:translateX(-50%);
+  white-space:nowrap;
+  animation:labelPop .3s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes labelPop{
+  from{transform:translateX(-50%) scale(.5);opacity:0}
+  to{transform:translateX(-50%) scale(1);opacity:1}
+}
+/* Lesson result */
+#lessonResult{
+  background:radial-gradient(ellipse at 50% 40%,#1A0A00 0%,rgba(0,0,0,.97) 100%);
+}
+
 .event-card{background:var(--surf);border:1px solid rgba(212,168,67,.15);
   border-radius:16px;padding:16px;position:relative}
 .event-card.event-active{border-color:rgba(212,168,67,.3)}
@@ -652,7 +840,26 @@ body.light .splash-logo,body.light .home-logo,body.light .login-logo{color:#5A3A
 .lc-sub{font-size:11px;color:var(--dim);margin-top:2px}
 .lc-arr{font-size:20px;color:var(--dim)}
 
-/* ── SETTINGS SCREEN ── */
+/* ── LEARN SYSTEM ── */
+.learn-chapter{background:var(--surf);border:1px solid rgba(212,168,67,.13);border-radius:16px;overflow:hidden}
+.lc-chapter-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(212,168,67,.08)}
+.lc-chap-icon{font-size:24px;flex-shrink:0}
+.lc-chap-title{font-size:14px;font-weight:800}
+.lc-chap-sub{font-size:11px;color:var(--dim);margin-top:2px}
+.lc-levels{display:flex;flex-direction:column}
+.lv-card{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;
+  border-top:1px solid rgba(212,168,67,.06);transition:background .15s}
+.lv-card:active{background:rgba(212,168,67,.08)}
+.lv-card.locked{opacity:.4;pointer-events:none}
+.lv-card.done .lv-star{color:var(--gold)}
+.lv-card.done .lv-num{background:rgba(76,175,80,.2);color:var(--green);border-color:rgba(76,175,80,.3)}
+.lv-num{width:32px;height:32px;border-radius:50%;background:rgba(212,168,67,.1);
+  border:1px solid rgba(212,168,67,.25);display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;color:var(--gold);flex-shrink:0}
+.lv-info{flex:1}
+.lv-title{font-size:13px;font-weight:700}
+.lv-sub{font-size:11px;color:var(--dim);margin-top:2px}
+.lv-star{font-size:18px;color:rgba(212,168,67,.2)}
 .set-group-lbl{font-size:10px;letter-spacing:3px;color:var(--dim);
   font-weight:700;text-transform:uppercase;margin:18px 0 8px}
 .set-group-lbl:first-child{margin-top:4px}
@@ -1064,44 +1271,70 @@ body.light .splash-logo,body.light .home-logo,body.light .login-logo{color:#5A3A
 
 <!-- ══ LEARN ══ -->
 <div id="learn" class="screen">
-  <div class="topbar">
-    <div class="tb-title">📚 Học Cờ Tướng</div>
+  <div id="learnHome" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+
+    <div class="lm-header">
+      <div class="lm-title">🏯 Học Cờ Tướng</div>
+      <div class="lm-progress-pill"><span id="learnProgress">0/9</span> ⭐</div>
+    </div>
+
+    <div class="learn-map-scroll">
+      <div class="learn-map-bg" id="learnMap">
+        <div id="lmNodes"></div>
+      </div>
+    </div>
+
+    <div class="lm-bottom">
+      <div class="lm-prog-track">
+        <div class="lm-prog-fill" id="learnBar" style="width:0%"></div>
+      </div>
+    </div>
   </div>
-  <div class="scroll">
-    <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
-      <div class="learn-section-lbl">Cơ Bản</div>
-      <div class="learn-card" onclick="showLesson('intro')">
-        <div class="lc-icon">♟️</div>
-        <div class="lc-info"><div class="lc-title">Luật Cơ Bản</div><div class="lc-sub">Cách đi của từng quân cờ</div></div>
-        <div class="lc-arr">›</div>
+
+  <!-- Màn chơi bài học -->
+  <div id="lessonScreen" style="display:none;flex-direction:column;height:100%;position:relative;background:#1A3A1A">
+
+    <!-- Topbar -->
+    <div class="lesson-topbar">
+      <div class="tb-btn" onclick="exitLesson()" style="flex-shrink:0;background:rgba(255,255,255,.1)">←</div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:4px;padding:0 8px">
+        <div style="font-size:11px;color:rgba(255,255,255,.5);font-weight:700;letter-spacing:1px" id="lessonBaiNum">BÀI 1</div>
+        <div class="lesson-progress-bar">
+          <div class="lesson-progress-fill" id="lessonProgFill" style="width:0%"></div>
+        </div>
       </div>
-      <div class="learn-card" onclick="showLesson('pieces')">
-        <div class="lc-icon">🏯</div>
-        <div class="lc-info"><div class="lc-title">Giá Trị Quân Cờ</div><div class="lc-sub">Xe, Mã, Pháo, Tốt...</div></div>
-        <div class="lc-arr">›</div>
-      </div>
-      <div class="learn-section-lbl" style="margin-top:8px">Chiến Thuật</div>
-      <div class="learn-card" onclick="showLesson('opening')">
-        <div class="lc-icon">🚀</div>
-        <div class="lc-info"><div class="lc-title">Khai Cuộc Phổ Biến</div><div class="lc-sub">Pháo đầu, Mã đầu...</div></div>
-        <div class="lc-arr">›</div>
-      </div>
-      <div class="learn-card" onclick="showLesson('attack')">
-        <div class="lc-icon">⚔️</div>
-        <div class="lc-info"><div class="lc-title">Chiêu Tấn Công</div><div class="lc-sub">Đòn đôi, đòn ghim...</div></div>
-        <div class="lc-arr">›</div>
-      </div>
-      <div class="learn-card" onclick="showLesson('endgame')">
-        <div class="lc-icon">🏁</div>
-        <div class="lc-info"><div class="lc-title">Tàn Cuộc</div><div class="lc-sub">Kỹ thuật chiếu hết</div></div>
-        <div class="lc-arr">›</div>
-      </div>
-      <div class="learn-section-lbl" style="margin-top:8px">Cờ Úp</div>
-      <div class="learn-card" onclick="showLesson('hidden')">
-        <div class="lc-icon">🎭</div>
-        <div class="lc-info"><div class="lc-title">Luật Cờ Úp</div><div class="lc-sub">Chiến lược đặc biệt</div></div>
-        <div class="lc-arr">›</div>
-      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);flex-shrink:0" id="lessonStep">1/3</div>
+    </div>
+
+    <!-- Hint / lý thuyết -->
+    <div id="lessonHint" style="
+      padding:12px 16px;
+      font-size:13px;line-height:1.65;color:#fff;
+      background:rgba(0,0,0,.35);
+      border-bottom:1px solid rgba(255,255,255,.06);
+      flex-shrink:0;min-height:56px;max-height:120px;overflow-y:auto;
+      white-space:pre-line;
+    "></div>
+
+    <!-- Canvas bàn cờ -->
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px;position:relative" id="lessonCanvasWrap">
+      <canvas id="lessonCv" style="border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.5)"></canvas>
+      <div id="lessonLabels" style="position:absolute;inset:0;pointer-events:none"></div>
+    </div>
+
+    <!-- Nút hành động -->
+    <div style="padding:8px 14px 12px;display:flex;gap:8px;flex-shrink:0;background:rgba(0,0,0,.25)">
+      <button style="flex:1;border-radius:12px;padding:11px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit" onclick="lessonHintBtn()">💡 Gợi ý</button>
+      <button style="flex:1.5;border-radius:12px;padding:11px;display:none;background:linear-gradient(135deg,#F5A000,#FFD700);border:none;color:#1A0A00;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 0 rgba(0,0,0,.3)" id="lessonNextBtn" onclick="lessonNext()">Tiếp theo →</button>
+    </div>
+
+    <!-- Kết quả -->
+    <div id="lessonResult" style="display:none;position:absolute;inset:0;z-index:50;background:radial-gradient(ellipse at 50% 40%,#1A3A0A,rgba(0,0,0,.97));flex-direction:column;align-items:center;justify-content:center;gap:12px">
+      <div style="font-size:76px" id="lessonResultIcon">🌟</div>
+      <div style="font-size:24px;font-weight:900;color:#FFD700" id="lessonResultTitle">Hoàn Thành!</div>
+      <div id="lessonStars" style="font-size:36px;letter-spacing:8px">⭐⭐⭐</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.6);text-align:center;padding:0 28px;line-height:1.6" id="lessonResultDesc"></div>
+      <button onclick="lessonDone()" style="margin-top:12px;padding:14px 44px;border-radius:18px;background:linear-gradient(135deg,#FFD700,#FF8C00);border:none;color:#1A0A00;font-size:16px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 5px 0 rgba(0,0,0,.3)">Tiếp Tục →</button>
     </div>
   </div>
 </div>
@@ -2646,142 +2879,6 @@ function lbTab(btn,m){
   renderLeaderboard(m);
 }
 
-function renderLeaderboard(m){
-  const rk=[...RANKS].reverse().find(r=>elo>=r.min)||RANKS[0];
-  const myStats=document.getElementById('lbMyStats');
-  const rows=document.getElementById('lbRows');
-  if(!myStats||!rows)return;
-
-  const mName={flash:'Cờ Chớp',normal:'Cờ Thường',hidden:'Cờ Úp'};
-  const mIcon={flash:'⚡',normal:'♟',hidden:'🎭'};
-
-  // Fetch top players từ server
-  fetch(`${SERVER_URL}/leaderboard`)
-    .then(r=>r.json())
-    .catch(()=>({flash:[],normal:[],hidden:[]}))
-    .then(serverLb=>{
-      if(m==='all'){
-        const tot=stats.w+stats.l+stats.d;
-        const rankTot=Object.values(rankStats).reduce((a,s)=>a+s.w+s.l+s.d,0);
-        const rankW=Object.values(rankStats).reduce((a,s)=>a+s.w,0);
-        myStats.innerHTML=`
-          <div style="background:var(--surf);border:1px solid rgba(212,168,67,.2);border-radius:16px;padding:16px;margin-bottom:12px">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-              <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#8B2020,#C0392B);
-                display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;
-                font-size:22px;font-weight:900;color:#FFD700;border:2px solid var(--gold)">帥</div>
-              <div>
-                <div style="font-size:16px;font-weight:800">${playerName||'Người Chơi'}</div>
-                <div style="font-size:12px;color:var(--gold);margin-top:2px">${rk.icon} ${rk.name} · ELO ${elo}</div>
-              </div>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
-              <div style="background:rgba(76,175,80,.1);border-radius:10px;padding:10px">
-                <div style="font-size:20px;font-weight:800;color:var(--green)">${stats.w}</div>
-                <div style="font-size:10px;color:var(--dim);margin-top:2px">Tổng Thắng</div>
-              </div>
-              <div style="background:rgba(255,80,80,.08);border-radius:10px;padding:10px">
-                <div style="font-size:20px;font-weight:800;color:#FF6060">${stats.l}</div>
-                <div style="font-size:10px;color:var(--dim);margin-top:2px">Tổng Thua</div>
-              </div>
-              <div style="background:rgba(212,168,67,.08);border-radius:10px;padding:10px">
-                <div style="font-size:20px;font-weight:800;color:var(--gold)">${stats.d}</div>
-                <div style="font-size:10px;color:var(--dim);margin-top:2px">Tổng Hòa</div>
-              </div>
-            </div>
-            <div style="margin-top:10px;font-size:11px;color:var(--dim);text-align:center">
-              Rank: ${rankTot} ván · ${rankTot>0?Math.round(rankW/rankTot*100)+'%':'—'} thắng
-              &nbsp;·&nbsp; AI: ${tot-rankTot} ván
-            </div>
-          </div>`;
-        // Top 1 mỗi chế độ từ server
-        const topHtml=['normal','flash','hidden'].map(md=>{
-          const top=serverLb[md]&&serverLb[md][0];
-          return `<div style="background:var(--surf);border:1px solid rgba(212,168,67,.13);
-            border-radius:12px;padding:12px 14px;margin-bottom:8px;
-            display:flex;align-items:center;gap:10px">
-            <div style="font-size:22px">${mIcon[md]}</div>
-            <div style="flex:1">
-              <div style="font-size:11px;color:var(--dim);font-weight:700">${mName[md]}</div>
-              <div style="font-size:14px;font-weight:800;margin-top:2px">${top?top.name:'—'}</div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-size:16px;font-weight:800;color:var(--gold)">${top?top.elo:'—'}</div>
-              <div style="font-size:10px;color:var(--dim)">${top?`${top.w}W ${top.l}L`:''}</div>
-            </div>
-            <div style="font-size:20px">👑</div>
-          </div>`;
-        }).join('');
-        rows.innerHTML=`<div style="padding:0 0 8px">
-          <div style="font-size:10px;letter-spacing:2px;color:var(--dim);font-weight:700;margin-bottom:8px">🏆 TOP 1 MỖI CHẾ ĐỘ</div>
-          ${topHtml}
-          <div style="text-align:center;padding:8px;font-size:11px;color:var(--dim)">
-            Bảng xếp hạng cập nhật theo thời gian thực</div>
-        </div>`;
-      } else {
-        const s=rankStats[m]||{w:0,l:0,d:0};
-        const tot=s.w+s.l+s.d;
-        const hist=stats.hist.filter(h=>h.isRank&&h.modeName===mName[m]);
-        myStats.innerHTML=`
-          <div style="background:var(--surf);border:1px solid rgba(212,168,67,.2);border-radius:16px;padding:16px;margin-bottom:12px">
-            <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:12px">${mIcon[m]} ${mName[m]} · ELO ${elo}</div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
-              <div style="background:rgba(76,175,80,.1);border-radius:10px;padding:10px">
-                <div style="font-size:22px;font-weight:800;color:var(--green)">${s.w}</div>
-                <div style="font-size:10px;color:var(--dim);margin-top:2px">Thắng</div>
-              </div>
-              <div style="background:rgba(255,80,80,.08);border-radius:10px;padding:10px">
-                <div style="font-size:22px;font-weight:800;color:#FF6060">${s.l}</div>
-                <div style="font-size:10px;color:var(--dim);margin-top:2px">Thua</div>
-              </div>
-              <div style="background:rgba(212,168,67,.08);border-radius:10px;padding:10px">
-                <div style="font-size:22px;font-weight:800;color:var(--gold)">${s.d}</div>
-                <div style="font-size:10px;color:var(--dim);margin-top:2px">Hòa</div>
-              </div>
-            </div>
-            <div style="margin-top:10px;font-size:11px;color:var(--dim);text-align:center">
-              ${tot} ván rank · ${tot>0?Math.round(s.w/tot*100)+'%':'—'} thắng
-            </div>
-          </div>`;
-        // Top players chế độ này từ server
-        const topList=serverLb[m]||[];
-        const isMe=playerName||'Người Chơi';
-        let topHtml='';
-        if(topList.length){
-          topHtml=topList.slice(0,5).map((p,i)=>`
-            <div class="lbrow ${p.name===isMe?'me':''}">
-              <div class="lbnum ${i<3?'t':''}">${i+1}</div>
-              <div class="lbav">帥</div>
-              <div class="lbinfo">
-                <div class="lbname">${p.name}</div>
-                <div class="lbsub">${p.w+p.l+p.d} ván · ${p.w+p.l+p.d>0?Math.round(p.w/(p.w+p.l+p.d)*100)+'%':'—'}</div>
-              </div>
-              <div><div class="lbelo">${p.elo}</div></div>
-            </div>`).join('');
-        } else {
-          topHtml=`<div class="sep">Chưa có dữ liệu server</div>`;
-        }
-        // Lịch sử cá nhân
-        const histHtml=hist.slice(0,10).map(h=>{
-          const c=h.elo.startsWith('+')?'var(--green)':h.elo.startsWith('-')?'#FF6060':'var(--gold)';
-          return `<div class="lbrow ${h.result==='win'?'me':''}">
-            <div class="lbnum" style="color:${c}">${h.result==='win'?'W':h.result==='lose'?'L':'D'}</div>
-            <div class="lbav" style="font-size:11px;background:var(--surf)">${h.modeIcon}</div>
-            <div class="lbinfo"><div class="lbname">${h.opp}</div><div class="lbsub">${h.date} ${h.time}</div></div>
-            <div><div class="lbelo" style="color:${c}">${h.elo}</div></div>
-          </div>`;
-        }).join('');
-        rows.innerHTML=`
-          <div style="font-size:10px;letter-spacing:2px;color:var(--dim);font-weight:700;margin-bottom:8px;padding:0 2px">🏆 BXH SERVER</div>
-          ${topHtml}
-          ${hist.length?`<div style="font-size:10px;letter-spacing:2px;color:var(--dim);font-weight:700;margin:12px 0 8px;padding:0 2px">📋 LỊCH SỬ CỦA BẠN</div>${histHtml}`:''}`;
-      }
-    });
-}
-
-function refreshLeaderboard(){
-  renderLeaderboard(currentLbMode);
-}
 
 function renderLeaderboard(m){
   const rk=[...RANKS].reverse().find(r=>elo>=r.min)||RANKS[0];
@@ -3001,30 +3098,978 @@ function nav(screenId,navEl){
     const el=document.getElementById('setNameLbl');
     if(el) el.textContent=playerName||'Người Chơi';
   }
+  if(screenId==='learn') updateLearnUI();
 }
 
-function showLesson(id){
-  const lessons={
-    intro:'📖 Luật cơ bản: Tướng trong cung, Xe đi thẳng, Mã đi chữ L, Pháo cần quân chắn để bắt.',
-    pieces:'♟ Giá trị: Xe=9, Pháo=4.5, Mã=4, Tượng/Sĩ=2, Tốt=1.',
-    opening:'🚀 Khai cuộc: Pháo đầu, Mã đầu, hoặc kết hợp để kiểm soát trung tâm.',
-    attack:'⚔️ Tấn công: Đòn đôi, đòn ghim, chiếu liên hoàn, hy sinh quân.',
-    endgame:'🏁 Tàn cuộc: Xe + Tướng đủ chiếu hết. Học cách tiếp cận tướng địch.',
-    hidden:'🎭 Cờ Úp: Quân đi theo vị trí trước khi lật. Sĩ/Tượng đặc biệt hơn sau khi lật!'
-  };
-  toast(lessons[id]||'Bài học sắp có!');
+
+// ══════════════════════════════════════════
+// LESSON ENGINE
+// ════════════════════════════════════════
+let learnDone=[], curLesson=-1, curStep=0;
+let lessonSel=null, lessonPcs=[], lessonCtx=null, lessonCell=32;
+
+const LESSONS=[
+
+// ══════════════════════════════════════
+// BÀI 1: QUÂN TỐT — Quân nhỏ nhưng dũng cảm
+// ══════════════════════════════════════
+{title:'Quân Tốt',icon:'兵',steps:[
+
+  // Lý thuyết 1: Cách đi cơ bản
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:2,s:'r',t:'A',r:9,c:3},{id:3,s:'r',t:'A',r:9,c:5},
+     {id:4,s:'r',t:'B',r:9,c:2},{id:5,s:'r',t:'B',r:9,c:6},
+     {id:6,s:'r',t:'R',r:9,c:0},{id:7,s:'r',t:'R',r:9,c:8},
+     {id:8,s:'r',t:'N',r:9,c:1},{id:9,s:'r',t:'N',r:9,c:7},
+     {id:10,s:'r',t:'C',r:7,c:1},{id:11,s:'r',t:'C',r:7,c:7},
+     {id:12,s:'r',t:'P',r:6,c:0},{id:13,s:'r',t:'P',r:6,c:2},
+     {id:14,s:'r',t:'P',r:6,c:4},{id:15,s:'r',t:'P',r:6,c:6},{id:16,s:'r',t:'P',r:6,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:2},{id:55,s:'b',t:'B',r:0,c:6},
+     {id:56,s:'b',t:'R',r:0,c:0},{id:57,s:'b',t:'R',r:0,c:8},
+     {id:58,s:'b',t:'N',r:0,c:1},{id:59,s:'b',t:'N',r:0,c:7},
+     {id:60,s:'b',t:'C',r:2,c:1},{id:61,s:'b',t:'C',r:2,c:7},
+     {id:62,s:'b',t:'P',r:3,c:0},{id:63,s:'b',t:'P',r:3,c:2},
+     {id:64,s:'b',t:'P',r:3,c:4},{id:65,s:'b',t:'P',r:3,c:6},{id:66,s:'b',t:'P',r:3,c:8}
+   ],
+   hint:'QUÂN TỐT (兵/卒) — Quân lính bộ binh\n\n📌 Chưa qua sông: chỉ tiến thẳng 1 ô, không đi ngang, không đi lùi.\n\n🍀 Mẹo nhớ: "Tốt chưa qua sông như lính mới — chỉ biết tiến thẳng!"',
+   arrows:[{fr:6,fc:0,tr:5,tc:0},{fr:6,fc:2,tr:5,tc:2},{fr:6,fc:4,tr:5,tc:4},{fr:6,fc:6,tr:5,tc:6},{fr:6,fc:8,tr:5,tc:8}]},
+
+  // Lý thuyết 2: Sau khi qua sông
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:14,s:'r',t:'P',r:4,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'SAU KHI QUA SÔNG — Tốt trở nên nguy hiểm hơn!\n\n✅ Được tiến thẳng 1 ô\n✅ Được đi ngang trái/phải 1 ô\n❌ Vẫn KHÔNG được đi lùi\n\n🍀 Mẹo nhớ: "Qua sông rồi thì được phép rẽ trái, rẽ phải — nhưng không được quay đầu!"',
+   arrows:[{fr:4,fc:4,tr:3,tc:4},{fr:4,fc:4,tr:4,tc:3},{fr:4,fc:4,tr:4,tc:5}]},
+
+  // Thực hành: tiến Tốt
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:9,c:0},{id:7,s:'r',t:'R',r:9,c:8},
+     {id:14,s:'r',t:'P',r:6,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🎯 THỰC HÀNH: Tiến Tốt giữa lên 1 ô.\n\nNhấn vào Tốt đỏ (hàng 6, cột giữa) → nhấn ô phía trên nó.',
+   movePiece:14,answer:{r:5,c:4}},
+
+  // Thực hành: Tốt qua sông đi ngang
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:9,c:0},{id:7,s:'r',t:'R',r:9,c:8},
+     {id:14,s:'r',t:'P',r:4,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🎯 THỰC HÀNH: Tốt đã qua sông (hàng 4).\nBây giờ đi ngang sang phải 1 ô.\n\nNhấn Tốt → nhấn ô bên phải nó.',
+   movePiece:14,answer:{r:4,c:5}},
+
+  // Mô phỏng chiếu: Tốt + Xe
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},
+     {id:6,s:'r',t:'R',r:2,c:0},{id:7,s:'r',t:'R',r:2,c:8},
+     {id:14,s:'r',t:'P',r:1,c:3},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🏆 MÔ PHỎNG CHIẾU HẾT bằng Tốt!\n\nBối cảnh:\n• Tốt đỏ ở (1,3) — đã qua sông\n• 2 Xe đỏ chặn hàng 2 — Tướng đen không chạy xuống được\n\nBước tiếp: Tốt tiến lên (0,3) bắt Sĩ đen. Tướng đen không thoát!',
+   arrows:[{fr:1,fc:3,tr:0,tc:3,cap:true},{fr:2,fc:0,tr:0,tc:0},{fr:2,fc:8,tr:0,tc:8}]},
+
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},
+     {id:6,s:'r',t:'R',r:2,c:0},{id:7,s:'r',t:'R',r:2,c:8},
+     {id:14,s:'r',t:'P',r:1,c:3},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'💥 Tiến Tốt lên (0,3) bắt Sĩ đen.\nTướng đen bị chiếu — không đi đâu được vì:\n• Sang trái (0,3): Tốt đang đứng đó\n• Sang phải (0,5): Sĩ còn đó\n• Lùi xuống: 2 Xe chặn hàng 2\n\n👉 CHIẾU HẾT! 🏆',
+   movePiece:14,answer:{r:0,c:3}},
+]},
+
+// ══════════════════════════════════════
+// BÀI 2: QUÂN PHÁO — Kẻ bắn tỉa
+// ══════════════════════════════════════
+{title:'Quân Pháo',icon:'炮',steps:[
+
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:2,s:'r',t:'A',r:9,c:3},{id:3,s:'r',t:'A',r:9,c:5},
+     {id:4,s:'r',t:'B',r:9,c:2},{id:5,s:'r',t:'B',r:9,c:6},
+     {id:6,s:'r',t:'R',r:9,c:0},{id:7,s:'r',t:'R',r:9,c:8},
+     {id:8,s:'r',t:'N',r:9,c:1},{id:9,s:'r',t:'N',r:9,c:7},
+     {id:10,s:'r',t:'C',r:7,c:1},{id:11,s:'r',t:'C',r:7,c:7},
+     {id:12,s:'r',t:'P',r:6,c:0},{id:13,s:'r',t:'P',r:6,c:2},
+     {id:14,s:'r',t:'P',r:6,c:4},{id:15,s:'r',t:'P',r:6,c:6},{id:16,s:'r',t:'P',r:6,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:2},{id:55,s:'b',t:'B',r:0,c:6},
+     {id:56,s:'b',t:'R',r:0,c:0},{id:57,s:'b',t:'R',r:0,c:8},
+     {id:58,s:'b',t:'N',r:0,c:1},{id:59,s:'b',t:'N',r:0,c:7},
+     {id:60,s:'b',t:'C',r:2,c:1},{id:61,s:'b',t:'C',r:2,c:7},
+     {id:62,s:'b',t:'P',r:3,c:0},{id:63,s:'b',t:'P',r:3,c:2},
+     {id:64,s:'b',t:'P',r:3,c:4},{id:65,s:'b',t:'P',r:3,c:6},{id:66,s:'b',t:'P',r:3,c:8}
+   ],
+   hint:'QUÂN PHÁO (炮) — Kẻ bắn tỉa nguy hiểm\n\n📌 Di chuyển: đi thẳng/ngang bao nhiêu ô cũng được (như Xe)\n📌 Ăn quân: PHẢI có đúng 1 quân bất kỳ làm "bàn đạp" ở giữa\n\n🍀 Mẹo nhớ: "Pháo đi như Xe, bắn như súng cần đạn lót!"',
+   arrows:[{fr:7,fc:1,tr:7,tc:3},{fr:7,fc:1,tr:4,tc:1}]},
+
+  // Luật bắn qua bàn đạp
+  {type:'show',
+   pcs:[
+     {id:10,s:'r',t:'C',r:5,c:1},{id:14,s:'r',t:'P',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:57,s:'b',t:'R',r:5,c:7},
+     {id:1,s:'r',t:'K',r:9,c:4}
+   ],
+   hint:'LUẬT BẮN ĐẶC BIỆT của Pháo:\n\n✅ CÓ bàn đạp → Pháo BẮT được quân đối phương:\nPháo (5,1) → Tốt đỏ (5,4) là bàn đạp → Bắt Xe đen (5,7)!\n\n❌ KHÔNG có bàn đạp → Pháo CHỈ đi qua, không bắt được\n\n👉 Mũi tên đỏ = đường bắt',
+   arrows:[{fr:5,fc:1,tr:5,tc:7,cap:true}]},
+
+  // Thực hành di chuyển
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:10,s:'r',t:'C',r:7,c:1},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🎯 THỰC HÀNH: Di chuyển Pháo từ (7,1) tiến thẳng lên (2,1).\n\nNhấn Pháo → nhấn ô đích.',
+   movePiece:10,answer:{r:2,c:1}},
+
+  // Thực hành bắn qua bàn đạp
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:10,s:'r',t:'C',r:5,c:1},
+     {id:14,s:'r',t:'P',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:57,s:'b',t:'R',r:5,c:7}
+   ],
+   hint:'🎯 THỰC HÀNH: Pháo bắn qua bàn đạp!\nPháo (5,1) có Tốt đỏ (5,4) làm bàn đạp.\nBắt Xe đen ở (5,7).\n\nNhấn Pháo → nhấn Xe đen.',
+   movePiece:10,answer:{r:5,c:7}},
+
+  // Mô phỏng chiếu hết
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:3},{id:10,s:'r',t:'C',r:9,c:4},
+     {id:6,s:'r',t:'R',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🏆 MÔ PHỎNG CHIẾU HẾT bằng Pháo!\n\nBối cảnh:\n• Pháo đỏ ở (9,4)\n• Xe đỏ ở (5,4) — sẽ là bàn đạp\n• Tướng đen ở (0,4) — cùng cột!\n\nPháo bắn lên cột 4, qua Xe làm bàn đạp → chiếu hết!',
+   arrows:[{fr:9,fc:4,tr:0,tc:4,cap:true}]},
+
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:3},{id:10,s:'r',t:'C',r:9,c:4},
+     {id:6,s:'r',t:'R',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'💥 Pháo bắn lên (0,4) — qua Xe (5,4) làm bàn đạp.\nTướng đen bị chiếu:\n• Sang trái (0,3): Sĩ đang đứng\n• Sang phải (0,5): Sĩ đang đứng\n• Không có quân nào chặn Pháo được\n\n👉 CHIẾU HẾT! 🏆',
+   movePiece:10,answer:{r:0,c:4}},
+]},
+
+// ══════════════════════════════════════
+// BÀI 3: QUÂN XE — Kẻ chinh phục đường thẳng
+// ══════════════════════════════════════
+{title:'Quân Xe',icon:'車',steps:[
+
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:2,s:'r',t:'A',r:9,c:3},{id:3,s:'r',t:'A',r:9,c:5},
+     {id:4,s:'r',t:'B',r:9,c:2},{id:5,s:'r',t:'B',r:9,c:6},
+     {id:6,s:'r',t:'R',r:9,c:0},{id:7,s:'r',t:'R',r:9,c:8},
+     {id:8,s:'r',t:'N',r:9,c:1},{id:9,s:'r',t:'N',r:9,c:7},
+     {id:10,s:'r',t:'C',r:7,c:1},{id:11,s:'r',t:'C',r:7,c:7},
+     {id:12,s:'r',t:'P',r:6,c:0},{id:13,s:'r',t:'P',r:6,c:2},
+     {id:14,s:'r',t:'P',r:6,c:4},{id:15,s:'r',t:'P',r:6,c:6},{id:16,s:'r',t:'P',r:6,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:2},{id:55,s:'b',t:'B',r:0,c:6},
+     {id:56,s:'b',t:'R',r:0,c:0},{id:57,s:'b',t:'R',r:0,c:8},
+     {id:58,s:'b',t:'N',r:0,c:1},{id:59,s:'b',t:'N',r:0,c:7},
+     {id:60,s:'b',t:'C',r:2,c:1},{id:61,s:'b',t:'C',r:2,c:7},
+     {id:62,s:'b',t:'P',r:3,c:0},{id:63,s:'b',t:'P',r:3,c:2},
+     {id:64,s:'b',t:'P',r:3,c:4},{id:65,s:'b',t:'P',r:3,c:6},{id:66,s:'b',t:'P',r:3,c:8}
+   ],
+   hint:'QUÂN XE (車) — Quân mạnh nhất trong cờ tướng!\n\n📌 Đi thẳng hoặc ngang bao nhiêu ô cũng được\n📌 KHÔNG nhảy qua quân khác\n📌 Gặp quân địch → ăn ngay\n\n🍀 Mẹo nhớ: "Xe như tàu hỏa — chạy thẳng, không cần bàn đạp, không nhảy qua ga!"',
+   arrows:[{fr:9,fc:0,tr:6,tc:0},{fr:9,fc:8,tr:6,tc:8}]},
+
+  // Xe bị chặn
+  {type:'show',
+   pcs:[
+     {id:6,s:'r',t:'R',r:5,c:1},{id:14,s:'r',t:'P',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:57,s:'b',t:'R',r:5,c:7},
+     {id:1,s:'r',t:'K',r:9,c:4}
+   ],
+   hint:'XE BỊ CHẶN — điều quan trọng cần nhớ!\n\nXe đỏ ở (5,1) muốn sang phải.\nTốt đỏ (5,4) đang đứng đó → Xe CHỈ đi đến (5,3), không nhảy qua được!\n\n⚠️ Khác với Pháo: Pháo bắn qua được, Xe thì không!',
+   arrows:[{fr:5,fc:1,tr:5,tc:3}]},
+
+  // Thực hành
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:9,c:0},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:62,s:'b',t:'P',r:3,c:0}
+   ],
+   hint:'🎯 THỰC HÀNH: Xe trái tiến lên ăn Tốt đen (3,0).\nXe từ (9,0) → (3,0).\n\nNhấn Xe → nhấn ô đích.',
+   movePiece:6,answer:{r:3,c:0}},
+
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:3,c:0},{id:7,s:'r',t:'R',r:9,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🎯 THỰC HÀNH: Xe phải (9,8) tiến lên (0,8).\nBịt đường thoát phải của Tướng đen.\n\nNhấn Xe → nhấn (0,8).',
+   movePiece:7,answer:{r:0,c:8}},
+
+  // Mô phỏng chiếu hết 2 Xe
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:3,c:0},{id:7,s:'r',t:'R',r:0,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🏆 MÔ PHỎNG CHIẾU HẾT 2 XE KẸP!\n\nXe phải đã chốt (0,8) — chặn hàng trên cùng bên phải.\nXe trái (3,0) tiến lên (0,0) — chiếu hết!\n\nTướng đen bị kẹp:\n• Trái: Xe (0,0) chiếu\n• Phải: Xe (0,8) chặn\n• Sĩ đen không chặn được',
+   arrows:[{fr:3,fc:0,tr:0,tc:0,cap:true}]},
+
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:3,c:0},{id:7,s:'r',t:'R',r:0,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'💥 Xe trái (3,0) → (0,0). CHIẾU HẾT! 🏆\n\nTướng đen không thoát vì:\n• Xe (0,0) đang chiếu từ trái\n• Xe (0,8) chặn hết hàng 0 bên phải\n• Không có quân nào chặn được 2 Xe này',
+   movePiece:6,answer:{r:0,c:0}},
+]},
+
+// ══════════════════════════════════════
+// BÀI 4: QUÂN MÃ — Kẻ nhảy chữ L
+// ══════════════════════════════════════
+{title:'Quân Mã',icon:'馬',steps:[
+
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:2,s:'r',t:'A',r:9,c:3},{id:3,s:'r',t:'A',r:9,c:5},
+     {id:4,s:'r',t:'B',r:9,c:2},{id:5,s:'r',t:'B',r:9,c:6},
+     {id:6,s:'r',t:'R',r:9,c:0},{id:7,s:'r',t:'R',r:9,c:8},
+     {id:8,s:'r',t:'N',r:9,c:1},{id:9,s:'r',t:'N',r:9,c:7},
+     {id:10,s:'r',t:'C',r:7,c:1},{id:11,s:'r',t:'C',r:7,c:7},
+     {id:12,s:'r',t:'P',r:6,c:0},{id:13,s:'r',t:'P',r:6,c:2},
+     {id:14,s:'r',t:'P',r:6,c:4},{id:15,s:'r',t:'P',r:6,c:6},{id:16,s:'r',t:'P',r:6,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:2},{id:55,s:'b',t:'B',r:0,c:6},
+     {id:56,s:'b',t:'R',r:0,c:0},{id:57,s:'b',t:'R',r:0,c:8},
+     {id:58,s:'b',t:'N',r:0,c:1},{id:59,s:'b',t:'N',r:0,c:7},
+     {id:60,s:'b',t:'C',r:2,c:1},{id:61,s:'b',t:'C',r:2,c:7},
+     {id:62,s:'b',t:'P',r:3,c:0},{id:63,s:'b',t:'P',r:3,c:2},
+     {id:64,s:'b',t:'P',r:3,c:4},{id:65,s:'b',t:'P',r:3,c:6},{id:66,s:'b',t:'P',r:3,c:8}
+   ],
+   hint:'QUÂN MÃ (馬) — Con ngựa nhảy chữ L\n\n📌 Đi 1 ô thẳng (ngang hoặc dọc) TRƯỚC, rồi 1 ô chéo\n📌 Có 8 hướng tiềm năng\n📌 BỊ CHẶN CHÂN: nếu ô thẳng đầu tiên có quân → không đi được!\n\n🍀 Mẹo nhớ: "Mã đi chữ L, bị chặn chân thì đứng yên!"',
+   arrows:[{fr:9,fc:1,tr:7,tc:0},{fr:9,fc:1,tr:7,tc:2},{fr:9,fc:7,tr:7,tc:6},{fr:9,fc:7,tr:7,tc:8}]},
+
+  // Luật bị chặn chân
+  {type:'show',
+   pcs:[
+     {id:20,s:'r',t:'N',r:5,c:4},{id:21,s:'r',t:'P',r:4,c:4},{id:22,s:'r',t:'P',r:5,c:3},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:51,s:'b',t:'K',r:0,c:4}
+   ],
+   hint:'CHẶN CHÂN MÃ — điều quan trọng nhất!\n\n• Tốt đỏ (4,4) chặn → Mã KHÔNG đi lên (3,3) hoặc (3,5) được (mũi đỏ)\n• Tốt đỏ (5,3) chặn → Mã KHÔNG đi sang (4,2) hoặc (6,2) được\n\n💡 Trong thực chiến, cài Tốt/quân khác chặn chân Mã đối thủ là cách phòng thủ rất hay!',
+   arrows:[{fr:5,fc:4,tr:3,tc:3,cap:true},{fr:5,fc:4,tr:3,tc:5,cap:true},{fr:5,fc:4,tr:4,tc:2,cap:true},{fr:5,fc:4,tr:6,tc:2,cap:true},{fr:5,fc:4,tr:7,tc:3},{fr:5,fc:4,tr:7,tc:5},{fr:5,fc:4,tr:4,tc:6},{fr:5,fc:4,tr:6,tc:6}]},
+
+  // Thực hành
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:8,s:'r',t:'N',r:7,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🎯 THỰC HÀNH: Mã từ (7,4) nhảy chữ L đến (5,5).\n1 ô lên + 1 ô sang phải chéo = (5,5)\n\nNhấn Mã → nhấn (5,5).',
+   movePiece:8,answer:{r:5,c:5}},
+
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:8,s:'r',t:'N',r:5,c:5},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🎯 THỰC HÀNH: Mã tiếp tục từ (5,5) → (3,4).\n1 ô lên + 1 ô sang trái chéo = (3,4)\n\nNhấn Mã → nhấn (3,4).',
+   movePiece:8,answer:{r:3,c:4}},
+
+  // Mô phỏng chiếu hết
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:8,s:'r',t:'N',r:2,c:3},{id:6,s:'r',t:'R',r:0,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🏆 MÔ PHỎNG CHIẾU HẾT bằng Mã!\n\nBối cảnh:\n• Mã đỏ ở (2,3) — sắp nhảy vào cung địch\n• Xe đỏ (0,8) chặn hàng 0\n• Sĩ đen (0,3) và (0,5) không cản được Mã nhảy!\n\nMã nhảy (2,3) → (0,4): 1 ô lên + 1 ô phải chéo = chiếu hết!',
+   arrows:[{fr:2,fc:3,tr:0,tc:4,cap:true}]},
+
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:8,s:'r',t:'N',r:2,c:3},{id:6,s:'r',t:'R',r:0,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'💥 Mã nhảy (2,3) → (0,4). CHIẾU HẾT! 🏆\n\nTướng đen không thoát vì:\n• Mã đứng ở (0,4) — chiếu trực tiếp\n• Sĩ đen không thể ăn Mã (không đi thẳng được)\n• Xe (0,8) kiểm soát hàng 0\n• Không có quân nào đỡ được Mã kiểu này!',
+   movePiece:8,answer:{r:0,c:4}},
+]},
+
+// ══════════════════════════════════════
+// BÀI 5: QUÂN TƯỚNG — Vị vua cần bảo vệ
+// ══════════════════════════════════════
+{title:'Quân Tướng',icon:'帥',steps:[
+
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:2,s:'r',t:'A',r:9,c:3},{id:3,s:'r',t:'A',r:9,c:5},
+     {id:4,s:'r',t:'B',r:9,c:2},{id:5,s:'r',t:'B',r:9,c:6},
+     {id:6,s:'r',t:'R',r:9,c:0},{id:7,s:'r',t:'R',r:9,c:8},
+     {id:8,s:'r',t:'N',r:9,c:1},{id:9,s:'r',t:'N',r:9,c:7},
+     {id:10,s:'r',t:'C',r:7,c:1},{id:11,s:'r',t:'C',r:7,c:7},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:2},{id:55,s:'b',t:'B',r:0,c:6},
+     {id:56,s:'b',t:'R',r:0,c:0},{id:57,s:'b',t:'R',r:0,c:8}
+   ],
+   hint:'QUÂN TƯỚNG (帥/將) — Vị vua của bàn cờ\n\n📌 Đi 1 ô NGANG hoặc DỌC mỗi lần\n📌 KHÔNG được ra khỏi CUNG (vùng 3×3 giữa)\n📌 Hai Tướng không được nhìn thẳng mặt nhau nếu không có quân cản\n\nCung đỏ: hàng 7-9, cột 3-5\nCung đen: hàng 0-2, cột 3-5\n\n🍀 Mẹo nhớ: "Tướng như ông vua ngồi trong cung — không được ra ngoài!"',
+   arrows:[{fr:9,fc:4,tr:8,tc:4},{fr:9,fc:4,tr:9,tc:3},{fr:9,fc:4,tr:9,tc:5}]},
+
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:51,s:'b',t:'K',r:0,c:4}
+   ],
+   hint:'QUY TẮC ĐỐI TƯỚNG — Đặc biệt chỉ có trong cờ tướng!\n\nNếu 2 Tướng đứng cùng cột (hoặc hàng) mà không có quân nào cản → Bên nào để xảy ra điều đó bị xử thua!\n\nTại sao? Vì hai Tướng "nhìn mặt nhau" = vi phạm luật.\n\n⚡ Lợi dụng điều này: dùng Tướng mình làm áp lực lên Tướng địch!',
+   arrows:[{fr:9,fc:4,tr:0,tc:4,cap:true}]},
+
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:2,s:'r',t:'A',r:9,c:3},{id:3,s:'r',t:'A',r:9,c:5},
+     {id:6,s:'r',t:'R',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🎯 THỰC HÀNH: Tướng đỏ dịch sang trái 1 ô (9,3).\n\nNhấn Tướng đỏ → nhấn ô bên trái.',
+   movePiece:1,answer:{r:9,c:3}},
+
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:3},{id:2,s:'r',t:'A',r:9,c:4},{id:3,s:'r',t:'A',r:9,c:5},
+     {id:6,s:'r',t:'R',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🎯 THỰC HÀNH: Tướng đỏ tiến lên (8,3).\n\nNhấn Tướng đỏ → nhấn ô phía trên.',
+   movePiece:1,answer:{r:8,c:3}},
+
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:1,c:4},{id:7,s:'r',t:'R',r:0,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🏆 MÔ PHỎNG CHIẾU HẾT — Xe chiếu + Tướng phối hợp!\n\nXe đỏ (1,4) chiếu Tướng đen (0,4).\nTướng đen muốn chạy:\n• Sang (0,3): Sĩ đang đứng đó\n• Sang (0,5): Sĩ đang đứng đó\n• Lùi xuống (1,4): Xe đang chiếu\n\nXe (0,8) khóa toàn bộ hàng 0!\n\n👉 CHIẾU HẾT! 🏆',
+   arrows:[{fr:1,fc:4,tr:0,tc:4,cap:true},{fr:0,fc:8,tr:0,tc:5}]},
+
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:5,c:4},{id:7,s:'r',t:'R',r:0,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'💥 Tiến Xe (5,4) → (1,4). CHIẾU HẾT! 🏆\n\nTướng đen bị chiếu hoàn toàn không có đường thoát.',
+   movePiece:6,answer:{r:1,c:4}},
+]},
+
+// ══════════════════════════════════════
+// BÀI 6: QUÂN SĨ — Lá chắn phòng thủ
+// ══════════════════════════════════════
+{title:'Sĩ — Phòng Thủ',icon:'仕',steps:[
+
+  {type:'show',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:2},{id:55,s:'b',t:'B',r:0,c:6},
+     {id:56,s:'b',t:'R',r:0,c:0},{id:57,s:'b',t:'R',r:0,c:8},
+     {id:58,s:'b',t:'N',r:0,c:1},{id:59,s:'b',t:'N',r:0,c:7},
+     {id:60,s:'b',t:'C',r:2,c:1},{id:61,s:'b',t:'C',r:2,c:7},
+     {id:62,s:'b',t:'P',r:3,c:0},{id:63,s:'b',t:'P',r:3,c:2},
+     {id:64,s:'b',t:'P',r:3,c:4},{id:65,s:'b',t:'P',r:3,c:6},{id:66,s:'b',t:'P',r:3,c:8},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:2,s:'r',t:'A',r:9,c:3},{id:3,s:'r',t:'A',r:9,c:5}
+   ],
+   hint:'QUÂN SĨ (仕/士) — Lá chắn bảo vệ Tướng\n\n📌 Đi CHÉO 1 ô, chỉ trong CUNG\n📌 Chỉ có 5 vị trí có thể đứng\n📌 KHÔNG ăn quân bên ngoài cung được\n\nVai trò chính: CHẶN quân địch đang tấn công Tướng!\n\n🍀 Mẹo nhớ: "Sĩ là cận vệ — chỉ đi chéo, không rời khỏi cung!"',
+   arrows:[{fr:0,fc:3,tr:1,tc:4},{fr:0,fc:5,tr:1,tc:4},{fr:1,fc:4,tr:0,tc:3},{fr:1,fc:4,tr:0,tc:5},{fr:1,fc:4,tr:2,tc:3},{fr:1,fc:4,tr:2,tc:5}]},
+
+  // Tình huống nguy hiểm
+  {type:'show',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:3,c:4}
+   ],
+   hint:'⚠️ NGUY HIỂM! Xe đỏ (3,4) đang nhắm thẳng vào cột 4.\nNếu không chặn — Xe tiến lên (1,4) rồi (0,4) là chiếu ngay!\n\nSĨ CÓ THỂ CHẶN: Sĩ đen (0,3) tiến chéo lên (1,4) đứng chặn đường Xe!\n\n👉 Đây chính là nhiệm vụ của Sĩ — phòng thủ!',
+   arrows:[{fr:3,fc:4,tr:0,tc:4,cap:true},{fr:0,fc:3,tr:1,tc:4}]},
+
+  // Thực hành chặn chiếu
+  {type:'move',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:3,c:4}
+   ],
+   hint:'🛡️ THỰC HÀNH PHÒNG THỦ:\nDùng Sĩ đen (0,3) tiến lên (1,4) để chặn đường Xe!\n\nNhấn Sĩ đen bên trái → nhấn (1,4).',
+   movePiece:52,answer:{r:1,c:4}},
+
+  // Kết quả sau khi chặn
+  {type:'show',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:1,c:4},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:3,c:4}
+   ],
+   hint:'✅ Sĩ đứng (1,4) — chặn thành công!\nXe đỏ không thể tiến qua (1,4) để chiếu Tướng.\n\n💡 Bài học: Sĩ chỉ mạnh khi bảo vệ Tướng, không nên đẩy Sĩ ra xa mà không cần thiết. Sĩ rời cung = Tướng mất lá chắn!',
+   arrows:[]},
+
+  // Tình huống Sĩ không cứu được
+  {type:'show',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:1,c:4},{id:7,s:'r',t:'R',r:0,c:8}
+   ],
+   hint:'😨 KHI SĨ KHÔNG CỨU ĐƯỢC:\nXe đỏ đã vào (1,4) — chiếu trực tiếp!\nTướng đen muốn dùng Sĩ chặn nhưng... Sĩ chỉ đi CHÉO!\n• Sĩ (0,3) không đi thẳng xuống (1,4) được\n• Sĩ (0,5) cũng vậy\n\n⚠️ Xe (0,8) chặn hàng trên — CHIẾU HẾT!\n\nBài học: Chặn Xe phải làm SỚM bằng Sĩ, không chờ Xe vào cung rồi mới đỡ!',
+   arrows:[{fr:1,fc:4,tr:0,tc:4,cap:true}]},
+
+  {type:'move',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:3,c:4},{id:7,s:'r',t:'R',r:0,c:8}
+   ],
+   hint:'🛡️ Lần này Xe chưa vào — hãy dùng Sĩ (0,5) tiến lên (1,4) chặn trước!\n\nNhấn Sĩ đen bên phải → nhấn (1,4).',
+   movePiece:53,answer:{r:1,c:4}},
+]},
+
+// ══════════════════════════════════════
+// BÀI 7: QUÂN TƯỢNG — Lá chắn tầm xa
+// ══════════════════════════════════════
+{title:'Tượng — Phòng Thủ',icon:'相',steps:[
+
+  {type:'show',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:2},{id:55,s:'b',t:'B',r:0,c:6},
+     {id:56,s:'b',t:'R',r:0,c:0},{id:57,s:'b',t:'R',r:0,c:8},
+     {id:58,s:'b',t:'N',r:0,c:1},{id:59,s:'b',t:'N',r:0,c:7},
+     {id:60,s:'b',t:'C',r:2,c:1},{id:61,s:'b',t:'C',r:2,c:7},
+     {id:62,s:'b',t:'P',r:3,c:0},{id:64,s:'b',t:'P',r:3,c:4},{id:66,s:'b',t:'P',r:3,c:8},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:2,s:'r',t:'A',r:9,c:3},{id:3,s:'r',t:'A',r:9,c:5}
+   ],
+   hint:'QUÂN TƯỢNG (相/象) — Lá chắn tầm xa\n\n📌 Đi CHÉO 2 ô (hình chữ X lớn)\n📌 KHÔNG được qua sông\n📌 BỊ CHẶN MẮT: nếu ô chéo giữa đường có quân → không đi được\n\nVai trò: Chặn quân địch từ xa, đặc biệt là phá bàn đạp của Pháo!\n\n🍀 Mẹo nhớ: "Tượng đi chéo 2 bước, sợ nhất bị bịt mắt!"',
+   arrows:[{fr:0,fc:2,tr:2,tc:0},{fr:0,fc:2,tr:2,tc:4},{fr:0,fc:6,tr:2,tc:4},{fr:0,fc:6,tr:2,tc:8}]},
+
+  // Tượng bị chặn mắt
+  {type:'show',
+   pcs:[
+     {id:54,s:'b',t:'B',r:0,c:2},{id:70,s:'r',t:'P',r:1,c:3},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:1,s:'r',t:'K',r:9,c:4}
+   ],
+   hint:'TƯỢNG BỊ CHẶN MẮT!\n\nTượng đen (0,2) muốn đi đến (2,4).\nĐường đi: phải qua ô tâm (1,3).\nTốt đỏ đứng ở (1,3) → Bịt mắt Tượng!\n\n❌ Tượng KHÔNG đi được (2,4)\n✅ Vẫn đi được hướng không bị bịt: (2,0)\n\n💡 Bịt mắt Tượng = vô hiệu hóa hoàn toàn 1 hướng phòng thủ của đối thủ!',
+   arrows:[{fr:0,fc:2,tr:2,tc:4,cap:true},{fr:0,fc:2,tr:2,tc:0}]},
+
+  // Tượng phá bàn đạp Pháo
+  {type:'show',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:6},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:10,s:'r',t:'C',r:4,c:4},{id:14,s:'r',t:'P',r:2,c:4}
+   ],
+   hint:'⚠️ NGUY HIỂM! Pháo đỏ (4,4) sắp bắn!\nTốt đỏ (2,4) đang làm bàn đạp → Pháo bắn được qua để chiếu Tướng!\n\nGIẢI PHÁP: Tượng đen (0,6) đi đến (2,4) bắt Tốt — phá bàn đạp!\nKhông còn bàn đạp = Pháo không bắn được!\n\n👉 Đây là cách dùng Tượng phòng thủ thông minh nhất!',
+   arrows:[{fr:4,fc:4,tr:0,tc:4,cap:true},{fr:0,fc:6,tr:2,tc:4}]},
+
+  // Thực hành phá bàn đạp
+  {type:'move',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:6},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:10,s:'r',t:'C',r:4,c:4},{id:14,s:'r',t:'P',r:2,c:4}
+   ],
+   hint:'🛡️ THỰC HÀNH: Tượng đen (0,6) đi đến (2,4) bắt Tốt đỏ làm bàn đạp.\n\nNhấn Tượng đen bên phải → nhấn (2,4).',
+   movePiece:54,answer:{r:2,c:4}},
+
+  // Kết quả
+  {type:'show',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:2,c:4},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:10,s:'r',t:'C',r:4,c:4}
+   ],
+   hint:'✅ Tượng đen đứng (2,4) — phá bàn đạp thành công!\nPháo đỏ không còn quân chắn để bắn.\n\n💡 Bài học:\n• Sĩ chặn quân đang chiếu trực tiếp\n• Tượng phá bàn đạp/chiến lược của đối thủ từ xa\n• Dùng cả Sĩ + Tượng phối hợp = phòng thủ vững chắc nhất!',
+   arrows:[]},
+
+  // Thực hành Tượng chặn Mã
+  {type:'move',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:55,s:'b',t:'B',r:2,c:6},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:8,s:'r',t:'N',r:4,c:3}
+   ],
+   hint:'🛡️ THỰC HÀNH: Mã đỏ (4,3) sắp nhảy vào (2,4) tấn công.\nTượng đen (2,6) đi đến (4,4) để chặn vùng Mã định đến!\n\nNhấn Tượng đen → nhấn (4,4).',
+   movePiece:55,answer:{r:4,c:4}},
+]},
+
+// ══════════════════════════════════════
+// BÀI 8: CHIẾU TƯỚNG — Tấn công vua địch
+// ══════════════════════════════════════
+{title:'Chiếu Tướng',icon:'⚠️',steps:[
+
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:2,s:'r',t:'A',r:9,c:3},{id:3,s:'r',t:'A',r:9,c:5},
+     {id:6,s:'r',t:'R',r:5,c:4},{id:10,s:'r',t:'C',r:7,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:2},{id:55,s:'b',t:'B',r:0,c:6}
+   ],
+   hint:'CHIẾU TƯỚNG là gì?\n\nKhi quân của bạn đang TẤN CÔNG trực tiếp vào Tướng đối thủ.\nĐối thủ BẮT BUỘC phải xử lý ngay — không được làm việc khác!\n\n3 CÁCH ĐỠ CHIẾU:\n① Chạy Tướng sang ô an toàn\n② Chặn quân vào giữa đường chiếu\n③ Bắt quân đang chiếu\n\nNếu không làm được bất kỳ cách nào → CHIẾU HẾT!',
+   arrows:[{fr:5,fc:4,tr:1,tc:4}]},
+
+  // Thực hành chiếu bằng Xe
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:2,s:'r',t:'A',r:9,c:3},{id:3,s:'r',t:'A',r:9,c:5},
+     {id:6,s:'r',t:'R',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🎯 THỰC HÀNH CHIẾU:\nTiến Xe đỏ (5,4) lên (1,4) để chiếu Tướng đen.\n\nNhấn Xe → nhấn (1,4).',
+   movePiece:6,answer:{r:1,c:4}},
+
+  // Chiếu bằng Pháo
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:10,s:'r',t:'C',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:2,c:4},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:2}
+   ],
+   hint:'CHIẾU BẰNG PHÁO — nguy hiểm và khó đỡ!\n\nPháo (5,4) nhìn thấy Sĩ đen (2,4) làm bàn đạp.\nPháo bắn qua Sĩ đen → chiếu Tướng (0,4)!\n\n⚠️ Chú ý: Sĩ đen vô tình làm bàn đạp cho Pháo địch!\nĐây là bẫy rất hay gặp — đặt Sĩ không đúng chỗ = tự hại mình!',
+   arrows:[{fr:5,fc:4,tr:0,tc:4,cap:true}]},
+
+  // Chiếu hết tổng hợp Xe + Pháo
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:2,c:0},{id:7,s:'r',t:'R',r:2,c:8},
+     {id:10,s:'r',t:'C',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:2,c:4},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🏆 CHIẾU HẾT TỔNG HỢP Xe + Pháo!\n\nPháo (5,4) bắn qua Sĩ đen (2,4) → chiếu Tướng (0,4).\n2 Xe ở hàng 2 chặn mọi đường thoát!\n\nTướng đen:\n• Sang trái: Xe (2,0) kiểm soát\n• Sang phải: Sĩ (0,5) + Xe (2,8)\n• Không có quân nào cứu được!\n\nDi chuyển Pháo để chiếu hết!',
+   arrows:[{fr:5,fc:4,tr:0,tc:4,cap:true}]},
+
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:2,c:0},{id:7,s:'r',t:'R',r:2,c:8},
+     {id:10,s:'r',t:'C',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:2,c:4},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'💥 Pháo (5,4) bắn lên (0,4) qua Sĩ đen (2,4).\nCHIẾU HẾT! Tướng đen không thoát được. 🏆',
+   movePiece:10,answer:{r:0,c:4}},
+]},
+
+// ══════════════════════════════════════
+// BÀI 9: CHIẾU HẾT — Kết thúc ván đấu
+// ══════════════════════════════════════
+{title:'Chiếu Hết!',icon:'🏆',steps:[
+
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:2,c:0},{id:7,s:'r',t:'R',r:3,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'CHIẾU HẾT — Mục tiêu tối thượng của cờ tướng!\n\nLà khi Tướng địch bị chiếu mà KHÔNG THỂ đỡ bằng bất kỳ cách nào:\n❌ Không chạy được\n❌ Không chặn được\n❌ Không bắt quân chiếu được\n\n→ Ván đấu kết thúc!\n\nHãy hoàn thành thế cờ chiếu hết 2 Xe kẹp!',
+   arrows:[{fr:3,fc:8,tr:0,tc:8},{fr:2,fc:0,tr:0,tc:0}]},
+
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:2,c:0},{id:7,s:'r',t:'R',r:3,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'1️⃣ Bước 1: Xe (3,8) → (0,8).\nBịt đường thoát phải của Tướng đen.\nBây giờ Tướng chỉ còn đường sang trái!\n\nNhấn Xe phải → nhấn (0,8).',
+   movePiece:7,answer:{r:0,c:8}},
+
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:2,c:0},{id:7,s:'r',t:'R',r:0,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'2️⃣ Bước 2: Xe (2,0) → (0,0).\nCHIẾU HẾT! 🏆\n\nTướng đen kiểm tra:\n• Trái (0,3): Sĩ đang đứng\n• Phải: Xe (0,8) chặn\n• Không có quân nào chặn Xe (0,0)\n\nVán đấu kết thúc!',
+   movePiece:6,answer:{r:0,c:0}},
+
+  // Chiếu hết bằng Mã
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:8,s:'r',t:'N',r:2,c:3},{id:6,s:'r',t:'R',r:0,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'⚔️ CHIẾU HẾT BẰNG MÃ!\n\nMã đỏ ở (2,3) — sắp nhảy lên (0,4).\nXe đỏ (0,8) khóa hàng 0 bên phải.\n\nSĩ đen KHÔNG THỂ ăn Mã vì:\n• Sĩ chỉ đi chéo, không đến được (0,4)\n\nMã nhảy = chiếu hết!',
+   arrows:[{fr:2,fc:3,tr:0,tc:4,cap:true}]},
+
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:8,s:'r',t:'N',r:2,c:3},{id:6,s:'r',t:'R',r:0,c:8},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'💥 Mã (2,3) → (0,4). CHIẾU HẾT bằng Mã! 🏆\n\nTướng đen hoàn toàn bị phong tỏa.',
+   movePiece:8,answer:{r:0,c:4}},
+
+  // Chiếu hết bằng Tốt
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:2,c:0},{id:7,s:'r',t:'R',r:2,c:8},
+     {id:14,s:'r',t:'P',r:1,c:3},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'⚔️ CHIẾU HẾT BẰNG TỐT!\n\nTốt đỏ (1,3) tiến lên (0,3) bắt Sĩ đen.\nTướng đen không thoát vì:\n• Phải (0,5): Sĩ đang đứng\n• Xuống: 2 Xe chặn hàng 2\n• Trái (0,2): ngoài cung — không đi được!\n\nTốt nhỏ cũng có thể kết thúc ván đấu!',
+   arrows:[{fr:1,fc:3,tr:0,tc:3,cap:true}]},
+
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:2,c:0},{id:7,s:'r',t:'R',r:2,c:8},
+     {id:14,s:'r',t:'P',r:1,c:3},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'💥 Tốt (1,3) → (0,3). CHIẾU HẾT bằng Tốt! 🏆\n\nQuân nhỏ nhất bàn cờ cũng có thể kết thúc ván đấu!\nĐây là bài học quan trọng nhất: đừng bao giờ coi thường quân Tốt!',
+   movePiece:14,answer:{r:0,c:3}},
+]},
+
+];
+
+
+
+function setupLessonCanvas(){
+  const cv=document.getElementById('lessonCv');if(!cv)return;
+  const wrap=document.getElementById('lessonCanvasWrap');if(!wrap)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=Math.min(wrap.clientWidth-16,340);
+  const H=Math.round(W*10/9);
+  cv.style.width=W+'px';cv.style.height=H+'px';
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  lessonCtx=cv.getContext('2d');lessonCtx.scale(dpr,dpr);
+  lessonCell=W/9;
+  cv.onclick=handleLessonClick;
+  drawLessonBoard(null,LESSONS[curLesson]?.steps[curStep]?.arrows||null);
 }
+function lx(c){return lessonCell*.5+c*lessonCell;}
+function ly(r){return lessonCell*.5+r*lessonCell;}
+
+function drawLessonBoard(hints,arrows){
+  if(!lessonCtx)return;
+  const ctx=lessonCtx,lt=isLightMode();
+  const W=ctx.canvas.width/(window.devicePixelRatio||1);
+  const H=ctx.canvas.height/(window.devicePixelRatio||1);
+  const cs=lessonCell; // cell size shorthand
+
+  // ── Nền bàn cờ ──
+  const bg=ctx.createLinearGradient(0,0,W,H);
+  if(lt){bg.addColorStop(0,'#FEF6DC');bg.addColorStop(1,'#F5DC8A');}
+  else{bg.addColorStop(0,'#D8A840');bg.addColorStop(1,'#A87020');}
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // Vân gỗ nhẹ
+  ctx.save();ctx.globalAlpha=0.06;
+  for(let i=0;i<H;i+=4){
+    ctx.strokeStyle=lt?'#6B3A00':'#FFD080';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(W,i+2);ctx.stroke();
+  }
+  ctx.restore();
+
+  // Khung ngoài
+  ctx.strokeStyle=lt?'#7A3A00':'#5A3A00';ctx.lineWidth=3;
+  ctx.strokeRect(lx(0),ly(0),8*cs,9*cs);
+
+  // ── Đường kẻ ──
+  ctx.strokeStyle=lt?'#92400E':'#7A5520';ctx.lineWidth=1.2;
+  for(let r=0;r<10;r++){
+    ctx.beginPath();ctx.moveTo(lx(0),ly(r));ctx.lineTo(lx(8),ly(r));ctx.stroke();
+  }
+  for(let c=0;c<9;c++){
+    if(c===0||c===8){ctx.beginPath();ctx.moveTo(lx(c),ly(0));ctx.lineTo(lx(c),ly(9));ctx.stroke();}
+    else{
+      ctx.beginPath();ctx.moveTo(lx(c),ly(0));ctx.lineTo(lx(c),ly(4));ctx.stroke();
+      ctx.beginPath();ctx.moveTo(lx(c),ly(5));ctx.lineTo(lx(c),ly(9));ctx.stroke();
+    }
+  }
+  // Cung
+  ctx.strokeStyle=lt?'#92400E':'#7A5520';ctx.lineWidth=1.5;
+  [[0,3,2,5],[7,3,9,5]].forEach(([r1,c1,r2,c2])=>{
+    ctx.beginPath();ctx.moveTo(lx(c1),ly(r1));ctx.lineTo(lx(c2),ly(r2));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(lx(c2),ly(r1));ctx.lineTo(lx(c1),ly(r2));ctx.stroke();
+  });
+  // Sông
+  ctx.fillStyle=lt?'rgba(60,120,220,.07)':'rgba(80,150,255,.1)';
+  ctx.fillRect(lx(0)+1,ly(4)+1,8*cs-2,cs-2);
+  ctx.fillStyle=lt?'rgba(20,70,180,.5)':'rgba(100,170,255,.55)';
+  ctx.font=`bold ${Math.round(cs*.28)}px Noto Serif SC`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('楚 河',lx(2),ly(4)+cs/2);
+  ctx.fillText('漢 界',lx(6),ly(4)+cs/2);
+
+  // ── Highlight ô nguồn (quân cần di chuyển) ──
+  const step=curLesson>=0?LESSONS[curLesson]?.steps[curStep]:null;
+  if(step?.type==='move'&&lessonSel){
+    // Ô quân đang đứng — nền xanh lá
+    ctx.fillStyle='rgba(80,220,80,.25)';
+    ctx.fillRect(lx(lessonSel.c)-cs/2+1,ly(lessonSel.r)-cs/2+1,cs-2,cs-2);
+    ctx.strokeStyle='rgba(80,255,80,.7)';ctx.lineWidth=2.5;
+    ctx.strokeRect(lx(lessonSel.c)-cs/2+1,ly(lessonSel.r)-cs/2+1,cs-2,cs-2);
+  } else if(step?.type==='move'&&!lessonSel){
+    // Highlight quân cần di chuyển — nhấp nháy viền vàng
+    const target=lessonPcs.find(p=>p.id===step.movePiece);
+    if(target){
+      const glow=ctx.createRadialGradient(lx(target.c),ly(target.r),cs*.2,lx(target.c),ly(target.r),cs*.55);
+      glow.addColorStop(0,'rgba(255,255,0,.35)');
+      glow.addColorStop(1,'rgba(255,255,0,0)');
+      ctx.fillStyle=glow;
+      ctx.beginPath();ctx.arc(lx(target.c),ly(target.r),cs*.55,0,Math.PI*2);ctx.fill();
+      // Viền nhấp nháy
+      ctx.strokeStyle='rgba(255,230,0,.9)';ctx.lineWidth=3;
+      ctx.setLineDash([cs*.18,cs*.1]);
+      ctx.beginPath();ctx.arc(lx(target.c),ly(target.r),cs*.48,0,Math.PI*2);ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  // ── Ô đích gợi ý (hints) ──
+  if(hints)hints.forEach(([r,c])=>{
+    // Nền tròn vàng lớn
+    const rg=ctx.createRadialGradient(lx(c),ly(r),0,lx(c),ly(r),cs*.45);
+    rg.addColorStop(0,'rgba(255,220,0,.55)');
+    rg.addColorStop(1,'rgba(255,180,0,.1)');
+    ctx.fillStyle=rg;
+    ctx.beginPath();ctx.arc(lx(c),ly(r),cs*.45,0,Math.PI*2);ctx.fill();
+    // Viền ngoài
+    ctx.strokeStyle='rgba(255,200,0,.9)';ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(lx(c),ly(r),cs*.44,0,Math.PI*2);ctx.stroke();
+    // Dấu X ở giữa
+    ctx.strokeStyle='rgba(200,150,0,.7)';ctx.lineWidth=2;
+    const d=cs*.15;
+    ctx.beginPath();ctx.moveTo(lx(c)-d,ly(r)-d);ctx.lineTo(lx(c)+d,ly(r)+d);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(lx(c)+d,ly(r)-d);ctx.lineTo(lx(c)-d,ly(r)+d);ctx.stroke();
+  });
+
+  // ── Mũi tên hướng dẫn ──
+  if(arrows)arrows.forEach((a,idx)=>{
+    const x1=lx(a.fc),y1=ly(a.fr),x2=lx(a.tc),y2=ly(a.tr);
+    const ang=Math.atan2(y2-y1,x2-x1);
+    const pieceR=cs*.4;
+    const sx=x1+Math.cos(ang)*pieceR, sy=y1+Math.sin(ang)*pieceR;
+    const ex=x2-Math.cos(ang)*pieceR, ey=y2-Math.sin(ang)*pieceR;
+    const len=Math.sqrt((ex-sx)**2+(ey-sy)**2);
+
+    const isCapture=a.cap;
+    // Màu: đỏ = ăn quân, xanh = di chuyển
+    const colStroke=isCapture?'rgba(255,70,50,.9)':'rgba(40,210,100,.9)';
+    const colFill  =isCapture?'rgba(255,70,50,1)'  :'rgba(40,210,100,1)';
+    const lw=Math.max(3.5, cs*.12); // độ dày tăng theo kích thước ô
+
+    ctx.save();
+    // Bóng mũi tên
+    ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=4;
+    // Thân mũi tên
+    ctx.strokeStyle=colStroke;ctx.lineWidth=lw;
+    ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);ctx.stroke();
+
+    // Đầu mũi tên to
+    const hs=Math.max(cs*.28, 12);
+    ctx.fillStyle=colFill;
+    ctx.shadowColor='rgba(0,0,0,.3)';ctx.shadowBlur=3;
+    ctx.beginPath();
+    ctx.moveTo(ex,ey);
+    ctx.lineTo(ex-hs*Math.cos(ang-.42),ey-hs*Math.sin(ang-.42));
+    ctx.lineTo(ex-hs*Math.cos(ang+.42),ey-hs*Math.sin(ang+.42));
+    ctx.closePath();ctx.fill();
+
+    ctx.restore();
+
+    // Số thứ tự trên mũi tên nếu có nhiều mũi tên
+    if(arrows.length>1){
+      const mx=(sx+ex)/2, my=(sy+ey)/2;
+      const nr=Math.max(cs*.22, 9);
+      ctx.fillStyle=isCapture?'#FF4020':'#20C060';
+      ctx.beginPath();ctx.arc(mx,my,nr,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#fff';
+      ctx.font=`900 ${Math.round(nr*1.2)}px sans-serif`;
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(idx+1,mx,my+1);
+    }
+  });
+
+  // ── Vẽ quân cờ ──
+  if(lessonSel){
+    ctx.fillStyle='rgba(255,240,80,.45)';
+    ctx.beginPath();ctx.arc(lx(lessonSel.c),ly(lessonSel.r),cs*.5,0,Math.PI*2);ctx.fill();
+  }
+  lessonPcs.forEach(p=>{
+    const x=lx(p.c),y=ly(p.r),r=cs*.42;
+    const isSel=lessonSel&&lessonSel.id===p.id;
+    const isTarget=step?.type==='move'&&!lessonSel&&p.id===step.movePiece;
+
+    // Bóng
+    ctx.save();
+    ctx.shadowColor='rgba(0,0,0,.45)';ctx.shadowBlur=6;ctx.shadowOffsetY=3;
+    const g=ctx.createRadialGradient(x-r*.3,y-r*.3,0,x,y,r);
+    if(p.s==='r'){
+      g.addColorStop(0,isSel?'#FF9070':'#E84838');
+      g.addColorStop(.55,isSel?'#DD2A18':'#9B1A1A');
+      g.addColorStop(1,'#5A0808');
+    } else {
+      g.addColorStop(0,isSel?'#909080':'#606050');
+      g.addColorStop(.55,isSel?'#505040':'#302010');
+      g.addColorStop(1,'#180A00');
+    }
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+
+    // Viền quân
+    ctx.strokeStyle=p.s==='r'?'rgba(255,200,100,.7)':'rgba(210,170,60,.6)';
+    ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,r*.85,0,Math.PI*2);ctx.stroke();
+
+    // Viền chọn / target
+    if(isSel){
+      ctx.strokeStyle='rgba(255,240,0,.95)';ctx.lineWidth=3.5;
+      ctx.beginPath();ctx.arc(x,y,r+4,0,Math.PI*2);ctx.stroke();
+    } else if(isTarget){
+      ctx.strokeStyle='rgba(255,240,0,.8)';ctx.lineWidth=3;
+      ctx.setLineDash([cs*.15,cs*.08]);
+      ctx.beginPath();ctx.arc(x,y,r+5,0,Math.PI*2);ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Chữ quân
+    const L={r:{K:'帥',A:'仕',B:'相',R:'車',N:'馬',C:'炮',P:'兵'},
+             b:{K:'將',A:'士',B:'象',R:'車',N:'馬',C:'砲',P:'卒'}};
+    ctx.fillStyle=p.s==='r'?'#FFE888':'#E8C840';
+    ctx.font=`900 ${Math.round(r*1.05)}px Noto Serif SC`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(L[p.s][p.t],x,y+1);
+  });
+}
+
+function startLesson(idx){
+  if(idx>0&&!learnDone.includes(idx-1)){toast('🔒 Hoàn thành bài trước nhé!');return;}
+  curLesson=idx;curStep=0;lessonSel=null;
+  document.getElementById('learnHome').style.display='none';
+  document.getElementById('lessonScreen').style.display='flex';
+  document.getElementById('mainNav').style.display='none';
+  renderStep();
+  setTimeout(setupLessonCanvas,60);
+}
+
+function renderStep(){
+  if(curLesson<0)return;
+  const lesson=LESSONS[curLesson];
+  const step=lesson.steps[curStep];
+  lessonPcs=step.pcs.map(p=>({...p}));lessonSel=null;
+  const total=lesson.steps.length;
+  const el=document.getElementById('lessonStep');if(el)el.textContent=`${curStep+1}/${total}`;
+  const fill=document.getElementById('lessonProgFill');if(fill)fill.style.width=Math.round(curStep/total*100)+'%';
+  const baiNum=document.getElementById('lessonBaiNum');
+  if(baiNum)baiNum.textContent=`BÀI ${curLesson+1} · ${lesson.title.toUpperCase()}`;
+  document.getElementById('lessonHint').textContent=step.hint;
+  const btn=document.getElementById('lessonNextBtn');btn.style.display=step.type==='show'?'':'none';
+  drawLessonBoard(null,step.arrows||null);
+}
+
+function handleLessonClick(e){
+  if(curLesson<0)return;
+  const step=LESSONS[curLesson].steps[curStep];
+  if(step.type==='show')return;
+  const cv=document.getElementById('lessonCv');
+  const rect=cv.getBoundingClientRect();
+  const sx=(cv.width/(window.devicePixelRatio||1))/rect.width;
+  const sy=(cv.height/(window.devicePixelRatio||1))/rect.height;
+  const c=Math.max(0,Math.min(8,Math.round(((e.clientX-rect.left)*sx-lessonCell*.5)/lessonCell)));
+  const r=Math.max(0,Math.min(9,Math.round(((e.clientY-rect.top)*sy-lessonCell*.5)/lessonCell)));
+  if(step.type==='tap'){
+    const hit=lessonPcs.find(p=>p.r===r&&p.c===c);
+    if(!hit)return;
+    if(hit.id===step.answer.id){lessonSel=hit;drawLessonBoard();toast('✅ Đúng!');setTimeout(advanceStep,600);}
+    else{toast('Không phải, thử lại! 💡');lessonSel=hit;drawLessonBoard();setTimeout(()=>{lessonSel=null;drawLessonBoard(null,step.arrows||null);},800);}
+  } else if(step.type==='move'){
+    if(!lessonSel){
+      const hit=lessonPcs.find(p=>p.r===r&&p.c===c&&p.id===step.movePiece);
+      if(hit){lessonSel=hit;drawLessonBoard([[step.answer.r,step.answer.c]]);}
+      else toast('Nhấn vào quân cần di chuyển!');
+    } else {
+      if(r===step.answer.r&&c===step.answer.c){
+        lessonSel.r=r;lessonSel.c=c;drawLessonBoard();toast('🎉 Tuyệt!');setTimeout(advanceStep,600);
+      } else {
+        const re=lessonPcs.find(p=>p.r===r&&p.c===c&&p.id===step.movePiece);
+        if(re){lessonSel=re;drawLessonBoard([[step.answer.r,step.answer.c]]);}
+        else{toast('Chưa đúng ô! 💡');lessonSel=null;drawLessonBoard(null,step.arrows||null);}
+      }
+    }
+  }
+}
+
+function lessonNext(){advanceStep();}
+function lessonHintBtn(){
+  if(curLesson<0)return;
+  const step=LESSONS[curLesson].steps[curStep];
+  if(step.type==='move'){drawLessonBoard([[step.answer.r,step.answer.c]]);toast('💡 Ô vàng là ô đích!');}
+  else drawLessonBoard(null,step.arrows||null);
+}
+function advanceStep(){
+  const lesson=LESSONS[curLesson];
+  if(curStep<lesson.steps.length-1){curStep++;renderStep();}
+  else{
+    if(!learnDone.includes(curLesson))learnDone.push(curLesson);
+    document.getElementById('lessonResultIcon').textContent='🌟';
+    document.getElementById('lessonResultTitle').textContent='Xuất Sắc!';
+    document.getElementById('lessonResultDesc').textContent=`✓ Bài ${curLesson+1}: ${lesson.title}`;
+    const s=document.getElementById('lessonStars');if(s)s.textContent='⭐⭐⭐';
+    document.getElementById('lessonResult').style.display='flex';
+  }
+}
+function lessonDone(){
+  document.getElementById('lessonResult').style.display='none';
+  document.getElementById('lessonScreen').style.display='none';
+  document.getElementById('learnHome').style.display='flex';
+  document.getElementById('mainNav').style.display='flex';
+  curLesson=-1;lessonSel=null;renderLearnMap();
+}
+function exitLesson(){
+  document.getElementById('lessonScreen').style.display='none';
+  document.getElementById('learnHome').style.display='flex';
+  document.getElementById('mainNav').style.display='flex';
+  curLesson=-1;lessonSel=null;
+}
+function updateLearnUI(){renderLearnMap();}
+function renderLearnMap(){
+  const container=document.getElementById('lmNodes');
+  const mapEl=document.getElementById('learnMap');
+  if(!container||!mapEl)return;
+  const done=learnDone.length,total=LESSONS.length;
+  const prog=document.getElementById('learnProgress');if(prog)prog.textContent=`${done}/${total}`;
+  const bar=document.getElementById('learnBar');if(bar)bar.style.width=Math.round(done/total*100)+'%';
+  const W=Math.min(window.innerWidth,430);
+  const NODE_H=115,TOTAL_H=LESSONS.length*NODE_H+220;
+  mapEl.style.minHeight=TOTAL_H+'px';
+  const cols=[.50,.70,.52,.30,.50,.70,.50,.30,.50];
+  let html='';
+  for(let i=0;i<LESSONS.length-1;i++){
+    const y1=TOTAL_H-100-(i*NODE_H),y2=TOTAL_H-100-((i+1)*NODE_H);
+    const x1=Math.round(cols[i]*W),x2=Math.round(cols[i+1]*W);
+    const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy),ang=Math.atan2(dy,dx)*180/Math.PI;
+    const col=learnDone.includes(i)?'rgba(255,210,0,.6)':i===done?'rgba(255,255,255,.3)':'rgba(255,255,255,.12)';
+    html+=`<div class="lm-path" style="left:${x1}px;top:${y1}px;width:${Math.round(len)}px;height:6px;background:${col};transform:rotate(${ang}deg)"></div>`;
+  }
+  [[0,'🟢 Cơ Bản'],[4,'🟡 Chiến Thuật'],[7,'🔴 Nâng Cao']].forEach(([idx,lbl])=>{
+    const y=TOTAL_H-80-(idx*NODE_H)+55;
+    html+=`<div class="lm-chap" style="top:${y}px">${lbl}</div>`;
+  });
+  html+=`<div class="lm-coming" style="top:18px"><div style="font-size:26px">🔮</div><div style="font-size:11px;font-weight:800;color:#fff;margin-top:4px">Sắp Có Thêm</div></div>`;
+  for(let i=0;i<LESSONS.length;i++){
+    const lesson=LESSONS[i];
+    const x=Math.round(cols[i]*W),y=TOTAL_H-100-(i*NODE_H);
+    const isDone=learnDone.includes(i);
+    const isUnlocked=i===0||learnDone.includes(i-1);
+    const state=isDone?'done':isUnlocked?'current unlocked':'locked';
+    const click=isUnlocked||isDone?`startLesson(${i})`:`toast('🔒 Hoàn thành bài trước!')`;
+    html+=`<div class="lm-node ${state}" id="lv${i}" style="left:${x}px;top:${y}px" onclick="${click}">
+      <div class="lm-wood">${!isUnlocked&&!isDone?'<div class="lm-lock-ico">🔒</div>':''}
+        <div class="lm-num" style="font-size:${/\p{Emoji}/u.test(lesson.icon)?'20px':'22px'}">${lesson.icon}</div>
+        <div class="lm-stars">${isDone?'⭐':''}</div>
+      </div>
+      <div class="lm-label">${lesson.title}</div>
+    </div>`;
+  }
+  container.innerHTML=html;
+  setTimeout(()=>{const sc=document.querySelector('.learn-map-scroll');if(sc){const n=document.getElementById(`lv${Math.min(done,LESSONS.length-1)}`);if(n)sc.scrollTop=parseInt(n.style.top)-150;}},200);
+}
+
 
 function doLogout(){
-  playerName='';
-  gameOn=false;clearInterval(timerInt);
+  playerName='';gameOn=false;clearInterval(timerInt);
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('login').classList.add('active');
   document.getElementById('loginName').value='';
-  const mainNav=document.getElementById('mainNav');
-  if(mainNav) mainNav.style.display='none';
+  const n=document.getElementById('mainNav');if(n)n.style.display='none';
 }
-
 function showModal(id){document.getElementById(id).classList.add('on');}
 function closeModal(id){document.getElementById(id).classList.remove('on');}
 function openSettings(){showModal('modSettings');}
@@ -3246,12 +4291,17 @@ window.addEventListener('resize',()=>{
 
 function toggleTheme(){
   const isLight=document.body.classList.toggle('light');
-  // Cập nhật toggle trong Settings
   const tog=document.getElementById('themeToggle');
   if(tog) tog.classList.toggle('on',!isLight);
   const sub=document.getElementById('themeSubLbl');
-  if(sub) sub.textContent=`Đang dùng: ${isLight?'Sáng':'Tối'}`;
+  if(sub) sub.textContent=`Đang dùng: ${isLight?'☀️ Sáng':'🌙 Tối'}`;
+  // Redraw bàn cờ game
   if(ctx) draw();
+  // Redraw bàn cờ lesson nếu đang học
+  if(lessonCtx&&curLesson>=0){
+    const step=LESSONS[curLesson]?.steps[curStep];
+    drawLessonBoard(null,step?.arrows||null);
+  }
   toast(isLight?'☀️ Giao diện sáng':'🌙 Giao diện tối');
 }
 
