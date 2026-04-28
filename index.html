@@ -3715,6 +3715,143 @@ const LESSONS=[
    movePiece:14,answer:{r:0,c:3}},
 ]},
 
+// ══ BÀI 6: SĨ — PHÒNG THỦ ══
+{title:'Sĩ — Phòng Thủ',icon:'仕',steps:[
+  {type:'show',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:2},{id:55,s:'b',t:'B',r:0,c:6},
+     {id:56,s:'b',t:'R',r:0,c:0},{id:57,s:'b',t:'R',r:0,c:8},
+     {id:58,s:'b',t:'N',r:0,c:1},{id:59,s:'b',t:'N',r:0,c:7},
+     {id:60,s:'b',t:'C',r:2,c:1},{id:61,s:'b',t:'C',r:2,c:7},
+     {id:62,s:'b',t:'P',r:3,c:0},{id:63,s:'b',t:'P',r:3,c:2},
+     {id:64,s:'b',t:'P',r:3,c:4},{id:65,s:'b',t:'P',r:3,c:6},{id:66,s:'b',t:'P',r:3,c:8},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:2,s:'r',t:'A',r:9,c:3},{id:3,s:'r',t:'A',r:9,c:5}
+   ],
+   hint:'QUÂN SĨ (仕/士) — Cận vệ bảo vệ Tướng\n\n📌 Đi CHÉO 1 ô, chỉ trong CUNG\n📌 Chỉ có 5 vị trí có thể đứng\n📌 Nhiệm vụ chính: CHẶN quân địch tấn công Tướng!\n\n🍀 Mẹo nhớ: "Sĩ là cận vệ — chỉ đi chéo, không rời khỏi cung!"',
+   arrows:[{fr:0,fc:3,tr:1,tc:4},{fr:0,fc:5,tr:1,tc:4},{fr:1,fc:4,tr:0,tc:3},{fr:1,fc:4,tr:0,tc:5},{fr:1,fc:4,tr:2,tc:3},{fr:1,fc:4,tr:2,tc:5}]},
+  {type:'show',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:3,c:4}
+   ],
+   hint:'⚠️ NGUY HIỂM! Xe đỏ (3,4) đang nhắm thẳng cột 4.\nNếu không chặn — Xe tiến lên sẽ chiếu Tướng!\n\nSĨ CÓ THỂ CHẶN:\nSĩ đen (0,3) tiến chéo lên (1,4) đứng giữa đường Xe!\n\n👉 Mũi tên xanh = Sĩ chặn, mũi tên đỏ = đường Xe nếu không chặn',
+   arrows:[{fr:3,fc:4,tr:1,tc:4,cap:true},{fr:0,fc:3,tr:1,tc:4}]},
+  {type:'move',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:3,c:4}
+   ],
+   hint:'🛡️ THỰC HÀNH: Dùng Sĩ đen (0,3) tiến lên (1,4) chặn Xe!\n\nNhấn Sĩ đen bên TRÁI → nhấn ô (1,4) ở giữa.',
+   movePiece:52,answer:{r:1,c:4}},
+  {type:'show',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:1,c:4},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:3,c:4}
+   ],
+   hint:'✅ Sĩ đứng (1,4) — chặn thành công!\nXe đỏ không thể tiến qua để chiếu Tướng.\n\n💡 Bài học quan trọng:\n• Sĩ chỉ mạnh khi bảo vệ Tướng\n• Đẩy Sĩ ra xa = Tướng mất lá chắn\n• Luôn giữ ít nhất 1 Sĩ gần Tướng!',
+   arrows:[]},
+  {type:'move',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:3,c:4},{id:7,s:'r',t:'R',r:0,c:8}
+   ],
+   hint:'🛡️ THỰC HÀNH KHÓ HƠN:\nXe (0,8) chặn hàng 0 bên phải, Xe (3,4) sắp tiến.\nDùng Sĩ (0,5) tiến lên (1,4) chặn ngay!\n\nNhấn Sĩ đen bên PHẢI → nhấn (1,4).',
+   movePiece:53,answer:{r:1,c:4}},
+]},
+
+// ══ BÀI 7: TƯỢNG — PHÒNG THỦ ══
+{title:'Tượng — Phòng Thủ',icon:'相',steps:[
+  {type:'show',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:2},{id:55,s:'b',t:'B',r:0,c:6},
+     {id:56,s:'b',t:'R',r:0,c:0},{id:57,s:'b',t:'R',r:0,c:8},
+     {id:58,s:'b',t:'N',r:0,c:1},{id:59,s:'b',t:'N',r:0,c:7},
+     {id:60,s:'b',t:'C',r:2,c:1},{id:61,s:'b',t:'C',r:2,c:7},
+     {id:62,s:'b',t:'P',r:3,c:0},{id:64,s:'b',t:'P',r:3,c:4},{id:66,s:'b',t:'P',r:3,c:8},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:2,s:'r',t:'A',r:9,c:3},{id:3,s:'r',t:'A',r:9,c:5}
+   ],
+   hint:'QUÂN TƯỢNG (相/象) — Lá chắn tầm xa\n\n📌 Đi CHÉO 2 ô\n📌 KHÔNG được qua sông\n📌 BỊ CHẶN MẮT: ô chéo giữa có quân = không đi được\n\nVai trò phòng thủ: Phá bàn đạp Pháo, chặn Mã từ xa!\n\n🍀 Mẹo nhớ: "Tượng đi chéo 2 bước, sợ nhất bị bịt mắt!"',
+   arrows:[{fr:0,fc:2,tr:2,tc:0},{fr:0,fc:2,tr:2,tc:4},{fr:0,fc:6,tr:2,tc:4},{fr:0,fc:6,tr:2,tc:8}]},
+  {type:'show',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:6},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:10,s:'r',t:'C',r:4,c:4},{id:14,s:'r',t:'P',r:2,c:4}
+   ],
+   hint:'⚠️ BẪY PHÁO!\nPháo đỏ (4,4) nhìn thấy Tốt đỏ (2,4) làm bàn đạp.\nPháo sẽ bắn qua bàn đạp → chiếu Tướng đen!\n\nGIẢI PHÁP: Tượng đen (0,6) đi (2,4) bắt Tốt — PHÁ bàn đạp!\n\n👉 Mũi tên đỏ = đường bắn Pháo, mũi tên xanh = Tượng phá bàn đạp',
+   arrows:[{fr:4,fc:4,tr:0,tc:4,cap:true},{fr:0,fc:6,tr:2,tc:4}]},
+  {type:'move',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:6},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:10,s:'r',t:'C',r:4,c:4},{id:14,s:'r',t:'P',r:2,c:4}
+   ],
+   hint:'🛡️ THỰC HÀNH: Tượng đen (0,6) đi đến (2,4) bắt Tốt đỏ làm bàn đạp!\n\nNhấn Tượng đen bên phải → nhấn (2,4).',
+   movePiece:54,answer:{r:2,c:4}},
+  {type:'show',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:2,c:4},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:10,s:'r',t:'C',r:4,c:4}
+   ],
+   hint:'✅ Tượng đứng (2,4) — phá bàn đạp thành công!\nPháo đỏ không còn bàn đạp → không bắn được nữa!\n\n💡 Tượng + Sĩ phối hợp:\n• SĨ chặn quân đang chiếu trực tiếp\n• TƯỢNG phá chiến lược từ xa\n• Dùng cả hai = phòng thủ vững nhất!',
+   arrows:[]},
+  {type:'move',
+   pcs:[
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:55,s:'b',t:'B',r:2,c:6},
+     {id:1,s:'r',t:'K',r:9,c:4},{id:8,s:'r',t:'N',r:4,c:3}
+   ],
+   hint:'🛡️ THỰC HÀNH: Mã đỏ (4,3) sắp nhảy vào (2,4) tấn công!\nTượng đen (2,6) đi đến (4,4) để kiểm soát vùng đó!\n\nNhấn Tượng đen → nhấn (4,4).',
+   movePiece:55,answer:{r:4,c:4}},
+]},
+
+// ══ BÀI 8: CHIẾU TƯỚNG ══
+{title:'Chiếu Tướng',icon:'⚠️',steps:[
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:2,s:'r',t:'A',r:9,c:3},{id:3,s:'r',t:'A',r:9,c:5},
+     {id:6,s:'r',t:'R',r:5,c:4},{id:10,s:'r',t:'C',r:7,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5},
+     {id:54,s:'b',t:'B',r:0,c:2},{id:55,s:'b',t:'B',r:0,c:6}
+   ],
+   hint:'CHIẾU TƯỚNG là gì?\n\nKhi quân của bạn đang TẤN CÔNG trực tiếp Tướng địch.\nĐối thủ PHẢI xử lý ngay — không được làm việc khác!\n\n3 CÁCH ĐỠ CHIẾU:\n① Chạy Tướng sang ô an toàn\n② Chặn quân vào giữa đường chiếu\n③ Bắt quân đang chiếu\n\nKhông làm được = CHIẾU HẾT!',
+   arrows:[{fr:5,fc:4,tr:1,tc:4}]},
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:2,s:'r',t:'A',r:9,c:3},{id:3,s:'r',t:'A',r:9,c:5},
+     {id:6,s:'r',t:'R',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:0,c:3},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🎯 THỰC HÀNH CHIẾU:\nTiến Xe đỏ (5,4) lên (1,4) để chiếu Tướng đen.\n\nNhấn Xe đỏ → nhấn (1,4).',
+   movePiece:6,answer:{r:1,c:4}},
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:10,s:'r',t:'C',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:2,c:4},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'💣 CHIẾU BẰNG PHÁO — bẫy nguy hiểm!\n\nSĩ đen ở (2,4) vô tình làm bàn đạp cho Pháo đỏ!\nPháo (5,4) bắn qua Sĩ đen → chiếu Tướng (0,4)!\n\n⚠️ Đặt Sĩ sai chỗ = tự hại mình!\nĐây là bẫy rất hay gặp trong thực chiến.',
+   arrows:[{fr:5,fc:4,tr:0,tc:4,cap:true}]},
+  {type:'show',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:2,c:0},{id:7,s:'r',t:'R',r:2,c:8},
+     {id:10,s:'r',t:'C',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:2,c:4},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'🏆 CHIẾU HẾT bằng Pháo + Xe!\n\nPháo (5,4) bắn qua Sĩ đen (2,4) → chiếu Tướng.\n2 Xe chặn hàng 2 — Tướng không chạy xuống được.\n\nTướng đen không có đường thoát!\nDi chuyển Pháo để kết thúc!',
+   arrows:[{fr:5,fc:4,tr:0,tc:4,cap:true},{fr:2,fc:0,tr:2,tc:3},{fr:2,fc:8,tr:2,tc:5}]},
+  {type:'move',
+   pcs:[
+     {id:1,s:'r',t:'K',r:9,c:4},{id:6,s:'r',t:'R',r:2,c:0},{id:7,s:'r',t:'R',r:2,c:8},
+     {id:10,s:'r',t:'C',r:5,c:4},
+     {id:51,s:'b',t:'K',r:0,c:4},{id:52,s:'b',t:'A',r:2,c:4},{id:53,s:'b',t:'A',r:0,c:5}
+   ],
+   hint:'💥 Pháo (5,4) bắn lên (0,4) qua Sĩ đen (2,4). CHIẾU HẾT! 🏆\n\nTướng đen hoàn toàn bị phong tỏa.',
+   movePiece:10,answer:{r:0,c:4}},
+]},
+
 ];
 
 
