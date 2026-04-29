@@ -2873,21 +2873,14 @@ function connectSocket(cb){
   socket.on('draw_offered',()=>showModal('modDraw'));
   socket.on('draw_declined',()=>toast('Đối thủ từ chối hòa'));
 
-  // Nhận emoji từ đối thủ — server broadcast về room
-  // Lắng nghe cả 2 tên event phòng trường hợp server dùng khác nhau
+  // Nhận emoji từ đối thủ
+  // Server dùng socket.to(roomId) nên chỉ người nhận mới nhận được — không cần check tên
   function handleIncomingEmoji(data){
-    // data có thể là {name,text} hoặc {from,text} hoặc {text}
-    const senderName = data.name || data.from || '';
     const text = data.text || data.emoji || '';
-    if(!text) return;
-    // Chỉ hiện nếu KHÔNG phải từ mình (tên khác hoặc server không gửi tên)
-    if(senderName && senderName === playerName) return;
-    showOpponentEmoji(text);
+    if(text) showOpponentEmoji(text);
   }
   socket.on('chat_msg',  handleIncomingEmoji);
-  socket.on('chat',      handleIncomingEmoji);
-  socket.on('emoji',     handleIncomingEmoji);
-  socket.on('emoji_msg', handleIncomingEmoji);
+  socket.on('chat',      handleIncomingEmoji); // fallback
 }
 
 // ══════════════════════════════════════════
