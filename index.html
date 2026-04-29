@@ -34,62 +34,188 @@ html,body{height:100%;overflow:hidden;touch-action:manipulation}
 body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--text);
   display:flex;flex-direction:column;align-items:center}
 
-/* ── SCREENS ── */
+/* d-hide: mobile hiện, desktop ẩn */
+.d-hide{ display:flex; }
+.d-hide.gctrl{ flex-direction:row; }
+
 .screen{display:none;flex-direction:column;width:100%;max-width:430px;
   height:100%;height:100dvh;position:absolute;top:0;left:50%;transform:translateX(-50%)}
 .screen.active{display:flex}
 .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding-bottom:calc(70px + var(--safe-bot))}
 
-/* ══ DESKTOP & TABLET (≥700px) ══ */
+/* ══════════════════════════════════════════════
+   DESKTOP & TABLET ≥ 700px
+   - Sidebar nav dọc bên TRÁI thay nav-bar dưới
+   - Content chính ở giữa, max-width hợp lý
+   - Game: bàn cờ lớn + panel phải
+   ══════════════════════════════════════════════ */
 @media(min-width:700px){
-  .screen{ max-width:100%; width:100%; }
 
-  /* Game: 2 cột row */
-  #game{
+  /* ── Root layout: sidebar-left + main ── */
+  html,body{ overflow:hidden; }
+  body{
     flex-direction:row !important;
     align-items:stretch;
+    height:100dvh;
     overflow:hidden;
   }
+
+  /* Sidebar nav trái — cố định */
+  #mainNav{
+    position:relative !important;
+    left:auto !important; bottom:auto !important;
+    transform:none !important;
+    width:72px !important;
+    max-width:72px !important;
+    height:100dvh;
+    flex-direction:column !important;
+    justify-content:flex-start !important;
+    align-items:center;
+    padding:20px 0 20px !important;
+    gap:4px;
+    border-top:none !important;
+    border-right:1px solid rgba(212,168,67,.12);
+    flex-shrink:0;
+    overflow:hidden;
+    z-index:40;
+    display:flex !important; /* luôn hiện, không bị JS ẩn */
+  }
+  /* Logo ở đầu sidebar */
+  #mainNav::before{
+    content:'象棋';
+    font-family:'Noto Serif SC',serif;
+    font-size:18px; font-weight:900;
+    color:var(--gold);
+    padding-bottom:16px;
+    border-bottom:1px solid rgba(212,168,67,.15);
+    margin-bottom:8px;
+    width:100%;
+    text-align:center;
+    flex-shrink:0;
+    letter-spacing:1px;
+  }
+  .nav-i{
+    width:56px; height:56px;
+    border-radius:14px;
+    padding:0 !important;
+    flex-direction:column;
+    gap:3px;
+    justify-content:center;
+  }
+  .nav-i .ni{ font-size:20px; }
+  .nav-i .nl{ font-size:8px; letter-spacing:0; }
+  .nav-i.on{ background:rgba(212,168,67,.12); }
+
+  /* ── Main content area ── */
+  .screen{
+    position:relative !important;
+    top:auto !important; left:auto !important;
+    transform:none !important;
+    max-width:none !important;
+    width:100% !important;
+    flex:1;
+    height:100dvh;
+    overflow:hidden;
+  }
+
+  /* Các screen nội dung: căn giữa có max-width */
+  #home .scroll,
+  #lb .scroll,
+  #profile .scroll,
+  #settings .scroll,
+  #events .scroll{
+    max-width:720px;
+    margin:0 auto;
+    width:100%;
+  }
+
+  /* ── GAME SCREEN: bàn cờ + panel phải ── */
+  #game{
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:stretch;
+    background:var(--game-bg);
+  }
+
+  /* Ẩn top-bar mobile */
   #game .game-top{ display:none !important; }
 
-  /* Cột trái: bàn cờ */
+  /* Bàn cờ: chiếm phần còn lại, căn giữa */
   #game .board-wrap{
-    flex:1; order:1;
-    display:flex; align-items:center; justify-content:center;
-    padding:20px; min-width:0; height:100%;
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    min-width:0;
+    height:100%;
   }
 
-  /* Cột phải: sidebar */
+  /* Panel bên phải */
   #game .game-sidebar-desktop{
-    order:2;
-    width:280px; min-width:260px; flex-shrink:0;
-    display:flex !important; flex-direction:column;
-    gap:10px; padding:20px 16px;
-    border-left:1px solid rgba(160,120,50,.2);
-    background:rgba(255,245,220,.4);
-    overflow-y:auto; overflow-x:hidden;
+    width:260px;
+    min-width:240px;
+    flex-shrink:0;
+    display:flex !important;
+    flex-direction:column;
+    gap:10px;
+    padding:24px 16px 20px;
+    border-left:1px solid rgba(212,168,67,.18);
+    overflow-y:auto;
+    overflow-x:hidden;
   }
   body.dark #game .game-sidebar-desktop{
-    background:rgba(0,0,0,.25);
-    border-left-color:rgba(212,168,67,.15);
+    background:rgba(0,0,0,.2);
+    border-left-color:rgba(212,168,67,.12);
   }
-  #game #gpbar{ flex-direction:column; gap:8px; }
-  #game #gpbar .vs{ display:none; }
-  #game #gpbar .pcrd{ width:100%; max-width:unset; }
-  #game .emoji-quick{ border-radius:12px; border:1px solid rgba(160,120,50,.2); padding:10px; justify-content:space-around; }
-  #game .gctrl{ flex-wrap:wrap; padding:0; }
-  #game .gctrl .gbtn{ flex:1 1 45%; max-width:unset; }
-  .desktop-header{ display:flex !important; }
+  body:not(.dark) #game .game-sidebar-desktop{
+    background:rgba(255,248,231,.6);
+    border-left-color:rgba(160,120,50,.2);
+  }
 
-  /* Screens khác */
-  #home,#lb,#profile,#settings{ max-width:680px; }
+  /* pbar dọc trong sidebar */
+  #game #gpbar{ flex-direction:column !important; gap:8px !important; padding:0; }
+  #game #gpbar .vs{ display:none !important; }
+  #game #gpbar .pcrd{ width:100% !important; max-width:none !important; }
+
+  /* emoji full width */
+  #game .emoji-quick{
+    border-radius:12px;
+    border:1px solid rgba(160,120,50,.2);
+    padding:10px 8px;
+    justify-content:space-around;
+    flex-shrink:0;
+  }
+
+  /* gctrl: 2 cột */
+  #game .gctrl{ flex-wrap:wrap; padding:0; gap:6px; flex-shrink:0; }
+  #game .gctrl .gbtn{ flex:1 1 calc(50% - 3px); max-width:none; }
+
+  /* desktop header trong sidebar */
+  .desktop-header{
+    display:flex !important;
+    align-items:center;
+    justify-content:space-between;
+    padding-bottom:14px;
+    border-bottom:1px solid rgba(160,120,50,.15);
+    margin-bottom:2px;
+    flex-shrink:0;
+  }
+
+  /* ── Ẩn/hiện ── */
+  /* mobile sidebar flatten: không cần trên desktop */
 }
 
-/* MOBILE: sidebar flatten */
+/* ══ MOBILE < 700px: giữ nguyên hoàn toàn ══ */
 @media(max-width:699px){
-  #game .game-sidebar-desktop{ display:contents; }
+  #game .game-sidebar-desktop{ display:none !important; }
   .desktop-header{ display:none !important; }
+  .d-hide{ display:flex; } /* mobile: các phần tử mobile hiện lại */
+}
+@media(min-width:700px){
+  .d-hide{ display:none !important; } /* desktop: ẩn bản mobile */
+  #game .game-top{ display:none !important; }
 }
 
 /* ── SPLASH ── */
@@ -1121,61 +1247,95 @@ body.dark .tog::after{background:#fff}
 <!-- ══ GAME ══ -->
 <div id="game" class="screen">
 
-  <!-- [MOBILE+DESKTOP] top bar mobile -->
+  <!-- Mobile top bar (desktop: hidden via CSS) -->
   <div class="game-top" id="gameTopMobile">
     <div style="width:38px"></div>
     <div class="gmode" id="gmode">♟ CỜ THƯỜNG</div>
     <div class="tb-btn" onclick="openSettings()">⚙</div>
   </div>
 
-  <!-- [MOBILE] pbar ngang — sẽ được override thành dọc trên desktop qua CSS -->
-  <div class="pbar" id="gpbar">
-    <div class="pcrd" id="bcrd">
+  <!-- Mobile: pbar/sbar/emoji/gctrl hiện trước board -->
+  <!-- Desktop: ẩn (bản trong gameSidebar hiện thay) -->
+  <div class="pbar d-hide" id="gpbar-mobile">
+    <div class="pcrd" id="bcrd-mob">
       <div class="mav b">將</div>
-      <div><div class="pn">Đối Thủ</div><div style="font-size:10px;color:var(--dim)" id="belo">ELO 1380</div></div>
-      <div class="ptm" id="btm">10:00</div>
+      <div><div class="pn" id="bname-mob">Đối Thủ</div><div style="font-size:10px;color:var(--dim)" id="belo-mob">ELO 1380</div></div>
+      <div class="ptm" id="btm-mob">10:00</div>
     </div>
     <div class="vs">VS</div>
-    <div class="pcrd on" id="rcrd">
+    <div class="pcrd on" id="rcrd-mob">
       <div class="mav r">帥</div>
-      <div><div class="pn">Bạn</div><div style="font-size:10px;color:var(--dim)" id="relo">ELO 1200</div></div>
-      <div class="ptm" id="rtm">10:00</div>
+      <div><div class="pn" id="rname-mob">Bạn</div><div style="font-size:10px;color:var(--dim)" id="relo-mob">ELO 1200</div></div>
+      <div class="ptm" id="rtm-mob">10:00</div>
     </div>
   </div>
+  <div class="sbar d-hide" id="sbar-mobile">Lượt của bạn (Đỏ) — Chọn quân cờ ♟</div>
 
-  <!-- status bar -->
-  <div class="sbar" id="sbar">Lượt của bạn (Đỏ) — Chọn quân cờ ♟</div>
-
-  <!-- bàn cờ — order:1 desktop, tự nhiên mobile -->
+  <!-- bàn cờ — luôn hiện cả 2 layout -->
   <div class="board-wrap">
     <canvas id="cv"></canvas>
   </div>
 
-  <!-- 5 emoji -->
-  <div class="emoji-quick" id="emojiBar">
+  <!-- Mobile: emoji + gctrl sau board -->
+  <div class="emoji-quick d-hide" id="emojiBar-mobile">
     <button class="eqbtn" onclick="sendEmoji('👍')">👍</button>
     <button class="eqbtn" onclick="sendEmoji('😂')">😂</button>
     <button class="eqbtn" onclick="sendEmoji('🤔')">🤔</button>
     <button class="eqbtn" onclick="sendEmoji('🔥')">🔥</button>
     <button class="eqbtn" onclick="sendEmoji('🙏')">🙏</button>
   </div>
-
-  <!-- nút điều khiển -->
-  <div class="gctrl">
-    <button class="gbtn" id="btnUndo"   onclick="undoMove()"><div class="gi">↩️</div>Hoàn Tác</button>
-    <button class="gbtn" id="btnEmoji"  style="display:none"></button>
-    <button class="gbtn red" id="btnResign" onclick="showModal('modResign')"><div class="gi">🏳️</div>Đầu Hàng</button>
-    <button class="gbtn" id="btnQuit"   onclick="confirmBack()"><div class="gi">🚪</div>Thoát</button>
+  <div class="gctrl d-hide" id="gctrl-mobile">
+    <button class="gbtn" id="btnUndo-mob"  onclick="undoMove()"><div class="gi">↩️</div>Hoàn Tác</button>
+    <button class="gbtn" style="display:none"></button>
+    <button class="gbtn red" id="btnResign-mob" onclick="showModal('modResign')"><div class="gi">🏳️</div>Đầu Hàng</button>
+    <button class="gbtn" id="btnQuit-mob" onclick="confirmBack()"><div class="gi">🚪</div>Thoát</button>
   </div>
 
-  <!-- [DESKTOP ONLY] sidebar wrapper — chứa header desktop + di chuyển các phần tử vào -->
+  <!-- DESKTOP PANEL (right sidebar) -->
   <div class="game-sidebar-desktop" id="gameSidebar">
-    <!-- Header chỉ hiện desktop -->
+
+    <!-- Header -->
     <div class="desktop-header">
       <div class="gmode" id="gmodeDesktop">♟ CỜ THƯỜNG</div>
       <div class="tb-btn" onclick="openSettings()">⚙</div>
     </div>
-  </div>
+
+    <!-- pbar dọc -->
+    <div class="pbar" id="gpbar">
+      <div class="pcrd" id="bcrd">
+        <div class="mav b">將</div>
+        <div><div class="pn">Đối Thủ</div><div style="font-size:10px;color:var(--dim)" id="belo">ELO 1380</div></div>
+        <div class="ptm" id="btm">10:00</div>
+      </div>
+      <div class="vs" style="display:none">VS</div>
+      <div class="pcrd on" id="rcrd">
+        <div class="mav r">帥</div>
+        <div><div class="pn">Bạn</div><div style="font-size:10px;color:var(--dim)" id="relo">ELO 1200</div></div>
+        <div class="ptm" id="rtm">10:00</div>
+      </div>
+    </div>
+
+    <!-- status -->
+    <div class="sbar" id="sbar">Lượt của bạn (Đỏ) — Chọn quân cờ ♟</div>
+
+    <!-- emoji -->
+    <div class="emoji-quick" id="emojiBar">
+      <button class="eqbtn" onclick="sendEmoji('👍')">👍</button>
+      <button class="eqbtn" onclick="sendEmoji('😂')">😂</button>
+      <button class="eqbtn" onclick="sendEmoji('🤔')">🤔</button>
+      <button class="eqbtn" onclick="sendEmoji('🔥')">🔥</button>
+      <button class="eqbtn" onclick="sendEmoji('🙏')">🙏</button>
+    </div>
+
+    <!-- nút điều khiển -->
+    <div class="gctrl">
+      <button class="gbtn" id="btnUndo"   onclick="undoMove()"><div class="gi">↩️</div>Hoàn Tác</button>
+      <button class="gbtn" id="btnEmoji"  style="display:none"></button>
+      <button class="gbtn red" id="btnResign" onclick="showModal('modResign')"><div class="gi">🏳️</div>Đầu Hàng</button>
+      <button class="gbtn" id="btnQuit"   onclick="confirmBack()"><div class="gi">🚪</div>Thoát</button>
+    </div>
+
+  </div><!-- /gameSidebar -->
 
   <span id="cunread" style="display:none">0</span>
   <span id="cunreadBadge" style="display:none">0</span>
@@ -1735,67 +1895,22 @@ function safeMoves(p,ps){
 // ══════════════════════════════════════════
 // CANVAS
 // ══════════════════════════════════════════
-// Theo dõi trạng thái layout để không rearrange nhiều lần
-let _layoutMode = '';
-
-function applyDesktopLayout(){
-  if(_layoutMode==='desktop') return;
-  _layoutMode='desktop';
-  const sidebar = document.getElementById('gameSidebar');
-  if(!sidebar) return;
-  ['gpbar','sbar','emojiBar'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el && el.parentNode!==sidebar) sidebar.appendChild(el);
-  });
-  const gctrl=document.querySelector('#game .gctrl');
-  if(gctrl && gctrl.parentNode!==sidebar) sidebar.appendChild(gctrl);
-  const mTop=document.getElementById('gameTopMobile');
-  if(mTop) mTop.style.display='none';
-  // sync gmode
-  const lbl=document.getElementById('gmode')?.textContent||'';
-  const gd=document.getElementById('gmodeDesktop');
-  if(gd) gd.textContent=lbl;
-}
-
-function applyMobileLayout(){
-  if(_layoutMode==='mobile') return;
-  _layoutMode='mobile';
-  const game=document.getElementById('game');
-  if(!game) return;
-  const board=game.querySelector('.board-wrap');
-  if(!board) return;
-  const mTop =document.getElementById('gameTopMobile');
-  const gpbar=document.getElementById('gpbar');
-  const sbar =document.getElementById('sbar');
-  const emoji=document.getElementById('emojiBar');
-  const gctrl=document.querySelector('#game .gctrl, #gameSidebar .gctrl');
-  // Đặt lại thứ tự: game-top → pbar → sbar → board → emoji → gctrl
-  if(mTop)  { mTop.style.display=''; if(mTop.parentNode!==game) game.insertBefore(mTop, game.firstChild); }
-  if(gpbar) { if(gpbar.parentNode!==game) game.insertBefore(gpbar, board); }
-  if(sbar)  { if(sbar.parentNode!==game) game.insertBefore(sbar, board); }
-  if(emoji) { if(emoji.parentNode!==game) board.insertAdjacentElement('afterend', emoji); }
-  if(gctrl) { if(gctrl.parentNode!==game) (emoji||board).insertAdjacentElement('afterend', gctrl); }
-}
-
 function setupCanvas(){
   cv=document.getElementById('cv');
   const dpr=window.devicePixelRatio||1;
   const isDesktop=window.innerWidth>=700;
 
-  // Sync gmode text desktop header
+  // Sync gmode desktop header
   const gmLbl=document.getElementById('gmode')?.textContent||'';
   const gmD=document.getElementById('gmodeDesktop');
   if(gmD) gmD.textContent=gmLbl;
 
-  // Rearrange DOM theo viewport
-  if(isDesktop) applyDesktopLayout();
-  else applyMobileLayout();
-
   let availW, availH;
   if(isDesktop){
-    const sideW=280+28+28; // sidebar + padding cả 2 bên
-    availW=window.innerWidth - sideW;
-    availH=window.innerHeight - 32;
+    // Desktop: sidebar nav 72px trái + panel game 260px phải + padding
+    const navW=72, panelW=260, pad=40;
+    availW=window.innerWidth - navW - panelW - pad;
+    availH=window.innerHeight - pad;
     const sq=Math.min(availW, availH);
     availW=sq; availH=sq;
   } else {
@@ -1820,11 +1935,11 @@ function setupCanvas(){
   cell=Math.max(Math.min(cellW,cellH),28);
   const boardW=Math.round(cell*(COLS-1+1.1));
   const boardH=Math.round(cell*(ROWS-1+1.1));
-  cv.style.width=boardW+'px';cv.style.height=boardH+'px';
-  cv.style.maxWidth='100%';cv.style.maxHeight='100%';
-  cv.width=Math.round(boardW*dpr);cv.height=Math.round(boardH*dpr);
-  ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
-  ox=cell*0.55;oy=cell*0.55;
+  cv.style.width=boardW+'px'; cv.style.height=boardH+'px';
+  cv.style.maxWidth='100%';   cv.style.maxHeight='100%';
+  cv.width=Math.round(boardW*dpr); cv.height=Math.round(boardH*dpr);
+  ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  ox=cell*0.55; oy=cell*0.55;
 }
 const cx=c=>Math.round(ox+(mySide==='b'?(COLS-1-c):c)*cell);
 const cy=r=>Math.round(oy+(mySide==='b'?(ROWS-1-r):r)*cell);
@@ -2704,58 +2819,73 @@ function startTimer(){
   },1000);
 }
 
+// Helper: sync cả element desktop lẫn mobile (-mob suffix)
+function g(id){ return document.getElementById(id); }
+function syncEl(id, fn){
+  const el=g(id); if(el) fn(el);
+  const mob=g(id+'-mob'); if(mob) fn(mob);
+}
+
 function updateTimer(){
   const f=t=>`${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
-  const re=document.getElementById('rtm'),be=document.getElementById('btm');
-  re.textContent=f(rTime);be.textContent=f(bTime);
-  re.className='ptm'+(rTime<=15?' urg':'');be.className='ptm'+(bTime<=15?' urg':'');
+  ['rtm','btm'].forEach(id=>{
+    syncEl(id, el=>{
+      el.textContent = id==='rtm'?f(rTime):f(bTime);
+      el.className = 'ptm'+((id==='rtm'?rTime:bTime)<=15?' urg':'');
+    });
+  });
 }
 
 // ══════════════════════════════════════════
 // TURN UI
 // ══════════════════════════════════════════
 function updateGameControls(gameMode){
-  // gameMode: 'ai' | 'rank' | 'spectate'
-  const undo   = document.getElementById('btnUndo');
-  const emoji  = document.getElementById('btnEmoji'); // hidden stub
-  const resign = document.getElementById('btnResign');
-  const quit   = document.getElementById('btnQuit');
-  const eqBar  = document.getElementById('emojiBar');
-  if(!undo)return;
-
-  if(gameMode==='ai'){
-    undo.style.display='';
-    resign.style.display='';
-    quit.style.display='none';
-    if(eqBar) eqBar.style.display='none'; // ẩn emoji khi chơi vs AI
-  } else if(gameMode==='rank'){
-    undo.style.display='none';
-    resign.style.display='';
-    quit.style.display='none';
-    if(eqBar) eqBar.style.display='flex'; // hiện 5 emoji khi rank
-  } else if(gameMode==='spectate'){
-    undo.style.display='none';
-    resign.style.display='none';
-    quit.style.display='';
-    if(eqBar) eqBar.style.display='none'; // ẩn khi xem
-  }
+  // Cập nhật cả desktop và mobile buttons
+  ['btnUndo','btnResign','btnQuit'].forEach(id=>{ /* handled below */ });
+  const sets=[
+    {undo:g('btnUndo'),resign:g('btnResign'),quit:g('btnQuit'),eqBar:g('emojiBar')},
+    {undo:g('btnUndo-mob'),resign:g('btnResign-mob'),quit:g('btnQuit-mob'),eqBar:g('emojiBar-mobile')},
+  ];
+  sets.forEach(({undo,resign,quit,eqBar})=>{
+    if(!undo&&!resign&&!quit) return;
+    if(gameMode==='ai'){
+      if(undo)   undo.style.display='';
+      if(resign) resign.style.display='';
+      if(quit)   quit.style.display='none';
+      if(eqBar)  eqBar.style.display='none';
+    } else if(gameMode==='rank'){
+      if(undo)   undo.style.display='none';
+      if(resign) resign.style.display='';
+      if(quit)   quit.style.display='none';
+      if(eqBar)  eqBar.style.display='flex';
+    } else if(gameMode==='spectate'){
+      if(undo)   undo.style.display='none';
+      if(resign) resign.style.display='none';
+      if(quit)   quit.style.display='';
+      if(eqBar)  eqBar.style.display='none';
+    }
+  });
 }
 
 function setTurnUI(){
-  document.getElementById('rcrd').classList.toggle('on',turn==='r');
-  document.getElementById('bcrd').classList.toggle('on',turn==='b');
+  // Sync cả desktop và mobile pcrd
+  ['rcrd','bcrd'].forEach(id=>{
+    const isOn = id==='rcrd'?(turn==='r'):(turn==='b');
+    syncEl(id, el=>el.classList.toggle('on', isOn));
+  });
   const myTurn=turn===mySide||(!isOnline&&turn==='r');
   setStatus(myTurn?'Lượt của bạn ♟ — Chọn quân':'Đối thủ đang suy nghĩ...',false);
-  // Đúng bộ nút theo chế độ
   if(spectateRoomId) updateGameControls('spectate');
   else if(isOnline)  updateGameControls('rank');
   else               updateGameControls('ai');
-
 }
 
 function setStatus(msg,alert){
-  const el=document.getElementById('sbar');
-  el.textContent=msg;el.className='sbar'+(alert?' alert':'');
+  // Sync cả desktop (#sbar) và mobile (#sbar-mobile)
+  ['sbar','sbar-mobile'].forEach(id=>{
+    const el=g(id);
+    if(el){ el.textContent=msg; el.className='sbar'+(alert?' alert':''); }
+  });
 }
 
 // ══════════════════════════════════════════
@@ -2803,8 +2933,9 @@ function initGame(){
   sel=null;turn='r';mvHist=[];lastMv=null;aiBusy=false;gameOn=true;gameStartTime=Date.now();
   clearInterval(timerInt);
   document.getElementById('relo').textContent=`ELO ${elo}`;
-  document.querySelector('#rcrd .pn').textContent='Bạn';
-  document.querySelector('#bcrd .pn').textContent='Bot AI';
+  ['relo','relo-mob'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=`ELO ${elo}`;});
+  document.querySelectorAll('#rcrd .pn,#rcrd-mob .pn').forEach(e=>e.textContent='Bạn');
+  document.querySelectorAll('#bcrd .pn,#bcrd-mob .pn').forEach(e=>e.textContent='Bot AI');
   setupCanvas();draw();setTurnUI();startTimer();
   updateGameControls('ai');
   if(isHidden)setStatus('🎭 Cờ Úp — Tất cả quân úp mù!',false);
@@ -2865,9 +2996,9 @@ function connectSocket(cb){
     document.getElementById('gmode').textContent=lbl; const _gmd=document.getElementById('gmodeDesktop'); if(_gmd)_gmd.textContent=lbl;
 
     // Tên người chơi — hiển thị đúng phe
-    document.querySelector('#rcrd .pn').textContent=side==='r'?'Bạn':opponent;
-    document.querySelector('#bcrd .pn').textContent=side==='b'?'Bạn':opponent;
-    document.getElementById('relo').textContent=`ELO ${elo}`;
+    document.querySelectorAll('#rcrd .pn,#rcrd-mob .pn').forEach(e=>e.textContent=side==='r'?'Bạn':opponent);
+    document.querySelectorAll('#bcrd .pn,#bcrd-mob .pn').forEach(e=>e.textContent=side==='b'?'Bạn':opponent);
+    ['relo','relo-mob'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=`ELO ${elo}`;});
 
     // ── Người chơi luôn ở dưới ──
     // Khi mySide==='b': đổi thứ tự pbar — bcrd (đen=mình) xuống dưới, rcrd lên trên
@@ -3035,7 +3166,10 @@ function showGameScreen(){
   document.getElementById('game').classList.add('active');
   document.querySelectorAll('.nav-i').forEach(n=>n.classList.remove('on'));
   const mainNav=document.getElementById('mainNav');
-  if(mainNav) mainNav.style.display='none';
+  if(mainNav){
+    // Desktop: sidebar luôn hiện; Mobile: ẩn khi vào game
+    mainNav.style.display='flex'; // desktop: luôn hiện
+  }
 }
 
 // ══════════════════════════════════════════
@@ -3379,7 +3513,7 @@ function nav(screenId,navEl){
 
   // Tabbar: ẩn khi game/spectate đang xem, hiện mọi nơi khác
   const mainNav=document.getElementById('mainNav');
-  if(mainNav) mainNav.style.display=(screenId==='game'||screenId==='spectate')?'none':'flex';
+  if(mainNav) mainNav.style.display=(window.innerWidth>=700||screenId!=='game'&&screenId!=='spectate')?'flex':'none';
 
   if(screenId==='game'&&cv)draw();
   if(screenId==='profile')refreshProfile();
@@ -4238,7 +4372,7 @@ function startLesson(idx){
   curLesson=idx;curStep=0;lessonSel=null;
   document.getElementById('learnHome').style.display='none';
   document.getElementById('lessonScreen').style.display='flex';
-  document.getElementById('mainNav').style.display='none';
+  { const _n=document.getElementById('mainNav'); if(_n) _n.style.display=(window.innerWidth>=700?'flex':'none'); }
   renderStep();
   setTimeout(setupLessonCanvas,60);
 }
@@ -4372,7 +4506,7 @@ function doLogout(){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('login').classList.add('active');
   document.getElementById('loginName').value='';
-  const n=document.getElementById('mainNav');if(n)n.style.display='none';
+  const n=document.getElementById('mainNav');if(n)n.style.display=(window.innerWidth>=700?'flex':'none');
 }
 function showModal(id){document.getElementById(id).classList.add('on');}
 function closeModal(id){document.getElementById(id).classList.remove('on');}
