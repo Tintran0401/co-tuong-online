@@ -28,48 +28,110 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
   height:100%;height:100dvh;position:absolute;top:0;left:50%;transform:translateX(-50%)}
 .screen.active{display:flex}
 
-/* Desktop: bàn cờ bên trái, sidebar bên phải */
+/* ══ DESKTOP & TABLET (≥601px) ══
+   Bàn cờ chiếm toàn bộ chiều cao bên trái
+   Sidebar 280px thông tin + điều khiển bên phải
+   Nav-bar ẩn đi vì không cần trên màn hình lớn
+*/
 @media(min-width:601px){
-  .screen{max-width:100%}
+  /* Tất cả screen full-width */
+  .screen{ max-width:100%; }
 
-  /* #game dùng grid 2 cột: bàn cờ | sidebar */
+  /* Ẩn nav-bar dưới — desktop dùng nút Thoát trong game */
+  .nav-bar{ display:none !important; }
+
+  /* ── MÀN HÌNH GAME: 2 cột ── */
   #game{
-    display:grid !important;
-    grid-template-columns: 1fr 260px;
-    grid-template-rows: auto;
-    grid-template-areas:
-      "board  top"
-      "board  pbar"
-      "board  sbar"
-      "board  emoji"
-      "board  ctrl"
-      "board  .";
-    align-items:start;
-    gap:0;
-    padding:12px;
-    background:#0D0600;
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:stretch;
+    height:100dvh;
+    overflow:hidden;
   }
 
-  #game .game-top    { grid-area:top;   display:flex; align-items:center; justify-content:flex-end; padding:0 4px 8px; border-bottom:1px solid rgba(212,168,67,.12); margin-bottom:4px; }
-  #game .board-wrap  { grid-area:board; display:flex; align-items:center; justify-content:center; height:100%; padding-right:12px; }
-  #game #gpbar       { grid-area:pbar;  padding:0; }
-  #game .sbar        { grid-area:sbar;  border-radius:8px; margin:6px 0; }
-  #game .emoji-quick { grid-area:emoji; border-radius:12px; border:1px solid rgba(212,168,67,.12); margin:4px 0; }
-  #game .gctrl       { grid-area:ctrl;  padding:4px 0 0; }
+  /* Cột trái: bàn cờ full height */
+  #game .board-wrap{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100%;
+    padding:16px;
+    min-width:0;
+  }
 
-  /* Sidebar: pbar dọc thay vì ngang */
-  #game #gpbar { display:flex; flex-direction:column; gap:6px; }
-  #game #gpbar .vs { display:none; }
-  #game #gpbar .pcrd { width:100%; max-width:unset; }
+  /* Cột phải: sidebar dọc */
+  #game .game-sidebar-desktop{
+    width:280px;
+    min-width:260px;
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    padding:20px 14px;
+    border-left:1px solid rgba(212,168,67,.15);
+    background:rgba(0,0,0,.25);
+    overflow-y:auto;
+  }
+
+  /* Ẩn mobile-only elements */
+  #game .game-top{ display:none !important; }
+
+  /* pbar dọc trong sidebar */
+  #game #gpbar{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    padding:0;
+  }
+  #game #gpbar .vs{ display:none; }
+  #game #gpbar .pcrd{ width:100%; max-width:unset; }
+
+  /* sbar full-width trong sidebar */
+  #game .sbar{
+    border-radius:8px;
+    margin:0;
+    text-align:center;
+  }
+
+  /* emoji bar căn đều */
+  #game .emoji-quick{
+    border-radius:12px;
+    border:1px solid rgba(212,168,67,.15);
+    padding:10px;
+    justify-content:space-around;
+  }
+
+  /* gctrl wrap */
+  #game .gctrl{
+    flex-wrap:wrap;
+    padding:0;
+  }
+  #game .gctrl .gbtn{
+    flex:1 1 45%;
+    max-width:unset;
+  }
+
+  /* Các screen khác (home, lb, profile...): cuộn dọc căn giữa */
+  #home, #lb, #profile, #settings{
+    max-width:600px;
+    left:50%;
+    transform:translateX(-50%);
+  }
 }
 
-/* Mobile: giữ nguyên layout cũ, không thay đổi gì */
+/* ══ MOBILE (≤600px): giữ nguyên hoàn toàn ══ */
 @media(max-width:600px){
-  .screen{ max-width:430px }
-  #game{ flex-direction:column }
-  #game .game-top{ display:flex }
+  .screen{ max-width:430px; }
+  #game{ flex-direction:column; }
+  #game .game-top{ display:flex; }
+  #game .game-sidebar-desktop{ display:contents; }
 }
-.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+/* desktop-header chỉ hiện trên desktop */
+.desktop-header{ display:none; }
+@media(min-width:601px){ .desktop-header{ display:flex !important; } }
+
+
   padding-bottom:calc(70px + var(--safe-bot))}
 
 /* ── SPLASH ── */
@@ -659,6 +721,7 @@ body.light #profile,body.light #lb,body.light #events,body.light #learn,body.lig
   background:radial-gradient(ellipse at top,#FFF3CC 0%,#EDE0C4 60%)}
 body.light #spectate{background:#EDE0C4}
 body.light #game{background:#D4B896}
+body.light .game-sidebar-desktop{background:rgba(255,245,220,.4);border-left-color:rgba(160,120,50,.2)}
 body.light #login{background:radial-gradient(ellipse at 50% 30%,#4A2200,#1A0800)}
 
 /* ── Light: Nav & bars ── */
@@ -1070,52 +1133,63 @@ body.light .tog::after{background:#fff}
 <!-- ══ GAME ══ -->
 <div id="game" class="screen">
 
-  <!-- top bar (mobile) / ẩn trên desktop -->
+  <!-- top bar: chỉ hiện trên mobile -->
   <div class="game-top" id="gameTopMobile">
     <div style="width:38px"></div>
     <div class="gmode" id="gmode">♟ CỜ THƯỜNG</div>
     <div class="tb-btn" onclick="openSettings()">⚙</div>
   </div>
 
-  <!-- pbar — đối thủ trên, mình dưới (mobile: hiện thẳng; desktop: trong sidebar) -->
-  <div class="pbar" id="gpbar">
-    <div class="pcrd" id="bcrd">
-      <div class="mav b">將</div>
-      <div><div class="pn">Đối Thủ</div><div style="font-size:10px;color:var(--dim)" id="belo">ELO 1380</div></div>
-      <div class="ptm" id="btm">10:00</div>
-    </div>
-    <div class="vs">VS</div>
-    <div class="pcrd on" id="rcrd">
-      <div class="mav r">帥</div>
-      <div><div class="pn">Bạn</div><div style="font-size:10px;color:var(--dim)" id="relo">ELO 1200</div></div>
-      <div class="ptm" id="rtm">10:00</div>
-    </div>
-  </div>
-
-  <!-- status bar -->
-  <div class="sbar" id="sbar">Lượt của bạn (Đỏ) — Chọn quân cờ ♟</div>
-
   <!-- bàn cờ -->
   <div class="board-wrap">
     <canvas id="cv"></canvas>
   </div>
 
-  <!-- 5 emoji cố định -->
-  <div class="emoji-quick" id="emojiBar">
-    <button class="eqbtn" onclick="sendEmoji('👍')">👍</button>
-    <button class="eqbtn" onclick="sendEmoji('😂')">😂</button>
-    <button class="eqbtn" onclick="sendEmoji('🤔')">🤔</button>
-    <button class="eqbtn" onclick="sendEmoji('🔥')">🔥</button>
-    <button class="eqbtn" onclick="sendEmoji('🙏')">🙏</button>
-  </div>
+  <!-- Sidebar desktop / flow thường trên mobile -->
+  <div class="game-sidebar-desktop">
 
-  <!-- nút điều khiển -->
-  <div class="gctrl">
-    <button class="gbtn" id="btnUndo"   onclick="undoMove()"><div class="gi">↩️</div>Hoàn Tác</button>
-    <button class="gbtn" id="btnEmoji"  style="display:none"></button>
-    <button class="gbtn red" id="btnResign" onclick="showModal('modResign')"><div class="gi">🏳️</div>Đầu Hàng</button>
-    <button class="gbtn" id="btnQuit"   onclick="confirmBack()"><div class="gi">🚪</div>Thoát</button>
-  </div>
+    <!-- Header desktop: mode + settings -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid rgba(212,168,67,.12);margin-bottom:4px" class="desktop-header">
+      <div class="gmode" id="gmodeDesktop">♟ CỜ THƯỜNG</div>
+      <div class="tb-btn" onclick="openSettings()">⚙</div>
+    </div>
+
+    <!-- pbar: đối thủ trên, mình dưới -->
+    <div class="pbar" id="gpbar">
+      <div class="pcrd" id="bcrd">
+        <div class="mav b">將</div>
+        <div><div class="pn">Đối Thủ</div><div style="font-size:10px;color:var(--dim)" id="belo">ELO 1380</div></div>
+        <div class="ptm" id="btm">10:00</div>
+      </div>
+      <div class="vs">VS</div>
+      <div class="pcrd on" id="rcrd">
+        <div class="mav r">帥</div>
+        <div><div class="pn">Bạn</div><div style="font-size:10px;color:var(--dim)" id="relo">ELO 1200</div></div>
+        <div class="ptm" id="rtm">10:00</div>
+      </div>
+    </div>
+
+    <!-- status bar -->
+    <div class="sbar" id="sbar">Lượt của bạn (Đỏ) — Chọn quân cờ ♟</div>
+
+    <!-- 5 emoji cố định -->
+    <div class="emoji-quick" id="emojiBar">
+      <button class="eqbtn" onclick="sendEmoji('👍')">👍</button>
+      <button class="eqbtn" onclick="sendEmoji('😂')">😂</button>
+      <button class="eqbtn" onclick="sendEmoji('🤔')">🤔</button>
+      <button class="eqbtn" onclick="sendEmoji('🔥')">🔥</button>
+      <button class="eqbtn" onclick="sendEmoji('🙏')">🙏</button>
+    </div>
+
+    <!-- nút điều khiển -->
+    <div class="gctrl">
+      <button class="gbtn" id="btnUndo"   onclick="undoMove()"><div class="gi">↩️</div>Hoàn Tác</button>
+      <button class="gbtn" id="btnEmoji"  style="display:none"></button>
+      <button class="gbtn red" id="btnResign" onclick="showModal('modResign')"><div class="gi">🏳️</div>Đầu Hàng</button>
+      <button class="gbtn" id="btnQuit"   onclick="confirmBack()"><div class="gi">🚪</div>Thoát</button>
+    </div>
+
+  </div><!-- /game-sidebar-desktop -->
 
   <span id="cunread" style="display:none">0</span>
   <span id="cunreadBadge" style="display:none">0</span>
@@ -1680,12 +1754,18 @@ function setupCanvas(){
   const dpr=window.devicePixelRatio||1;
   const isDesktop=window.innerWidth>=601;
 
+  // Sync gmode text vào desktop header
+  const gmLbl=document.getElementById('gmode')?.textContent||'';
+  const gmD=document.getElementById('gmodeDesktop');
+  if(gmD) gmD.textContent=gmLbl;
+
   let availW, availH;
   if(isDesktop){
-    // Desktop: bàn cờ cột trái, sidebar 260px + padding
-    const sidebarW=260+24;
-    availW=window.innerWidth - sidebarW - 24;
-    availH=window.innerHeight - 24;
+    // Desktop: bàn cờ cột trái, sidebar 280px + padding 32px
+    const sideW=280+32;
+    availW=window.innerWidth - sideW - 32;
+    availH=window.innerHeight - 32;
+    // Vuông, lấy cạnh nhỏ hơn
     const sq=Math.min(availW, availH);
     availW=sq; availH=sq;
   } else {
@@ -2753,7 +2833,7 @@ function connectSocket(cb){
     myRoomId=roomId;mySide=side;isOnline=true;mode=m;isHidden=m==='hidden';
     pcs=board;sel=null;turn=t;mvHist=[];lastMv=null;aiBusy=false;gameOn=true;gameStartTime=Date.now();
     const lbl={flash:'⚡ CỜ CHỚP',normal:'♟ CỜ THƯỜNG',hidden:'🎭 CỜ ÚP'}[m];
-    document.getElementById('gmode').textContent=lbl;
+    document.getElementById('gmode').textContent=lbl; const _gmd=document.getElementById('gmodeDesktop'); if(_gmd)_gmd.textContent=lbl;
 
     // Tên người chơi — hiển thị đúng phe
     document.querySelector('#rcrd .pn').textContent=side==='r'?'Bạn':opponent;
@@ -2917,7 +2997,7 @@ function startVsAI(m='normal'){
   closeModal('modVsAI');
   isOnline=false; mode=m;
   const lbl={flash:'⚡ VS MÁY · CỜ CHỚP',normal:'🤖 VS MÁY · CỜ THƯỜNG',hidden:'🎭 VS MÁY · CỜ ÚP'}[m];
-  document.getElementById('gmode').textContent=lbl;
+  document.getElementById('gmode').textContent=lbl; const _gmd=document.getElementById('gmodeDesktop'); if(_gmd)_gmd.textContent=lbl;
   showGameScreen();initGame();
 }
 
@@ -4385,7 +4465,7 @@ function startSpectate(sk,data){
   const p2=data.players.find(p=>p.side==='b')?.name||'Đen';
   const modeLbl={flash:'⚡ CỜ CHỚP',normal:'♟ CỜ THƯỜNG',hidden:'🎭 CỜ ÚP'}[data.mode]||'♟';
 
-  document.getElementById('gmode').textContent=`👁 LIVE · ${modeLbl}`;
+  document.getElementById('gmode').textContent=`👁 LIVE · ${modeLbl}`; const _gmd2=document.getElementById('gmodeDesktop'); if(_gmd2)_gmd2.textContent=`👁 LIVE · ${modeLbl}`;
   document.querySelector('#rcrd .pn').textContent=p1;
   document.querySelector('#bcrd .pn').textContent=p2;
   document.getElementById('relo').textContent='';
