@@ -552,26 +552,45 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
   pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ── EMOJI BAR ── */
-.emoji-bar{display:none;justify-content:center;flex-wrap:wrap;gap:6px;
-  padding:6px 12px 4px;background:rgba(0,0,0,.3);
-  border-top:1px solid rgba(212,168,67,.1)}
+/* ── EMOJI BAR — trên nút điều khiển ── */
+.emoji-bar{
+  display:none;
+  justify-content:center;flex-wrap:wrap;gap:5px;
+  padding:8px 10px 6px;
+  background:rgba(0,0,0,.45);
+  border-top:1px solid rgba(212,168,67,.15);
+  border-bottom:1px solid rgba(212,168,67,.1);
+}
 .emoji-bar.show{display:flex}
-.ebtn2{width:38px;height:38px;border-radius:10px;
-  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
-  font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:all .14s;font-family:'Be Vietnam Pro',sans-serif;
-  font-size:13px;font-weight:700;color:var(--text)}
-.ebtn2:active{transform:scale(.82);background:rgba(212,168,67,.2)}
+.ebtn2{
+  width:40px;height:40px;border-radius:12px;
+  background:rgba(255,255,255,.08);
+  border:1.5px solid rgba(255,255,255,.12);
+  font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+  font-family:'Be Vietnam Pro',sans-serif;
+  font-size:13px;font-weight:700;color:var(--text);
+}
+.ebtn2:active{transform:scale(.82);background:rgba(212,168,67,.25);border-color:var(--gold)}
 
-/* ── EMOJI POPUP (hiện trên bàn cờ) ── */
-.emoji-pop{position:absolute;font-size:36px;pointer-events:none;z-index:50;
-  animation:emojiFloat 1.8s ease forwards}
+/* ── EMOJI POPUP ── */
+.emoji-pop{
+  position:absolute;pointer-events:none;z-index:50;
+  animation:emojiFloat 2s cubic-bezier(.2,.8,.4,1) forwards;
+  text-shadow:0 2px 12px rgba(0,0,0,.6);
+}
 @keyframes emojiFloat{
-  0%{transform:translateY(0) scale(.5);opacity:0}
-  20%{transform:translateY(-10px) scale(1.3);opacity:1}
-  70%{transform:translateY(-60px) scale(1);opacity:1}
-  100%{transform:translateY(-100px) scale(.8);opacity:0}
+  0%{transform:translateY(0) scale(.3);opacity:0}
+  15%{transform:translateY(-20px) scale(1.4);opacity:1}
+  60%{transform:translateY(-90px) scale(1.1);opacity:1}
+  100%{transform:translateY(-150px) scale(.8);opacity:0}
+}
+@keyframes emojiFloatDown{
+  0%{transform:translateY(0) scale(.3);opacity:0}
+  15%{transform:translateY(20px) scale(1.4);opacity:1}
+  60%{transform:translateY(80px) scale(1.1);opacity:1}
+  100%{transform:translateY(140px) scale(.8);opacity:0}
 }
 .ai-mode-btn{display:flex;align-items:center;gap:12px;
   background:var(--surf);border:1px solid rgba(212,168,67,.13);
@@ -1031,14 +1050,7 @@ body.light .tog::after{background:#fff}
     <canvas id="cv"></canvas>
   </div>
 
-  <div class="gctrl">
-    <button class="gbtn" id="btnUndo"   onclick="undoMove()"><div class="gi">↩️</div>Hoàn Tác</button>
-    <button class="gbtn" id="btnEmoji"  onclick="toggleEmojiBar()"><div class="gi">😊</div>Cảm Xúc</button>
-    <button class="gbtn red" id="btnResign" onclick="showModal('modResign')"><div class="gi">🏳️</div>Đầu Hàng</button>
-    <button class="gbtn" id="btnQuit"   onclick="confirmBack()"><div class="gi">🚪</div>Thoát</button>
-  </div>
-
-  <!-- Emoji reaction bar -->
+  <!-- Emoji reaction bar — phía TRÊN các nút điều khiển -->
   <div class="emoji-bar" id="emojiBar">
     <button class="ebtn2" onclick="sendEmoji('👍')">👍</button>
     <button class="ebtn2" onclick="sendEmoji('😄')">😄</button>
@@ -1049,43 +1061,19 @@ body.light .tog::after{background:#fff}
     <button class="ebtn2" onclick="sendEmoji('👏')">👏</button>
     <button class="ebtn2" onclick="sendEmoji('🎯')">🎯</button>
     <button class="ebtn2" onclick="sendEmoji('GG!')">GG</button>
-    <button class="ebtn2" onclick="sendEmoji('Hay lắm!')">Hay!</button>
+    <button class="ebtn2" onclick="sendEmoji('🙏')">🙏</button>
   </div>
 
-  <!-- Chat nổi góc trên phải -->
-  <div class="chat-float" id="chatFloat">
-    <button class="chat-float-btn" onclick="toggleChat()">
-      💬
-      <span id="cunreadBadge" class="chat-badge hide">0</span>
-    </button>
+  <div class="gctrl">
+    <button class="gbtn" id="btnUndo"   onclick="undoMove()"><div class="gi">↩️</div>Hoàn Tác</button>
+    <button class="gbtn" id="btnEmoji"  onclick="toggleEmojiBar()"><div class="gi">😊</div>Cảm Xúc</button>
+    <button class="gbtn red" id="btnResign" onclick="showModal('modResign')"><div class="gi">🏳️</div>Đầu Hàng</button>
+    <button class="gbtn" id="btnQuit"   onclick="confirmBack()"><div class="gi">🚪</div>Thoát</button>
   </div>
 
-  <!-- chat panel trượt từ phải -->
-  <div class="chat-panel" id="chatPanel">
-    <div class="chat-panel-head">
-      <span style="font-size:13px;font-weight:700;color:var(--gold)">💬 Trò Chuyện</span>
-      <button class="chat-close-btn" onclick="toggleChat()">✕</button>
-    </div>
-    <div class="quick-e">
-      <button class="ebtn" onclick="qChat('👍')">👍</button>
-      <button class="ebtn" onclick="qChat('😄')">😄</button>
-      <button class="ebtn" onclick="qChat('🤔')">🤔</button>
-      <button class="ebtn" onclick="qChat('😮')">😮</button>
-      <button class="ebtn" onclick="qChat('👏')">👏</button>
-      <button class="ebtn" onclick="qChat('🎯')">🎯</button>
-      <button class="ebtn" onclick="qChat('Hay lắm!')">Hay!</button>
-      <button class="ebtn" onclick="qChat('GG!')">GG</button>
-      <button class="ebtn" onclick="qChat('Ván tốt!')">⚔️</button>
-    </div>
-    <div class="cmessages" id="cmsg"></div>
-    <div class="cinput-row">
-      <input class="cinp" id="cinp" placeholder="Nhắn tin..." maxlength="60"
-        onkeydown="if(event.key==='Enter')sendChat()">
-      <button class="csend" onclick="sendChat()">➤</button>
-    </div>
-  </div>
-  <!-- ẩn cunread cũ, dùng badge mới -->
-  <span id="cunread" class="cunread hide" style="display:none!important">0</span>
+  <!-- Không còn chat — chỉ giao tiếp qua emoji -->
+  <span id="cunread" style="display:none">0</span>
+  <span id="cunreadBadge" style="display:none">0</span>
 </div>
 
 <!-- ══ SPECTATE ══ -->
@@ -1722,24 +1710,26 @@ function draw(){
   [[2,1],[2,7],[7,1],[7,7],[3,0],[3,2],[3,4],[3,6],[3,8],[6,0],[6,2],[6,4],[6,6],[6,8]]
     .forEach(([r,c])=>dot(c,r));
 
-  // ── Highlight nước đi cuối ──
+  // ── Highlight nước đi cuối — hình TRÒN đậm ──
   if(lastMv){
-    // Ô XUẤT PHÁT — nền vàng nhạt + viền đứt
+    // Ô XUẤT PHÁT — tròn vàng đậm, viền đứt
     const fc=lastMv.f.c, fr=lastMv.f.r;
-    ctx.fillStyle=light?'rgba(210,160,0,.28)':'rgba(255,200,0,.22)';
-    ctx.fillRect(cx(fc)-cell/2+1, cy(fr)-cell/2+1, cell-2, cell-2);
-    ctx.strokeStyle=light?'rgba(180,130,0,.6)':'rgba(255,210,0,.55)';
-    ctx.lineWidth=2; ctx.setLineDash([cell*.15,cell*.08]);
-    ctx.strokeRect(cx(fc)-cell/2+2, cy(fr)-cell/2+2, cell-4, cell-4);
+    // Nền tròn solid
+    ctx.fillStyle=light?'rgba(180,120,0,.38)':'rgba(255,200,0,.32)';
+    ctx.beginPath();ctx.arc(cx(fc),cy(fr),cell*.48,0,Math.PI*2);ctx.fill();
+    // Viền đứt
+    ctx.strokeStyle=light?'rgba(150,100,0,.8)':'rgba(255,220,0,.8)';
+    ctx.lineWidth=2.5;ctx.setLineDash([cell*.16,cell*.09]);
+    ctx.beginPath();ctx.arc(cx(fc),cy(fr),cell*.48,0,Math.PI*2);ctx.stroke();
     ctx.setLineDash([]);
 
-    // Ô ĐÍCH — nền xanh lá/vàng đậm hơn + viền liền đậm
+    // Ô ĐÍCH — tròn xanh lá đậm, viền liền
     const tc=lastMv.t.c, tr=lastMv.t.r;
-    ctx.fillStyle=light?'rgba(60,160,60,.22)':'rgba(120,220,80,.2)';
-    ctx.fillRect(cx(tc)-cell/2+1, cy(tr)-cell/2+1, cell-2, cell-2);
-    ctx.strokeStyle=light?'rgba(40,140,40,.7)':'rgba(100,220,60,.75)';
-    ctx.lineWidth=2.5; ctx.setLineDash([]);
-    ctx.strokeRect(cx(tc)-cell/2+2, cy(tr)-cell/2+2, cell-4, cell-4);
+    ctx.fillStyle=light?'rgba(30,140,30,.32)':'rgba(80,220,60,.28)';
+    ctx.beginPath();ctx.arc(cx(tc),cy(tr),cell*.48,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=light?'rgba(20,140,20,.85)':'rgba(60,230,40,.9)';
+    ctx.lineWidth=3;ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(cx(tc),cy(tr),cell*.48,0,Math.PI*2);ctx.stroke();
   }
 
   // ── Quân được chọn & gợi ý ──
@@ -2587,8 +2577,7 @@ function setTurnUI(){
   if(spectateRoomId) updateGameControls('spectate');
   else if(isOnline)  updateGameControls('rank');
   else               updateGameControls('ai');
-  const chatFloat=document.getElementById('chatFloat');
-  if(chatFloat) chatFloat.style.display=gameOn&&!spectateRoomId?'':'none';
+
 }
 
 function setStatus(msg,alert){
@@ -2803,9 +2792,8 @@ function connectSocket(cb){
   socket.on('draw_declined',()=>toast('Đối thủ từ chối hòa'));
 
   socket.on('chat_msg',({name,text})=>{
-    const isMe=(name===playerName||name==='Bạn');
-    if(!isMe) showOpponentEmoji(text); // hiện emoji bay lên
-    addChatMsg(name,text,isMe);
+    const isMe=(name===playerName);
+    if(!isMe) showOpponentEmoji(text);
   });
 }
 
@@ -2875,13 +2863,13 @@ window.addEventListener('beforeunload',()=>{
 function resetChat(){
   document.getElementById('cmsg').innerHTML='';
   unread=0;chatOpen=false;
-  document.getElementById('chatPanel').classList.remove('open');
+
   const ub=document.getElementById('cunreadBadge');if(ub)ub.classList.add('hide');
 }
 
 function toggleChat(){
   chatOpen=!chatOpen;
-  document.getElementById('chatPanel').classList.toggle('open',chatOpen);
+
   if(chatOpen){
     unread=0;
     const ub=document.getElementById('cunreadBadge');if(ub)ub.classList.add('hide');
@@ -2906,42 +2894,58 @@ function toggleEmojiBar(){
   bar.classList.toggle('show');
 }
 
+// Giới hạn spam emoji
+let _emojiCount=0, _emojiTimer=null;
+
 function sendEmoji(emoji){
-  // Hiện emoji bay lên trên bàn cờ
-  showEmojiPop(emoji);
-  // Gửi qua chat
-  if(isOnline&&myRoomId){
+  // Giới hạn 3 lần liên tiếp trong 4 giây
+  _emojiCount++;
+  if(_emojiTimer) clearTimeout(_emojiTimer);
+  _emojiTimer=setTimeout(()=>{_emojiCount=0;},4000);
+  if(_emojiCount>3){
+    toast('😅 Bình tĩnh nào! Chờ chút...');
+    document.getElementById('emojiBar').classList.remove('show');
+    return;
+  }
+  // Hiện emoji của mình bay lên — bên dưới bàn cờ
+  showEmojiPop(emoji, 'me');
+  // Gửi qua socket cho đối thủ
+  if(isOnline&&myRoomId&&socket){
     socket.emit('chat',{roomId:myRoomId,text:emoji});
   }
-  addChatMsg('Bạn',emoji,true);
-  // Ẩn bar sau khi bấm
   document.getElementById('emojiBar').classList.remove('show');
 }
 
-function showEmojiPop(emoji){
+function showEmojiPop(emoji, side){
   const game=document.getElementById('game');
   const pop=document.createElement('div');
   pop.className='emoji-pop';
   pop.textContent=emoji;
-  pop.style.left=(20+Math.random()*60)+'%';
-  pop.style.bottom='140px';
+  // Bên mình bay từ dưới lên (bên đỏ = dưới)
+  // Đối thủ bay từ trên xuống (bên đen = trên)
+  if(side==='me'){
+    pop.style.cssText=`left:${20+Math.random()*60}%;bottom:120px;font-size:44px;`;
+  } else {
+    pop.style.cssText=`left:${15+Math.random()*70}%;top:100px;font-size:44px;`;
+    pop.style.animationName='emojiFloatDown';
+  }
   game.appendChild(pop);
-  setTimeout(()=>pop.remove(),1900);
+  setTimeout(()=>pop.remove(),2200);
 }
 
-// Hiện emoji từ đối thủ
 function showOpponentEmoji(emoji){
-  const game=document.getElementById('game');
-  const pop=document.createElement('div');
-  pop.className='emoji-pop';
-  pop.textContent=emoji;
-  pop.style.left=(20+Math.random()*60)+'%';
-  pop.style.bottom='140px';
-  pop.style.filter='hue-rotate(180deg)';
-  game.appendChild(pop);
-  setTimeout(()=>pop.remove(),1900);
+  showEmojiPop(emoji,'opp');
+  snd('flip'); // tiếng nhẹ báo hiệu
 }
 
+// Stub functions để tránh lỗi nếu gọi nhầm
+function toggleChat(){}
+function sendChat(){}
+function resetChat(){
+  _emojiCount=0;
+  if(_emojiTimer){clearTimeout(_emojiTimer);_emojiTimer=null;}
+}
+function addChatMsg(){} // không dùng nữa
 function qChat(msg){ sendEmoji(msg); }
 
 function addChatMsg(sender,text,isMe){
@@ -4334,9 +4338,6 @@ function startSpectate(sk,data){
     document.getElementById('rtm').className='ptm'+(rTime<=15?' urg':'');
     document.getElementById('btm').className='ptm'+(bTime<=15?' urg':'');
   },1000);
-
-  const chatFloat=document.getElementById('chatFloat');
-  if(chatFloat)chatFloat.style.display='none';
   document.getElementById('emojiBar').classList.remove('show');
 
   showGameScreen();
@@ -4365,8 +4366,6 @@ function startSpectate(sk,data){
     toast(winName?`🏆 ${winName} chiến thắng!`:'🤝 Hòa cờ!');
     setTimeout(()=>{
       spectateRoomId=null;
-      const chatFloat=document.getElementById('chatFloat');
-      if(chatFloat)chatFloat.style.display='';
       nav('spectate',document.getElementById('ni2'));
     },2500);
   };
@@ -4383,8 +4382,6 @@ function startSpectate(sk,data){
     if(spectateRoomId&&socket)socket.emit('stop_spectate',{roomId:spectateRoomId});
     spectateRoomId=null;
     btnQuit.onclick=()=>confirmBack(); // khôi phục
-    const chatFloat=document.getElementById('chatFloat');
-    if(chatFloat)chatFloat.style.display='';
     nav('spectate',document.getElementById('ni2'));
   };
 }
