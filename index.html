@@ -152,7 +152,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 .qbtn .ql{font-size:11px;font-weight:600;color:var(--dim)}
 
 /* ── GAME SCREEN ── */
-#game{background:#0D0600}
+#game{background:#0D0600;position:relative;overflow:hidden}
 .game-top{display:flex;align-items:center;justify-content:space-between;
   padding:calc(var(--safe-top)+6px) 14px 8px;background:rgba(13,6,0,.8);
   backdrop-filter:blur(20px);border-bottom:1px solid rgba(212,168,67,.1);flex-shrink:0}
@@ -1654,8 +1654,8 @@ function setupCanvas(){
   ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
   ox=cell*0.55;oy=cell*0.55;
 }
-const cx=c=>Math.round(ox+c*cell);
-const cy=r=>Math.round(oy+r*cell);
+const cx=c=>Math.round(ox+(mySide==='b'?(COLS-1-c):c)*cell);
+const cy=r=>Math.round(oy+(mySide==='b'?(ROWS-1-r):r)*cell);
 
 function isLightMode(){ return document.body.classList.contains('light'); }
 
@@ -1950,7 +1950,10 @@ function handleClick(evt){
   const scaleY=parseFloat(cv.style.height||cv.height)/rect.height;
   const px=(evt.clientX-rect.left)*scaleX;
   const py=(evt.clientY-rect.top)*scaleY;
-  const col=Math.round((px-ox)/cell),row=Math.round((py-oy)/cell);
+  let col=Math.round((px-ox)/cell);
+  let row=Math.round((py-oy)/cell);
+  // Nếu đang chơi bên Đen, bàn cờ bị lật — đảo tọa độ lại
+  if(mySide==='b'&&isOnline){col=COLS-1-col;row=ROWS-1-row;}
   if(!onB(row,col))return;
 
   const clicked=at(row,col,pcs);
@@ -2688,10 +2691,28 @@ function connectSocket(cb){
     pcs=board;sel=null;turn=t;mvHist=[];lastMv=null;aiBusy=false;gameOn=true;gameStartTime=Date.now();
     const lbl={flash:'⚡ CỜ CHỚP',normal:'♟ CỜ THƯỜNG',hidden:'🎭 CỜ ÚP'}[m];
     document.getElementById('gmode').textContent=lbl;
+
     // Tên người chơi — hiển thị đúng phe
     document.querySelector('#rcrd .pn').textContent=side==='r'?'Bạn':opponent;
     document.querySelector('#bcrd .pn').textContent=side==='b'?'Bạn':opponent;
     document.getElementById('relo').textContent=`ELO ${elo}`;
+
+    // ── Người chơi luôn ở dưới ──
+    // Khi mySide==='b': đổi thứ tự pbar — bcrd (đen=mình) xuống dưới, rcrd lên trên
+    const pbar=document.querySelector('.pbar');
+    const rcrd=document.getElementById('rcrd');
+    const bcrd=document.getElementById('bcrd');
+    const vsEl=pbar.querySelector('.vs');
+    if(side==='b'){
+      // Mình là Đen → bcrd (mình) xuống dưới, rcrd (đối thủ) lên trên
+      pbar.innerHTML='';
+      pbar.appendChild(rcrd);pbar.appendChild(vsEl);pbar.appendChild(bcrd);
+    } else {
+      // Mình là Đỏ → rcrd (mình) ở dưới như mặc định
+      pbar.innerHTML='';
+      pbar.appendChild(bcrd);pbar.appendChild(vsEl);pbar.appendChild(rcrd);
+    }
+
     showGameScreen();clearInterval(timerInt);
     setupCanvas();draw();setTurnUI();
     updateGameControls('rank');
@@ -2789,10 +2810,12 @@ function connectSocket(cb){
   socket.on('draw_offered',()=>showModal('modDraw'));
   socket.on('draw_declined',()=>toast('Đối thủ từ chối hòa'));
 
-  socket.on('chat_msg',({name,text})=>{
-    const isMe=(name===playerName);
-    if(!isMe) showOpponentEmoji(text);
-  });
+  // Lắng nghe emoji từ đối thủ — hỗ trợ cả 2 tên event
+  function handleIncomingEmoji({name,text}){
+    if(name!==playerName) showOpponentEmoji(text);
+  }
+  socket.on('chat_msg', handleIncomingEmoji);
+  socket.on('chat',     handleIncomingEmoji); // fallback nếu server broadcast lại cùng tên
 }
 
 // ══════════════════════════════════════════
@@ -2875,18 +2898,6 @@ function toggleChat(){
   }
 }
 
-function sendChat(){
-  const inp=document.getElementById('cinp');const txt=inp.value.trim();if(!txt)return;
-  if(isOnline&&myRoomId){
-    socket.emit('chat',{roomId:myRoomId,text:txt});
-    addChatMsg('Bạn',txt,true);
-  } else {
-    addChatMsg('Bạn',txt,true);
-    if(gameOn)setTimeout(()=>addChatMsg('Bot',aiReplies[Math.floor(Math.random()*aiReplies.length)],false),700+Math.random()*1000);
-  }
-  inp.value='';
-}
-
 function toggleEmojiBar(){ /* emoji bar luôn hiện, không cần toggle */ }
 
 // Giới hạn spam emoji
@@ -2914,16 +2925,17 @@ function showEmojiPop(emoji, side){
   const pop=document.createElement('div');
   pop.className='emoji-pop';
   pop.textContent=emoji;
+  const leftPct=(18+Math.random()*64)+'%';
   if(side==='me'){
-    // Bên mình: bay từ dưới lên
-    pop.style.left=(20+Math.random()*60)+'%';
-    pop.style.bottom='130px';
+    // Bên mình: góc dưới bàn cờ bay lên
+    pop.style.left=leftPct;
+    pop.style.bottom='18%';
     pop.style.fontSize='46px';
     pop.style.animationName='emojiFloat';
   } else {
-    // Đối thủ: hiện từ trên bàn cờ rơi xuống
-    pop.style.left=(15+Math.random()*70)+'%';
-    pop.style.top='80px';
+    // Đối thủ: góc trên bàn cờ rơi xuống
+    pop.style.left=leftPct;
+    pop.style.top='12%';
     pop.style.fontSize='46px';
     pop.style.animationName='emojiFloatDown';
   }
