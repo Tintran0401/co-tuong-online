@@ -24,9 +24,58 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
   display:flex;flex-direction:column;align-items:center}
 
 /* ── SCREENS ── */
-.screen{display:none;flex-direction:column;width:100%;max-width:430px;
+.screen{display:none;flex-direction:column;width:100%;
   height:100%;height:100dvh;position:absolute;top:0;left:50%;transform:translateX(-50%)}
 .screen.active{display:flex}
+
+/* Desktop: bàn cờ bên trái, sidebar bên phải */
+@media(min-width:601px){
+  .screen{max-width:100%}
+  #game{
+    flex-direction:row !important;
+    align-items:stretch;
+    justify-content:center;
+  }
+  #game .game-top{ display:none !important; }
+  #game .board-wrap{
+    flex:1;
+    max-width:calc(100vh - 40px);
+    display:flex;align-items:center;justify-content:center;
+    padding:16px;
+  }
+  .game-sidebar{
+    width:240px;
+    min-width:200px;
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:4px;
+    padding:20px 12px;
+    border-left:1px solid rgba(212,168,67,.15);
+    background:rgba(0,0,0,.3);
+  }
+  .game-sidebar .pbar{flex-direction:column;gap:8px}
+  .game-sidebar .pbar .vs{display:none}
+  .game-sidebar .pcrd{width:100%}
+  .game-top-desktop{
+    display:flex !important;
+    align-items:center;justify-content:space-between;
+    padding:0 4px 12px;
+    border-bottom:1px solid rgba(212,168,67,.12);
+    margin-bottom:4px;
+  }
+  .game-sidebar .emoji-quick{border-radius:12px;border:1px solid rgba(212,168,67,.12)}
+  .game-sidebar .gctrl{flex-wrap:wrap}
+}
+
+/* Mobile: layout dọc */
+@media(max-width:600px){
+  .screen{max-width:430px}
+  #game{flex-direction:column}
+  .game-top-desktop{display:none !important}
+  .game-sidebar{display:contents} /* flatten sidebar children vào flow dọc */
+}
 .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding-bottom:calc(70px + var(--safe-bot))}
 
@@ -578,21 +627,22 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 
 /* ── EMOJI POPUP ── */
 .emoji-pop{
-  position:absolute;pointer-events:none;z-index:50;
-  animation:emojiFloat 2s cubic-bezier(.2,.8,.4,1) forwards;
-  text-shadow:0 2px 12px rgba(0,0,0,.6);
+  position:absolute;pointer-events:none;z-index:9999;
+  animation:emojiFloat 2.2s cubic-bezier(.2,.8,.4,1) forwards;
+  text-shadow:0 2px 16px rgba(0,0,0,.7);
+  line-height:1;
 }
 @keyframes emojiFloat{
-  0%{transform:translateY(0) scale(.3);opacity:0}
-  15%{transform:translateY(-20px) scale(1.4);opacity:1}
-  60%{transform:translateY(-90px) scale(1.1);opacity:1}
-  100%{transform:translateY(-150px) scale(.8);opacity:0}
+  0%  {transform:translateY(0)   scale(.2);opacity:0}
+  12% {transform:translateY(-15px) scale(1.5);opacity:1}
+  55% {transform:translateY(-80px) scale(1.1);opacity:1}
+  100%{transform:translateY(-160px) scale(.7);opacity:0}
 }
 @keyframes emojiFloatDown{
-  0%{transform:translateY(0) scale(.3);opacity:0}
-  15%{transform:translateY(20px) scale(1.4);opacity:1}
-  60%{transform:translateY(80px) scale(1.1);opacity:1}
-  100%{transform:translateY(140px) scale(.8);opacity:0}
+  0%  {transform:translateY(0)   scale(.2);opacity:0}
+  12% {transform:translateY(15px)  scale(1.5);opacity:1}
+  55% {transform:translateY(80px)  scale(1.1);opacity:1}
+  100%{transform:translateY(160px) scale(.7);opacity:0}
 }
 .ai-mode-btn{display:flex;align-items:center;gap:12px;
   background:var(--surf);border:1px solid rgba(212,168,67,.13);
@@ -1032,40 +1082,48 @@ body.light .tog::after{background:#fff}
     <div class="tb-btn" onclick="openSettings()">⚙</div>
   </div>
 
-  <div class="pbar">
-    <div class="pcrd" id="bcrd">
-      <div class="mav b">將</div>
-      <div><div class="pn">Đối Thủ</div><div style="font-size:10px;color:var(--dim)" id="belo">ELO 1380</div></div>
-      <div class="ptm" id="btm">10:00</div>
-    </div>
-    <div class="vs">VS</div>
-    <div class="pcrd on" id="rcrd">
-      <div class="mav r">帥</div>
-      <div><div class="pn">Bạn</div><div style="font-size:10px;color:var(--dim)" id="relo">ELO 1200</div></div>
-      <div class="ptm" id="rtm">10:00</div>
-    </div>
-  </div>
-
-  <div class="sbar" id="sbar">Lượt của bạn (Đỏ) — Chọn quân cờ ♟</div>
-
   <div class="board-wrap">
     <canvas id="cv"></canvas>
   </div>
 
-  <!-- 5 emoji cố định luôn hiện trên màn hình trận đấu -->
-  <div class="emoji-quick" id="emojiBar">
-    <button class="eqbtn" onclick="sendEmoji('👍')">👍</button>
-    <button class="eqbtn" onclick="sendEmoji('😂')">😂</button>
-    <button class="eqbtn" onclick="sendEmoji('🤔')">🤔</button>
-    <button class="eqbtn" onclick="sendEmoji('🔥')">🔥</button>
-    <button class="eqbtn" onclick="sendEmoji('🙏')">🙏</button>
-  </div>
+  <!-- Sidebar: hiện ngang trên mobile, dọc bên phải trên desktop -->
+  <div class="game-sidebar" id="gameSidebar">
+    <div class="game-top-desktop" style="display:none">
+      <div class="gmode" id="gmode2">♟ CỜ THƯỜNG</div>
+      <div class="tb-btn" onclick="openSettings()">⚙</div>
+    </div>
 
-  <div class="gctrl">
-    <button class="gbtn" id="btnUndo"   onclick="undoMove()"><div class="gi">↩️</div>Hoàn Tác</button>
-    <button class="gbtn" id="btnEmoji"  style="display:none"></button>
-    <button class="gbtn red" id="btnResign" onclick="showModal('modResign')"><div class="gi">🏳️</div>Đầu Hàng</button>
-    <button class="gbtn" id="btnQuit"   onclick="confirmBack()"><div class="gi">🚪</div>Thoát</button>
+    <div class="pbar">
+      <div class="pcrd" id="bcrd">
+        <div class="mav b">將</div>
+        <div><div class="pn">Đối Thủ</div><div style="font-size:10px;color:var(--dim)" id="belo">ELO 1380</div></div>
+        <div class="ptm" id="btm">10:00</div>
+      </div>
+      <div class="vs">VS</div>
+      <div class="pcrd on" id="rcrd">
+        <div class="mav r">帥</div>
+        <div><div class="pn">Bạn</div><div style="font-size:10px;color:var(--dim)" id="relo">ELO 1200</div></div>
+        <div class="ptm" id="rtm">10:00</div>
+      </div>
+    </div>
+
+    <div class="sbar" id="sbar">Lượt của bạn (Đỏ) — Chọn quân cờ ♟</div>
+
+    <!-- 5 emoji cố định luôn hiện trên màn hình trận đấu -->
+    <div class="emoji-quick" id="emojiBar">
+      <button class="eqbtn" onclick="sendEmoji('👍')">👍</button>
+      <button class="eqbtn" onclick="sendEmoji('😂')">😂</button>
+      <button class="eqbtn" onclick="sendEmoji('🤔')">🤔</button>
+      <button class="eqbtn" onclick="sendEmoji('🔥')">🔥</button>
+      <button class="eqbtn" onclick="sendEmoji('🙏')">🙏</button>
+    </div>
+
+    <div class="gctrl">
+      <button class="gbtn" id="btnUndo"   onclick="undoMove()"><div class="gi">↩️</div>Hoàn Tác</button>
+      <button class="gbtn" id="btnEmoji"  style="display:none"></button>
+      <button class="gbtn red" id="btnResign" onclick="showModal('modResign')"><div class="gi">🏳️</div>Đầu Hàng</button>
+      <button class="gbtn" id="btnQuit"   onclick="confirmBack()"><div class="gi">🚪</div>Thoát</button>
+    </div>
   </div>
 
   <!-- Không còn chat — chỉ giao tiếp qua emoji -->
@@ -1630,21 +1688,33 @@ function safeMoves(p,ps){
 function setupCanvas(){
   cv=document.getElementById('cv');
   const dpr=window.devicePixelRatio||1;
-  const gameEl=document.getElementById('game');
-  const gameH=gameEl.getBoundingClientRect().height||window.innerHeight;
-  const topBar=document.querySelector('.game-top');
-  const pBar=document.querySelector('.pbar');
-  const sBar=document.querySelector('.sbar');
-  const ctrl=document.querySelector('.gctrl');
-  const usedH=(topBar?topBar.offsetHeight:52)+(pBar?pBar.offsetHeight:58)
-             +(sBar?sBar.offsetHeight:26)+(ctrl?ctrl.offsetHeight:56)+8;
-  // Tăng kích thước bàn cờ — dùng nhiều không gian hơn
-  const availW=Math.min(window.innerWidth-8,430);
-  const availH=Math.max(gameH-usedH,220);
-  // Hệ số 1.1 thay vì 1.3 → ô rộng hơn
+  const isDesktop=window.innerWidth>=601;
+
+  let availW, availH;
+
+  if(isDesktop){
+    // Desktop: bàn cờ chiếm phần bên trái, sidebar 220px bên phải
+    const sidebarW=240;
+    availW=window.innerWidth - sidebarW - 32;
+    availH=window.innerHeight - 32;
+    availW=Math.min(availW, availH); // giữ vuông
+    availH=availW;
+  } else {
+    // Mobile: layout dọc như cũ
+    const gameEl=document.getElementById('game');
+    const gameH=gameEl.getBoundingClientRect().height||window.innerHeight;
+    const pBar=document.querySelector('.pbar');
+    const sBar=document.querySelector('.sbar');
+    const ctrl=document.querySelector('.gctrl');
+    const eBar=document.querySelector('.emoji-quick');
+    const usedH=(pBar?pBar.offsetHeight:58)+(sBar?sBar.offsetHeight:26)
+               +(ctrl?ctrl.offsetHeight:56)+(eBar?eBar.offsetHeight:60)+8;
+    availW=Math.min(window.innerWidth-8,430);
+    availH=Math.max(gameH-usedH,220);
+  }
+
   const cellW=Math.floor((availW-8)/(COLS-1+1.1));
   const cellH=Math.floor((availH-8)/(ROWS-1+1.1));
-  // min cell 28px thay vì 24px
   cell=Math.max(Math.min(cellW,cellH),28);
   const boardW=Math.round(cell*(COLS-1+1.1));
   const boardH=Math.round(cell*(ROWS-1+1.1));
@@ -1653,6 +1723,22 @@ function setupCanvas(){
   cv.width=Math.round(boardW*dpr);cv.height=Math.round(boardH*dpr);
   ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
   ox=cell*0.55;oy=cell*0.55;
+
+  // Sync gmode text
+  const lbl=document.getElementById('gmode')?.textContent||'';
+  const g2=document.getElementById('gmode2');
+  if(g2) g2.textContent=lbl;
+
+  // Desktop: show/hide game-top-desktop
+  const gtd=document.querySelector('.game-top-desktop');
+  const gtm=document.querySelector('.game-top');
+  if(isDesktop){
+    if(gtd) gtd.style.display='flex';
+    if(gtm) gtm.style.display='none';
+  } else {
+    if(gtd) gtd.style.display='none';
+    if(gtm) gtm.style.display='flex';
+  }
 }
 const cx=c=>Math.round(ox+(mySide==='b'?(COLS-1-c):c)*cell);
 const cy=r=>Math.round(oy+(mySide==='b'?(ROWS-1-r):r)*cell);
@@ -2921,26 +3007,28 @@ function sendEmoji(emoji){
 }
 
 function showEmojiPop(emoji, side){
-  const game=document.getElementById('game');
-  const pop=document.createElement('div');
-  pop.className='emoji-pop';
-  pop.textContent=emoji;
-  const leftPct=(18+Math.random()*64)+'%';
-  if(side==='me'){
-    // Bên mình: góc dưới bàn cờ bay lên
-    pop.style.left=leftPct;
-    pop.style.bottom='18%';
-    pop.style.fontSize='46px';
-    pop.style.animationName='emojiFloat';
+  const overlay = document.getElementById('emojiOverlay');
+  if(!overlay) return;
+  const pop = document.createElement('div');
+  pop.className = 'emoji-pop';
+  pop.textContent = emoji;
+  // Vị trí ngang ngẫu nhiên trong 20%–80% chiều rộng màn hình
+  const leftPct = (20 + Math.random() * 60) + '%';
+  if(side === 'me'){
+    // Bên mình: xuất hiện ở 70% chiều cao, bay lên
+    pop.style.left = leftPct;
+    pop.style.top = '65%';
+    pop.style.fontSize = '52px';
+    pop.style.animationName = 'emojiFloat';
   } else {
-    // Đối thủ: góc trên bàn cờ rơi xuống
-    pop.style.left=leftPct;
-    pop.style.top='12%';
-    pop.style.fontSize='46px';
-    pop.style.animationName='emojiFloatDown';
+    // Đối thủ: xuất hiện ở 20% chiều cao, rơi xuống
+    pop.style.left = leftPct;
+    pop.style.top = '15%';
+    pop.style.fontSize = '52px';
+    pop.style.animationName = 'emojiFloatDown';
   }
-  game.appendChild(pop);
-  setTimeout(()=>pop.remove(),2200);
+  overlay.appendChild(pop);
+  setTimeout(()=>{ if(pop.parentNode) pop.parentNode.removeChild(pop); }, 2200);
 }
 
 function showOpponentEmoji(emoji){
@@ -4500,5 +4588,14 @@ setTimeout(()=>{
     <div class="ni">⚙️</div><div class="nl">Cài Đặt</div>
   </div>
 </nav>
+
+<!-- EMOJI OVERLAY — fixed toàn màn hình, không bị clip -->
+<div id="emojiOverlay" style="
+  position:fixed;inset:0;
+  pointer-events:none;
+  z-index:9999;
+  overflow:hidden;
+"></div>
+
 </body>
 </html>
