@@ -553,26 +553,28 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ── EMOJI BAR — trên nút điều khiển ── */
-.emoji-bar{
-  display:none;
-  justify-content:center;flex-wrap:wrap;gap:5px;
+/* ── EMOJI QUICK BAR (5 nút luôn hiện) ── */
+.emoji-quick{
+  display:flex;
+  justify-content:center;
+  gap:10px;
   padding:8px 10px 6px;
-  background:rgba(0,0,0,.45);
+  background:rgba(0,0,0,.35);
   border-top:1px solid rgba(212,168,67,.15);
   border-bottom:1px solid rgba(212,168,67,.1);
 }
-.emoji-bar.show{display:flex}
-.ebtn2{
-  width:40px;height:40px;border-radius:12px;
+.eqbtn{
+  width:46px;height:46px;
+  border-radius:50%;
   background:rgba(255,255,255,.08);
   border:1.5px solid rgba(255,255,255,.12);
-  font-size:20px;cursor:pointer;
+  font-size:24px;
+  cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  transition:all .12s;
-  font-family:'Be Vietnam Pro',sans-serif;
-  font-size:13px;font-weight:700;color:var(--text);
+  transition:transform .12s, background .12s;
+  -webkit-tap-highlight-color:transparent;
 }
-.ebtn2:active{transform:scale(.82);background:rgba(212,168,67,.25);border-color:var(--gold)}
+.eqbtn:active{transform:scale(1.35);background:rgba(212,168,67,.3);border-color:var(--gold)}
 
 /* ── EMOJI POPUP ── */
 .emoji-pop{
@@ -1050,23 +1052,18 @@ body.light .tog::after{background:#fff}
     <canvas id="cv"></canvas>
   </div>
 
-  <!-- Emoji reaction bar — phía TRÊN các nút điều khiển -->
-  <div class="emoji-bar" id="emojiBar">
-    <button class="ebtn2" onclick="sendEmoji('👍')">👍</button>
-    <button class="ebtn2" onclick="sendEmoji('😄')">😄</button>
-    <button class="ebtn2" onclick="sendEmoji('🤔')">🤔</button>
-    <button class="ebtn2" onclick="sendEmoji('😮')">😮</button>
-    <button class="ebtn2" onclick="sendEmoji('😂')">😂</button>
-    <button class="ebtn2" onclick="sendEmoji('🔥')">🔥</button>
-    <button class="ebtn2" onclick="sendEmoji('👏')">👏</button>
-    <button class="ebtn2" onclick="sendEmoji('🎯')">🎯</button>
-    <button class="ebtn2" onclick="sendEmoji('GG!')">GG</button>
-    <button class="ebtn2" onclick="sendEmoji('🙏')">🙏</button>
+  <!-- 5 emoji cố định luôn hiện trên màn hình trận đấu -->
+  <div class="emoji-quick" id="emojiBar">
+    <button class="eqbtn" onclick="sendEmoji('👍')">👍</button>
+    <button class="eqbtn" onclick="sendEmoji('😂')">😂</button>
+    <button class="eqbtn" onclick="sendEmoji('🤔')">🤔</button>
+    <button class="eqbtn" onclick="sendEmoji('🔥')">🔥</button>
+    <button class="eqbtn" onclick="sendEmoji('🙏')">🙏</button>
   </div>
 
   <div class="gctrl">
     <button class="gbtn" id="btnUndo"   onclick="undoMove()"><div class="gi">↩️</div>Hoàn Tác</button>
-    <button class="gbtn" id="btnEmoji"  onclick="toggleEmojiBar()"><div class="gi">😊</div>Cảm Xúc</button>
+    <button class="gbtn" id="btnEmoji"  style="display:none"></button>
     <button class="gbtn red" id="btnResign" onclick="showModal('modResign')"><div class="gi">🏳️</div>Đầu Hàng</button>
     <button class="gbtn" id="btnQuit"   onclick="confirmBack()"><div class="gi">🚪</div>Thoát</button>
   </div>
@@ -2545,26 +2542,27 @@ function updateTimer(){
 function updateGameControls(gameMode){
   // gameMode: 'ai' | 'rank' | 'spectate'
   const undo   = document.getElementById('btnUndo');
-  const emoji  = document.getElementById('btnEmoji');
+  const emoji  = document.getElementById('btnEmoji'); // hidden stub
   const resign = document.getElementById('btnResign');
   const quit   = document.getElementById('btnQuit');
+  const eqBar  = document.getElementById('emojiBar');
   if(!undo)return;
 
   if(gameMode==='ai'){
-    undo.style.display='';     // ✅ Hoàn Tác
-    emoji.style.display='none';
-    resign.style.display='';   // ✅ Đầu Hàng
+    undo.style.display='';
+    resign.style.display='';
     quit.style.display='none';
+    if(eqBar) eqBar.style.display='none'; // ẩn emoji khi chơi vs AI
   } else if(gameMode==='rank'){
     undo.style.display='none';
-    emoji.style.display='';    // ✅ Cảm Xúc
-    resign.style.display='';   // ✅ Đầu Hàng
+    resign.style.display='';
     quit.style.display='none';
+    if(eqBar) eqBar.style.display='flex'; // hiện 5 emoji khi rank
   } else if(gameMode==='spectate'){
     undo.style.display='none';
-    emoji.style.display='';    // ✅ Cảm Xúc
     resign.style.display='none';
-    quit.style.display='';     // ✅ Thoát
+    quit.style.display='';
+    if(eqBar) eqBar.style.display='none'; // ẩn khi xem
   }
 }
 
@@ -2889,31 +2887,26 @@ function sendChat(){
   inp.value='';
 }
 
-function toggleEmojiBar(){
-  const bar=document.getElementById('emojiBar');
-  bar.classList.toggle('show');
-}
+function toggleEmojiBar(){ /* emoji bar luôn hiện, không cần toggle */ }
 
 // Giới hạn spam emoji
 let _emojiCount=0, _emojiTimer=null;
 
 function sendEmoji(emoji){
-  // Giới hạn 3 lần liên tiếp trong 4 giây
-  _emojiCount++;
-  if(_emojiTimer) clearTimeout(_emojiTimer);
-  _emojiTimer=setTimeout(()=>{_emojiCount=0;},4000);
-  if(_emojiCount>3){
+  // Kiểm tra spam trước — max 3 lần trong 4 giây
+  if(_emojiCount>=3){
     toast('😅 Bình tĩnh nào! Chờ chút...');
-    document.getElementById('emojiBar').classList.remove('show');
     return;
   }
-  // Hiện emoji của mình bay lên — bên dưới bàn cờ
-  showEmojiPop(emoji, 'me');
-  // Gửi qua socket cho đối thủ
+  _emojiCount++;
+  if(_emojiTimer) clearTimeout(_emojiTimer);
+  _emojiTimer=setTimeout(()=>{_emojiCount=0;_emojiTimer=null;},4000);
+  // Hiện emoji của mình bay lên
+  showEmojiPop(emoji,'me');
+  // Gửi qua socket kèm tên để server nhận dạng
   if(isOnline&&myRoomId&&socket){
-    socket.emit('chat',{roomId:myRoomId,text:emoji});
+    socket.emit('chat',{roomId:myRoomId,name:playerName,text:emoji});
   }
-  document.getElementById('emojiBar').classList.remove('show');
 }
 
 function showEmojiPop(emoji, side){
@@ -2921,12 +2914,17 @@ function showEmojiPop(emoji, side){
   const pop=document.createElement('div');
   pop.className='emoji-pop';
   pop.textContent=emoji;
-  // Bên mình bay từ dưới lên (bên đỏ = dưới)
-  // Đối thủ bay từ trên xuống (bên đen = trên)
   if(side==='me'){
-    pop.style.cssText=`left:${20+Math.random()*60}%;bottom:120px;font-size:44px;`;
+    // Bên mình: bay từ dưới lên
+    pop.style.left=(20+Math.random()*60)+'%';
+    pop.style.bottom='130px';
+    pop.style.fontSize='46px';
+    pop.style.animationName='emojiFloat';
   } else {
-    pop.style.cssText=`left:${15+Math.random()*70}%;top:100px;font-size:44px;`;
+    // Đối thủ: hiện từ trên bàn cờ rơi xuống
+    pop.style.left=(15+Math.random()*70)+'%';
+    pop.style.top='80px';
+    pop.style.fontSize='46px';
     pop.style.animationName='emojiFloatDown';
   }
   game.appendChild(pop);
@@ -4338,8 +4336,6 @@ function startSpectate(sk,data){
     document.getElementById('rtm').className='ptm'+(rTime<=15?' urg':'');
     document.getElementById('btm').className='ptm'+(bTime<=15?' urg':'');
   },1000);
-  document.getElementById('emojiBar').classList.remove('show');
-
   showGameScreen();
   setupCanvas();draw();
   setStatus(`👁 ${p1} VS ${p2} · Đang xem trực tiếp`,false);
