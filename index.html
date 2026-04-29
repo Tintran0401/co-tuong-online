@@ -52,74 +52,78 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
    ══════════════════════════════════════════════ */
 @media(min-width:700px){
 
-  /* ── Root layout: sidebar-left + main ── */
-  html,body{ overflow:hidden; }
+  /* ── Root: sidebar trái + content phải ── */
+  html,body{ overflow:hidden; height:100%; }
   body{
     flex-direction:row !important;
     align-items:stretch;
     height:100dvh;
-    overflow:hidden;
   }
 
-  /* Sidebar nav trái — cố định */
+  /* Sidebar nav trái */
   #mainNav{
     position:relative !important;
     left:auto !important; bottom:auto !important;
     transform:none !important;
-    width:72px !important;
-    max-width:72px !important;
+    width:76px !important;
+    max-width:76px !important;
+    min-width:76px !important;
     height:100dvh;
     flex-direction:column !important;
     justify-content:flex-start !important;
     align-items:center;
-    padding:20px 0 20px !important;
-    gap:4px;
+    padding:16px 0 16px !important;
+    gap:2px;
     border-top:none !important;
-    border-right:1px solid rgba(212,168,67,.12);
+    border-right:1px solid rgba(212,168,67,.15);
     flex-shrink:0;
-    overflow:hidden;
     z-index:40;
-    display:flex !important; /* luôn hiện, không bị JS ẩn */
+    display:flex !important;
+    order:-1;
   }
-  /* Logo ở đầu sidebar */
   #mainNav::before{
     content:'象棋';
     font-family:'Noto Serif SC',serif;
-    font-size:18px; font-weight:900;
+    font-size:16px; font-weight:900;
     color:var(--gold);
-    padding-bottom:16px;
+    padding-bottom:14px;
     border-bottom:1px solid rgba(212,168,67,.15);
-    margin-bottom:8px;
+    margin-bottom:6px;
     width:100%;
     text-align:center;
     flex-shrink:0;
-    letter-spacing:1px;
   }
   .nav-i{
-    width:56px; height:56px;
+    width:60px; height:60px;
     border-radius:14px;
     padding:0 !important;
     flex-direction:column;
-    gap:3px;
+    gap:2px;
     justify-content:center;
   }
   .nav-i .ni{ font-size:20px; }
   .nav-i .nl{ font-size:8px; letter-spacing:0; }
-  .nav-i.on{ background:rgba(212,168,67,.12); }
+  .nav-i.on{ background:rgba(212,168,67,.15); }
 
-  /* ── Main content area ── */
+  /* ── Screens: inactive vẫn display:none ── */
+  /* Chỉ active screen mới đổi position/size */
   .screen{
+    /* Mặc định vẫn display:none — giữ nguyên base CSS */
+  }
+  .screen.active{
     position:relative !important;
-    top:auto !important; left:auto !important;
+    top:auto !important;
+    left:auto !important;
     transform:none !important;
     max-width:none !important;
     width:100% !important;
     flex:1;
     height:100dvh;
     overflow:hidden;
+    display:flex !important;
   }
 
-  /* Các screen nội dung: căn giữa có max-width */
+  /* Content screens: căn giữa */
   #home .scroll,
   #lb .scroll,
   #profile .scroll,
@@ -130,18 +134,13 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
     width:100%;
   }
 
-  /* ── GAME SCREEN: bàn cờ + panel phải ── */
-  #game{
-    display:flex !important;
+  /* ── GAME: bàn cờ trái + panel phải ── */
+  #game.active{
     flex-direction:row !important;
     align-items:stretch;
     background:var(--game-bg);
   }
-
-  /* Ẩn top-bar mobile */
   #game .game-top{ display:none !important; }
-
-  /* Bàn cờ: chiếm phần còn lại, căn giữa */
   #game .board-wrap{
     flex:1;
     display:flex;
@@ -151,8 +150,6 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
     min-width:0;
     height:100%;
   }
-
-  /* Panel bên phải */
   #game .game-sidebar-desktop{
     width:260px;
     min-width:240px;
@@ -173,13 +170,9 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
     background:rgba(255,248,231,.6);
     border-left-color:rgba(160,120,50,.2);
   }
-
-  /* pbar dọc trong sidebar */
   #game #gpbar{ flex-direction:column !important; gap:8px !important; padding:0; }
   #game #gpbar .vs{ display:none !important; }
   #game #gpbar .pcrd{ width:100% !important; max-width:none !important; }
-
-  /* emoji full width */
   #game .emoji-quick{
     border-radius:12px;
     border:1px solid rgba(160,120,50,.2);
@@ -187,12 +180,8 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
     justify-content:space-around;
     flex-shrink:0;
   }
-
-  /* gctrl: 2 cột */
   #game .gctrl{ flex-wrap:wrap; padding:0; gap:6px; flex-shrink:0; }
   #game .gctrl .gbtn{ flex:1 1 calc(50% - 3px); max-width:none; }
-
-  /* desktop header trong sidebar */
   .desktop-header{
     display:flex !important;
     align-items:center;
@@ -203,19 +192,16 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
     flex-shrink:0;
   }
 
-  /* ── Ẩn/hiện ── */
-  /* mobile sidebar flatten: không cần trên desktop */
+  /* Mobile elements: ẩn trên desktop */
+  .d-hide{ display:none !important; }
+  #game .game-top{ display:none !important; }
 }
 
-/* ══ MOBILE < 700px: giữ nguyên hoàn toàn ══ */
+/* ══ MOBILE < 700px ══ */
 @media(max-width:699px){
   #game .game-sidebar-desktop{ display:none !important; }
   .desktop-header{ display:none !important; }
-  .d-hide{ display:flex; } /* mobile: các phần tử mobile hiện lại */
-}
-@media(min-width:700px){
-  .d-hide{ display:none !important; } /* desktop: ẩn bản mobile */
-  #game .game-top{ display:none !important; }
+  .d-hide{ display:flex; }
 }
 
 /* ── SPLASH ── */
@@ -1907,8 +1893,8 @@ function setupCanvas(){
 
   let availW, availH;
   if(isDesktop){
-    // Desktop: sidebar nav 72px trái + panel game 260px phải + padding
-    const navW=72, panelW=260, pad=40;
+    // Desktop: nav sidebar 76px + game panel 260px + padding 40px
+    const navW=76, panelW=260, pad=40;
     availW=window.innerWidth - navW - panelW - pad;
     availH=window.innerHeight - pad;
     const sq=Math.min(availW, availH);
@@ -3161,6 +3147,17 @@ function startVsAI(m='normal'){
   showGameScreen();initGame();
 }
 
+
+// Helper: set mainNav display đúng theo viewport
+function setNavDisplay(forceShow){
+  const nav=document.getElementById('mainNav');
+  if(!nav) return;
+  if(window.innerWidth>=700){
+    nav.style.display='flex'; // desktop: luôn hiện (sidebar)
+  } else {
+    nav.style.display=forceShow?'flex':'none';
+  }
+}
 function showGameScreen(){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('game').classList.add('active');
@@ -3168,7 +3165,7 @@ function showGameScreen(){
   const mainNav=document.getElementById('mainNav');
   if(mainNav){
     // Desktop: sidebar luôn hiện; Mobile: ẩn khi vào game
-    mainNav.style.display='flex'; // desktop: luôn hiện
+    setNavDisplay(true); // desktop: luôn hiện
   }
 }
 
@@ -3513,14 +3510,14 @@ function nav(screenId,navEl){
 
   // Tabbar: ẩn khi game/spectate đang xem, hiện mọi nơi khác
   const mainNav=document.getElementById('mainNav');
-  if(mainNav) mainNav.style.display=(window.innerWidth>=700||screenId!=='game'&&screenId!=='spectate')?'flex':'none';
+  if(mainNav) setNavDisplay(screenId!=='game'&&screenId!=='spectate');
 
   if(screenId==='game'&&cv)draw();
   if(screenId==='profile')refreshProfile();
   if(screenId==='lb')renderLeaderboard(currentLbMode);
   if(screenId==='spectate'){
     // Hiện lại tabbar vì spectate có thể xem từ nav
-    if(mainNav) mainNav.style.display='flex';
+    setNavDisplay(true);
     loadLiveRooms();
     clearInterval(liveRefreshInt);
     liveRefreshInt=setInterval(()=>{
@@ -4372,7 +4369,7 @@ function startLesson(idx){
   curLesson=idx;curStep=0;lessonSel=null;
   document.getElementById('learnHome').style.display='none';
   document.getElementById('lessonScreen').style.display='flex';
-  { const _n=document.getElementById('mainNav'); if(_n) _n.style.display=(window.innerWidth>=700?'flex':'none'); }
+  setNavDisplay(false)
   renderStep();
   setTimeout(setupLessonCanvas,60);
 }
@@ -4447,13 +4444,13 @@ function lessonDone(){
   document.getElementById('lessonResult').style.display='none';
   document.getElementById('lessonScreen').style.display='none';
   document.getElementById('learnHome').style.display='flex';
-  document.getElementById('mainNav').style.display='flex';
+  setNavDisplay(true);
   curLesson=-1;lessonSel=null;renderLearnMap();
 }
 function exitLesson(){
   document.getElementById('lessonScreen').style.display='none';
   document.getElementById('learnHome').style.display='flex';
-  document.getElementById('mainNav').style.display='flex';
+  setNavDisplay(true);
   curLesson=-1;lessonSel=null;
 }
 function updateLearnUI(){renderLearnMap();}
@@ -4506,7 +4503,7 @@ function doLogout(){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('login').classList.add('active');
   document.getElementById('loginName').value='';
-  const n=document.getElementById('mainNav');if(n)n.style.display=(window.innerWidth>=700?'flex':'none');
+  setNavDisplay(false);
 }
 function showModal(id){document.getElementById(id).classList.add('on');}
 function closeModal(id){document.getElementById(id).classList.remove('on');}
@@ -4789,7 +4786,7 @@ function doLogin(){
   document.getElementById('home').classList.add('active');
   document.getElementById('ni1').classList.add('on');
   const mainNav=document.getElementById('mainNav');
-  if(mainNav) mainNav.style.display='flex';
+  setNavDisplay(true);
   refreshProfile();
   // Pre-render learn map
   setTimeout(()=>renderLearnMap(),100);
